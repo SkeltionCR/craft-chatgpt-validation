@@ -2860,7 +2860,7 @@ index 21e5336..3fab3cf 100644
  }
 diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
 new file mode 100644
-index 0000000..c63fb17
+index 0000000..46192b9
 --- /dev/null
 +++ b/docs/chatgpt-connection.md
 @@ -0,0 +1,58 @@
@@ -2894,8 +2894,8 @@ index 0000000..c63fb17
 +
 +Windows compilation and 8 authentication/UI tests passed, along with an explicitly
 +requested offscreen preview of the real connection panel on a synthetic editor surface.
-+The complete upstream CI gate passed, including formatting, Clippy, workspace tests,
-+asset/layer checks, and the repository's WASM checks. The runner's formatted source and
++The complete upstream CI gate passed. Its exact summary is:
++`CI summary: all 7 steps passed (fmt, clippy, test, assets, brands, layers, wasm)`. The runner's formatted source and
 +resolved Cargo.lock have been imported into this checkout.
 +
 +Evidence: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526641875

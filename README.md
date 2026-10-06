@@ -36,3 +36,13 @@ Source contract: https://developers.openai.com/siwc/token-sharing-open-source/si
 The underlying upstream source is licensed MIT OR Apache-2.0. Original notices remain in
 each checked-out upstream project. These patches contain no Adobe assets. Trademark
 assets from upstream remain in its ephemeral build checkout and are not redistributed.
+
+## Completed validation
+
+| Project | Full Windows CI | Live account |
+|---|---|---|
+| designcraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526643074) | Not exercised |
+| vectorcraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526641875) | Not exercised |
+| photocraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526632188) | Not exercised |
+
+Other selected runs are pending. Panel previews use synthetic accounts and a test editor.

@@ -62,6 +62,12 @@ Set-Location -LiteralPath $sourceRoot
 Invoke-Checked -Command rustup -Arguments @('toolchain','install','stable','--profile','minimal','--component','rustfmt','--component','clippy')
 Invoke-Checked -Command rustup -Arguments @('target','add','wasm32-unknown-unknown','--toolchain','stable')
 Invoke-Checked -Command cargo -Arguments @('+stable','fmt','--all')
+if ($App -eq 'printcraft') {
+    # PrintCraft requires this checker in CI. Run its unchanged dependency policy
+    # before compilation so policy failures are reported without a cold rebuild.
+    Invoke-Checked -Command cargo -Arguments @('+stable','install','cargo-deny','--locked','--version','0.20.2')
+    Invoke-Checked -Command cargo -Arguments @('+stable','deny','--log-level','error','check')
+}
 # This first resolution preserves upstream's existing lockfile pins and adds only
 # dependencies required by the reviewed patch. Subsequent checks enforce that lock.
 # Use the same workspace feature union as upstream CI to reuse compilation outputs.

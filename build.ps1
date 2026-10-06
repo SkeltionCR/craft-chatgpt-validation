@@ -64,8 +64,9 @@ Invoke-Checked -Command rustup -Arguments @('target','add','wasm32-unknown-unkno
 Invoke-Checked -Command cargo -Arguments @('+stable','fmt','--all')
 # This first resolution preserves upstream's existing lockfile pins and adds only
 # dependencies required by the reviewed patch. Subsequent checks enforce that lock.
-Invoke-Checked -Command cargo -Arguments @('+stable','test','-p',$App,'chatgpt')
+# Use the same workspace feature union as upstream CI to reuse compilation outputs.
+Invoke-Checked -Command cargo -Arguments @('+stable','test','--workspace','chatgpt')
 $env:CRAFT_SNAPSHOT_PATH = Join-Path $recipeRoot 'panel-preview.png'
-Invoke-Checked -Command cargo -Arguments @('+stable','test','-p',$App,'chatgpt_panel_offscreen_preview','--locked','--','--ignored')
-Invoke-Checked -Command cargo -Arguments @('+stable','clippy','-p',$App,'--all-targets','--locked','--','-D','warnings')
+Invoke-Checked -Command cargo -Arguments @('+stable','test','--workspace','chatgpt_panel_offscreen_preview','--locked','--','--ignored')
+Invoke-Checked -Command cargo -Arguments @('+stable','clippy','--workspace','--all-targets','--locked','--','-D','warnings')
 Invoke-Checked -Command cargo -Arguments @('+stable','xtask','ci')

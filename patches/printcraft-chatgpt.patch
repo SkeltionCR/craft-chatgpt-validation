@@ -2164,7 +2164,7 @@ index e021588..a0a20c3 100644
 +egui_kittest = { workspace = true, features = ["eframe", "wgpu", "snapshot"] }
 diff --git a/apps/printcraft/src/chatgpt.rs b/apps/printcraft/src/chatgpt.rs
 new file mode 100644
-index 0000000..1d2cc25
+index 0000000..89720b0
 --- /dev/null
 +++ b/apps/printcraft/src/chatgpt.rs
 @@ -0,0 +1,927 @@
@@ -2684,7 +2684,7 @@ index 0000000..1d2cc25
 +}
 +impl Runtime {
 +    fn new() -> Self {
-+        let status = Arc::new(Mutex::new(Status { busy: true, message: "Loading ChatGPT connectionâ€¦".into(), ..Default::default() }));
++        let status = Arc::new(Mutex::new(Status { busy: true, message: "Loading ChatGPT connection...".into(), ..Default::default() }));
 +        let cancel = Arc::new(AtomicBool::new(false));
 +        let (sender, rx) = mpsc::sync_channel::<String>(1);
 +        let shared = status.clone();
@@ -2734,7 +2734,7 @@ index 0000000..1d2cc25
 +                            if revoked {
 +                                "ChatGPT disconnected.".into()
 +                            } else {
-+                                "Disconnected locally. Remote revocation was not confirmed; remove this app in ChatGPT Settings â†’ Usage.".into()
++                                "Disconnected locally. Remote revocation was not confirmed; remove this app in ChatGPT Settings  >  Usage.".into()
 +                            }
 +                        }),
 +                        _ => Err("Unknown ChatGPT connection command".into()),
@@ -2779,7 +2779,7 @@ index 0000000..1d2cc25
 +        status.busy = true;
 +        status.last_action_ok = None;
 +        status.message = match self.sender.try_send(action.into()) {
-+            Ok(()) => "Waiting for ChatGPTâ€¦".into(),
++            Ok(()) => "Waiting for ChatGPT...".into(),
 +            Err(_) => {
 +                status.busy = false;
 +                status.last_action_ok = Some(false);
@@ -2814,7 +2814,7 @@ index 0000000..1d2cc25
 +            .anchor(egui::Align2::RIGHT_BOTTOM, [-12.0, -12.0])
 +            .order(egui::Order::Foreground)
 +            .show(&ctx, |ui| {
-+                if ui.button("ChatGPT connectionâ€¦").clicked() {
++                if ui.button("ChatGPT connection...").clicked() {
 +                    self.panel = true;
 +                }
 +            });
@@ -2822,7 +2822,7 @@ index 0000000..1d2cc25
 +            return;
 +        }
 +        let status = self.runtime.status();
-+        egui::Window::new(format!("{APP} Â· ChatGPT")).id(egui::Id::new("chatgpt.connection")).open(&mut self.panel).resizable(false).show(
++        egui::Window::new(format!("{APP} - ChatGPT")).id(egui::Id::new("chatgpt.connection")).open(&mut self.panel).resizable(false).show(
 +            &ctx,
 +            |ui| {
 +                ui.label("Connect your ChatGPT account");
@@ -3029,7 +3029,7 @@ index 0000000..1d2cc25
 +    struct TestEditor;
 +    impl eframe::App for TestEditor {
 +        fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
-+            ui.label("Editor surface Â· connection panel preview");
++            ui.label("Editor surface - connection panel preview");
 +        }
 +    }
 +

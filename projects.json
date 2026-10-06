@@ -1,0 +1,44 @@
+[
+  {
+    "repo": "photocraft",
+    "name": "PhotoCraft",
+    "upstream": "a0d49de0478fbaa91733517297432e7bbe5b479f",
+    "patch_sha256": "8f7d529c8c6837e9bbd889b60460549d6ef35b4000af0e2426747784d40b055c"
+  },
+  {
+    "repo": "vectorcraft",
+    "name": "VectorCraft",
+    "upstream": "81e7b915afb6750d3b86df6aa14fcd1c8de3f738",
+    "patch_sha256": "cae0e7bc5fa63a296713498b45502450966c4c1ed6ce76f70efdaa372bf8a40b"
+  },
+  {
+    "repo": "filmcraft",
+    "name": "FilmCraft",
+    "upstream": "771b614ad4c3fbefda5d668ce4384504b8c13f6d",
+    "patch_sha256": "73f360ea4f9a4fd6be4bbd1c4b2d68430fd02ef8985b6cf9ebaf3169ec90cad4"
+  },
+  {
+    "repo": "lightcraft",
+    "name": "LightCraft",
+    "upstream": "265248c86fa3267709aea45633d0d135331e180c",
+    "patch_sha256": "a4cd17e80064be278a0d78e8c601ba0a7a130b75a577d871b917661689dacfcb"
+  },
+  {
+    "repo": "printcraft",
+    "name": "PrintCraft",
+    "upstream": "55c581760ab389b88f08997ab235eecdf1a1b002",
+    "patch_sha256": "b4ca93aad256bac16889d56bd67fbfd1d1ca15e1ce612dc96683c9cf4ab99517"
+  },
+  {
+    "repo": "effectcraft",
+    "name": "EffectCraft",
+    "upstream": "2fadd14f09bb064cab8f1f8fe85af601a08b6e53",
+    "patch_sha256": "f6cf8d8dcf631f2eda5d19a7d805a35e941ae218532338a7e26fb422644a712f"
+  },
+  {
+    "repo": "designcraft",
+    "name": "DesignCraft",
+    "upstream": "d582277cc79c4bc9cee174b25b13fb11e6957aa5",
+    "patch_sha256": "9e18eb1395a14ebba335dd09b5310b0dd87d64eae72ffba143cb89513aa7e2a6"
+  }
+]

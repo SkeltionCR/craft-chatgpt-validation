@@ -1,3 +1,36 @@
+diff --git a/apps/lightcraft-cli/tests/cli.rs b/apps/lightcraft-cli/tests/cli.rs
+index 9d41873..0fdc851 100644
+--- a/apps/lightcraft-cli/tests/cli.rs
++++ b/apps/lightcraft-cli/tests/cli.rs
+@@ -58,8 +58,8 @@ fn mcp_over_stdio_sets_exposure_and_renders() {
+     drop(stdin);
+     assert!(child.wait().unwrap().success());
+     let (a, b) = (mean(&base), mean(&bright));
+-    println!("cli mcp: mean sRGB exposure 0 → {a:.1}, +1 → {b:.1}");
+-    assert!(b > a + 10.0, "{a} → {b}");
++    println!("cli mcp: mean sRGB exposure 0 â†’ {a:.1}, +1 â†’ {b:.1}");
++    assert!(b > a + 10.0, "{a} â†’ {b}");
+ }
+ 
+ #[test]
+@@ -176,7 +176,7 @@ fn snapshot_subcommand_renders_the_ui_headlessly() {
+         // the export dialog dims everything around it
+         assert_eq!(mean(p) < mean(&a) - 2.0, dimmed, "{}", p.display());
+     }
+-    // no script: one settled screenshot, at 2× scale
++    // no script: one settled screenshot, at 2Ã— scale
+     let o = Command::new(BIN).args(["snapshot", "-o", a.to_str().unwrap(), "--size", "320x240", "--scale", "2"]).output().unwrap();
+     assert!(o.status.success(), "{}", String::from_utf8_lossy(&o.stderr));
+     let d = lightcraft_codecs::decode(&std::fs::read(&a).unwrap(), Default::default()).unwrap();
+@@ -292,7 +292,7 @@ fn devices_are_listed_and_imported_from() {
+     assert_eq!(dev["name"], "CARD", "{line}");
+     // the import review of its DCIM folder finds the photo
+     let dcim = dev["path"].as_str().unwrap().to_string();
+-    let o = Command::new(BIN).args(["run", "library.importPreview", &format!("paths=[\"{dcim}\"]")]).output().unwrap();
++    let o = Command::new(BIN).args(["run", "library.importPreview", &format!("paths={}", serde_json::json!([dcim]))]).output().unwrap();
+     let line: Value = serde_json::from_slice(o.stdout.split(|b| *b == b'\n').next().unwrap()).unwrap();
+     assert_eq!(line["result"]["candidates"].as_array().map(Vec::len), Some(1), "{line}");
+ }
 diff --git a/apps/lightcraft/Cargo.toml b/apps/lightcraft/Cargo.toml
 index 46acbb7..e8d5728 100644
 --- a/apps/lightcraft/Cargo.toml
@@ -28,45 +61,9 @@ index 46acbb7..e8d5728 100644
 +[target.'cfg(windows)'.dev-dependencies]
 +jsonwebtoken = { version = "=10.3.0", default-features = false, features = ["rust_crypto", "use_pem"] }
 +egui_kittest = { workspace = true, features = ["eframe", "wgpu", "snapshot"] }
-diff --git a/apps/lightcraft/src/main.rs b/apps/lightcraft/src/main.rs
-index 2bdfa16..ddb8d96 100644
---- a/apps/lightcraft/src/main.rs
-+++ b/apps/lightcraft/src/main.rs
-@@ -417,7 +417,17 @@ ENVIRONMENT:
-                    Vulkan on Linux; off = render on the CPU); else WGPU_BACKEND. LIGHTCRAFT_GPU=0: CPU rendering.
- ";
- 
-+#[cfg(windows)]
-+mod chatgpt;
-+#[cfg(not(windows))]
-+#[path = "chatgpt_unsupported.rs"]
-+mod chatgpt;
-+
- fn main() -> eframe::Result {
-+    if let Some(result) = chatgpt::cli() {
-+        return result.map_err(|error| eframe::Error::AppCreation(Box::new(std::io::Error::other(error))));
-+    }
-+
-     lightcraft_engine::guard::install_hook(std::env::temp_dir().join("lightcraft-panics.log"));
-     alloc_release::install();
-     let mut control_port: Option<u16> = std::env::var("LIGHTCRAFT_CONTROL_PORT").ok().and_then(|p| p.parse().ok());
-@@ -517,12 +527,12 @@ fn main() -> eframe::Result {
-             // drawn in the window's top bar). LIGHTCRAFT_NO_NATIVE_MENU=1 keeps the in-window menus.
-             #[cfg(target_os = "macos")]
-             let menu = (std::env::var_os("LIGHTCRAFT_NO_NATIVE_MENU").is_none()).then(|| native_menu::NativeMenu::install(&mut app, &cc.egui_ctx));
--            Ok(Box::new(App(
-+            Ok(Box::new(chatgpt::wrap(App(
-                 app,
-                 writer,
-                 #[cfg(target_os = "macos")]
-                 menu,
--            )))
-+            ))))
-         }),
-     )
- }
 diff --git a/apps/lightcraft/src/chatgpt.rs b/apps/lightcraft/src/chatgpt.rs
 new file mode 100644
+index 0000000..351d80a
 --- /dev/null
 +++ b/apps/lightcraft/src/chatgpt.rs
 @@ -0,0 +1,900 @@
@@ -972,6 +969,7 @@ new file mode 100644
 +}
 diff --git a/apps/lightcraft/src/chatgpt_unsupported.rs b/apps/lightcraft/src/chatgpt_unsupported.rs
 new file mode 100644
+index 0000000..afad37e
 --- /dev/null
 +++ b/apps/lightcraft/src/chatgpt_unsupported.rs
 @@ -0,0 +1,11 @@
@@ -986,8 +984,46 @@ new file mode 100644
 +        _ => None,
 +    }
 +}
+diff --git a/apps/lightcraft/src/main.rs b/apps/lightcraft/src/main.rs
+index 2bdfa16..ddb8d96 100644
+--- a/apps/lightcraft/src/main.rs
++++ b/apps/lightcraft/src/main.rs
+@@ -417,7 +417,17 @@ ENVIRONMENT:
+                    Vulkan on Linux; off = render on the CPU); else WGPU_BACKEND. LIGHTCRAFT_GPU=0: CPU rendering.
+ ";
+ 
++#[cfg(windows)]
++mod chatgpt;
++#[cfg(not(windows))]
++#[path = "chatgpt_unsupported.rs"]
++mod chatgpt;
++
+ fn main() -> eframe::Result {
++    if let Some(result) = chatgpt::cli() {
++        return result.map_err(|error| eframe::Error::AppCreation(Box::new(std::io::Error::other(error))));
++    }
++
+     lightcraft_engine::guard::install_hook(std::env::temp_dir().join("lightcraft-panics.log"));
+     alloc_release::install();
+     let mut control_port: Option<u16> = std::env::var("LIGHTCRAFT_CONTROL_PORT").ok().and_then(|p| p.parse().ok());
+@@ -517,12 +527,12 @@ fn main() -> eframe::Result {
+             // drawn in the window's top bar). LIGHTCRAFT_NO_NATIVE_MENU=1 keeps the in-window menus.
+             #[cfg(target_os = "macos")]
+             let menu = (std::env::var_os("LIGHTCRAFT_NO_NATIVE_MENU").is_none()).then(|| native_menu::NativeMenu::install(&mut app, &cc.egui_ctx));
+-            Ok(Box::new(App(
++            Ok(Box::new(chatgpt::wrap(App(
+                 app,
+                 writer,
+                 #[cfg(target_os = "macos")]
+                 menu,
+-            )))
++            ))))
+         }),
+     )
+ }
 diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
 new file mode 100644
+index 0000000..75b401e
 --- /dev/null
 +++ b/docs/chatgpt-connection.md
 @@ -0,0 +1,54 @@

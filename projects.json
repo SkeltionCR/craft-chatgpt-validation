@@ -21,7 +21,7 @@
     "repo": "lightcraft",
     "name": "LightCraft",
     "upstream": "265248c86fa3267709aea45633d0d135331e180c",
-    "patch_sha256": "b2d809983b1287f3762ffb3a7aa2aed87140d4c4fa52382bcb2976516255c30e"
+    "patch_sha256": "85623e3a1d859817633f47933e34aef0e1796aaf49632f8eeb9f9fccea5cc873"
   },
   {
     "repo": "printcraft",

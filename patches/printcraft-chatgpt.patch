@@ -2122,7 +2122,7 @@ index a6efac4..6c7f613 100644
  ]
  
 diff --git a/apps/printcraft/Cargo.toml b/apps/printcraft/Cargo.toml
-index e021588..a0a20c3 100644
+index e021588..28ac8f8 100644
 --- a/apps/printcraft/Cargo.toml
 +++ b/apps/printcraft/Cargo.toml
 @@ -9,7 +9,7 @@ license.workspace = true
@@ -2134,7 +2134,7 @@ index e021588..a0a20c3 100644
  # trusted roots. No bundled root list (webpki-roots and webpki-root-certs are CDLA-licensed).
  ureq = { version = "3.4", default-features = false, features = ["rustls-no-provider", "_ring"] }
  rustls-native-certs = "0.8"
-@@ -27,3 +27,27 @@ fmv-macos-events = "=0.1.0"
+@@ -27,3 +27,26 @@ fmv-macos-events = "=0.1.0"
  [build-dependencies]
  # Icon + VERSIONINFO for printcraft.exe; build.rs only uses it when targeting Windows.
  winresource = "0.1"
@@ -2147,7 +2147,6 @@ index e021588..a0a20c3 100644
 +aes-gcm = "=0.10.3"
 +atomic-write-file = "=0.3.1"
 +base64 = "0.22"
-+directories = "6"
 +fs2 = "0.4"
 +getrandom = "0.3"
 +jsonwebtoken = { version = "=10.3.0", default-features = false, features = ["rust_crypto"] }
@@ -2164,10 +2163,10 @@ index e021588..a0a20c3 100644
 +egui_kittest = { workspace = true, features = ["eframe", "wgpu", "snapshot"] }
 diff --git a/apps/printcraft/src/chatgpt.rs b/apps/printcraft/src/chatgpt.rs
 new file mode 100644
-index 0000000..89720b0
+index 0000000..4199462
 --- /dev/null
 +++ b/apps/printcraft/src/chatgpt.rs
-@@ -0,0 +1,927 @@
+@@ -0,0 +1,942 @@
 +//! Native, optional ChatGPT connection. Credentials never enter document/UI state.
 +#![forbid(unsafe_code)]
 +use aes_gcm::{
@@ -2266,13 +2265,19 @@ index 0000000..89720b0
 +    serde_json::from_slice(&bytes).map_err(|_| "OpenAI returned invalid JSON".into())
 +}
 +
++// Use Windows' per-user local-data location without a copyleft path dependency.
++// Preserve the existing app-specific location and reject relative or missing roots.
++fn storage_directory(local_app_data: Option<std::ffi::OsString>) -> Result<PathBuf, String> {
++    let root = local_app_data.map(PathBuf::from).filter(|path| path.is_absolute()).ok_or("No absolute Windows local-data directory")?;
++    Ok(root.join("storyteller").join("printcraft-chatgpt").join("config"))
++}
++
 +struct Store {
 +    dir: PathBuf,
 +}
 +impl Store {
 +    fn new() -> Result<Self, String> {
-+        let dirs = directories::ProjectDirs::from("ai", "storyteller", "printcraft-chatgpt").ok_or("No user configuration directory")?;
-+        Ok(Self { dir: dirs.config_local_dir().to_path_buf() })
++        Ok(Self { dir: storage_directory(std::env::var_os("LOCALAPPDATA"))? })
 +    }
 +    fn lock(&self) -> Result<std::fs::File, String> {
 +        std::fs::create_dir_all(&self.dir).map_err(|_| "Could not create ChatGPT configuration directory")?;
@@ -3048,6 +3053,15 @@ index 0000000..89720b0
 +    }
 +
 +    #[test]
++    fn chatgpt_storage_path_rejects_missing_or_relative_roots() {
++        assert!(storage_directory(None).is_err());
++        assert!(storage_directory(Some("relative".into())).is_err());
++        assert!(storage_directory(Some("".into())).is_err());
++        let root = PathBuf::from(r"C:\Users\Test\AppData\Local");
++        assert_eq!(storage_directory(Some(root.clone().into_os_string())).unwrap(), root.join("storyteller").join("printcraft-chatgpt").join("config"));
++    }
++
++    #[test]
 +    fn chatgpt_shutdown_forwards_editor_cleanup() {
 +        struct ExitEditor(Arc<AtomicBool>);
 +        impl eframe::App for ExitEditor {
@@ -3178,15 +3192,15 @@ index cf79636..19d9a34 100644
  }
 diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
 new file mode 100644
-index 0000000..11a32d7
+index 0000000..37cd9b2
 --- /dev/null
 +++ b/docs/chatgpt-connection.md
-@@ -0,0 +1,54 @@
+@@ -0,0 +1,58 @@
 +# PrintCraft ChatGPT connection
 +
 +This local modification adds an optional native ChatGPT connection to the Windows desktop app.
 +Other platforms retain their original editor and explicitly report unsupported auth commands.
-+Open **ChatGPT connection…** at the bottom right, then **Continue with ChatGPT**.
++Open **ChatGPT connection...** at the bottom right, then **Continue with ChatGPT**.
 +The browser asks you to authorize this app independently of the other Craft apps.
 +Account connection is implemented; AI editing and inference are not part of this change.
 +
@@ -3207,6 +3221,10 @@ index 0000000..11a32d7
 +- Authentication commands are native platform operations, available headlessly:
 +  `printcraft --chatgpt-status`, `--chatgpt-sign-in`, `--chatgpt-refresh`, and
 +  `--chatgpt-disconnect`. Status never returns credentials.
++
++PrintCraft uses `%LOCALAPPDATA%\storyteller\printcraft-chatgpt\config` for account
++metadata and encrypted tokens. Missing or relative roots are rejected. This preserves
++the storage location while avoiding the MPL dependency forbidden by its policy.
 +
 +## Validation status (2026-10-06)
 +

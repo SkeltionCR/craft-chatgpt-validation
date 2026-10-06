@@ -29,7 +29,7 @@
     "repo": "printcraft",
     "name": "PrintCraft",
     "upstream": "55c581760ab389b88f08997ab235eecdf1a1b002",
-    "patch_sha256": "60c97c8dd709de18345c1b6adbb6ae468fd563034ae5b5ef306ec7ce6cff42df"
+    "patch_sha256": "d484f3833c0291cdbaad70ef450d93734667fc6b0822e3d5322ccef559a932b9"
   },
   {
     "repo": "effectcraft",

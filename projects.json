@@ -9,7 +9,8 @@
     "repo": "vectorcraft",
     "name": "VectorCraft",
     "upstream": "81e7b915afb6750d3b86df6aa14fcd1c8de3f738",
-    "patch_sha256": "6aa9b7c3451b648a6465c387245ecfdeadec6b92df77c289059f23bfd4820dbf"
+    "patch_sha256": "0cab1845662b20cc71ca0b78091c9b56532f03771adb189ce050091099aa4802",
+    "validated_run": "https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526641875"
   },
   {
     "repo": "filmcraft",

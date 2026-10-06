@@ -2881,7 +2881,7 @@ index 2fb3a1f..4a0cecc 100644
  }
 diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
 new file mode 100644
-index 0000000..afb2bf2
+index 0000000..09be487
 --- /dev/null
 +++ b/docs/chatgpt-connection.md
 @@ -0,0 +1,58 @@
@@ -2889,7 +2889,7 @@ index 0000000..afb2bf2
 +
 +This local modification adds an optional native ChatGPT connection to the Windows desktop app.
 +Other platforms retain their original editor and explicitly report unsupported auth commands.
-+Open **ChatGPT connectionâ€¦** at the bottom right, then **Continue with ChatGPT**.
++Open **ChatGPT connection…** at the bottom right, then **Continue with ChatGPT**.
 +The browser asks you to authorize this app independently of the other Craft apps.
 +Account connection is implemented; AI editing and inference are not part of this change.
 +

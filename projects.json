@@ -21,7 +21,7 @@
     "repo": "lightcraft",
     "name": "LightCraft",
     "upstream": "265248c86fa3267709aea45633d0d135331e180c",
-    "patch_sha256": "85623e3a1d859817633f47933e34aef0e1796aaf49632f8eeb9f9fccea5cc873"
+    "patch_sha256": "5539493241931274be32b901d1722f19289462e2b5d4b5d69987431a4a09b534"
   },
   {
     "repo": "printcraft",
@@ -39,7 +39,7 @@
     "repo": "designcraft",
     "name": "DesignCraft",
     "upstream": "d582277cc79c4bc9cee174b25b13fb11e6957aa5",
-    "patch_sha256": "697e2e881e9ae860e9c4dd01bf084f7e51d80911b423295948a82f09d8546ed4",
+    "patch_sha256": "16f81128013e640d9f3009623fb1841a488e1ceac17efeb9541113c1830840da",
     "validated_run": "https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526643074"
   }
 ]

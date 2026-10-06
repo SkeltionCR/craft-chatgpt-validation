@@ -1,13 +1,2147 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index a6efac4..6c7f613 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -123,15 +123,50 @@ version = "2.0.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
+ 
++[[package]]
++name = "aead"
++version = "0.5.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "d122413f284cf2d62fb1b7db97e02edb8cda96d769b16e443a4f6195e35662b0"
++dependencies = [
++ "crypto-common 0.1.7",
++ "generic-array",
++]
++
++[[package]]
++name = "aes"
++version = "0.8.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "b169f7a6d4742236a0a00c541b845991d0ac43e546831af1249753ab4c3aa3a0"
++dependencies = [
++ "cfg-if",
++ "cipher 0.4.4",
++ "cpufeatures 0.2.17",
++]
++
+ [[package]]
+ name = "aes"
+ version = "0.9.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "35f0f96ce78e38c3dc6d8948aa8163d06385be74000f3c7a95bf1eef35d3ea32"
+ dependencies = [
+- "cipher",
++ "cipher 0.5.2",
+  "cpubits",
+- "cpufeatures",
++ "cpufeatures 0.3.1",
++]
++
++[[package]]
++name = "aes-gcm"
++version = "0.10.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "831010a0f742e1209b3bcea8fab6a8e149051ba6099432c8cb2cc117dec3ead1"
++dependencies = [
++ "aead",
++ "aes 0.8.4",
++ "cipher 0.4.4",
++ "ctr",
++ "ghash",
++ "subtle",
+ ]
+ 
+ [[package]]
+@@ -402,6 +437,16 @@ version = "1.1.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
+ 
++[[package]]
++name = "atomic-write-file"
++version = "0.3.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ae67d5c03ee972c101a1d8db3ddbf8a9c819ad1ea9d6fd9cd385605547b60edb"
++dependencies = [
++ "nix",
++ "rand 0.10.3",
++]
++
+ [[package]]
+ name = "atspi"
+ version = "0.29.0"
+@@ -468,6 +513,12 @@ dependencies = [
+  "pkg-config",
+ ]
+ 
++[[package]]
++name = "base16ct"
++version = "0.2.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "4c7f02d4ea65f2c1853089ffd8d2787bdbc63de2f0d29dedbcf8ccdfa0ccd4cf"
++
+ [[package]]
+ name = "base16ct"
+ version = "1.0.0"
+@@ -537,6 +588,15 @@ dependencies = [
+  "serde_core",
+ ]
+ 
++[[package]]
++name = "block-buffer"
++version = "0.10.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "3078c7629b62d3f0439517fa394996acacc5cbc91c5a20d8c658e77abd503a71"
++dependencies = [
++ "generic-array",
++]
++
+ [[package]]
+ name = "block-buffer"
+ version = "0.12.1"
+@@ -597,7 +657,7 @@ dependencies = [
+  "boa_macros",
+  "boa_string",
+  "indexmap",
+- "num-bigint",
++ "num-bigint 0.5.1",
+  "rustc-hash 2.1.3",
+  "strum",
+ ]
+@@ -632,7 +692,7 @@ dependencies = [
+  "indexmap",
+  "intrusive-collections",
+  "itertools",
+- "num-bigint",
++ "num-bigint 0.5.1",
+  "num-integer",
+  "num-traits",
+  "num_enum",
+@@ -710,7 +770,7 @@ dependencies = [
+  "boa_macros",
+  "fast-float2",
+  "icu_properties",
+- "num-bigint",
++ "num-bigint 0.5.1",
+  "num-traits",
+  "regress",
+  "rustc-hash 2.1.3",
+@@ -777,6 +837,12 @@ dependencies = [
+  "syn 3.0.6",
+ ]
+ 
++[[package]]
++name = "byteorder"
++version = "1.5.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "1fd0f2584146f6f2ef48085050886acf353beff7305ebd1ae69500e27c67f64b"
++
+ [[package]]
+ name = "byteorder-lite"
+ version = "0.1.0"
+@@ -846,7 +912,7 @@ version = "0.2.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "ce2dc9ee5f88d11e0beb842c88b33c8a5cf0d1329c4b19494af42b07dbfe8896"
+ dependencies = [
+- "cipher",
++ "cipher 0.5.2",
+ ]
+ 
+ [[package]]
+@@ -889,7 +955,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "65c35e4b699c7e15ccbe7ee35c005e4fc0a278d22238a2857e6ce2dadeda1b06"
+ dependencies = [
+  "cfg-if",
+- "cpufeatures",
++ "cpufeatures 0.3.1",
+  "rand_core 0.10.1",
+ ]
+ 
+@@ -904,14 +970,24 @@ dependencies = [
+  "windows-link",
+ ]
+ 
++[[package]]
++name = "cipher"
++version = "0.4.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "773f3b9af64447d2ce9850330c473515014aa235e6a783b02db81ff39e4a3dad"
++dependencies = [
++ "crypto-common 0.1.7",
++ "inout 0.1.4",
++]
++
+ [[package]]
+ name = "cipher"
+ version = "0.5.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "e8cf2a2c93cd704877c0858356ed03480ff301ee950b43f1cbe4573b088bfa6c"
+ dependencies = [
+- "crypto-common",
+- "inout",
++ "crypto-common 0.2.2",
++ "inout 0.2.2",
+ ]
+ 
+ [[package]]
+@@ -964,6 +1040,16 @@ version = "1.1.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "3d7b894f5411737b7867f4827955924d7c254fc9f4d91a6aad6b097804b1018b"
+ 
++[[package]]
++name = "colored"
++version = "2.2.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "117725a109d387c937a1533ce01b450cbde6b88abceea8473c4d7a85853cda3c"
++dependencies = [
++ "lazy_static",
++ "windows-sys 0.59.0",
++]
++
+ [[package]]
+ name = "combine"
+ version = "4.6.8"
+@@ -983,6 +1069,12 @@ dependencies = [
+  "crossbeam-utils",
+ ]
+ 
++[[package]]
++name = "const-oid"
++version = "0.9.6"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8"
++
+ [[package]]
+ name = "const-oid"
+ version = "0.10.2"
+@@ -1024,7 +1116,7 @@ dependencies = [
+  "bitflags 1.3.2",
+  "core-foundation 0.9.4",
+  "core-graphics-types",
+- "foreign-types",
++ "foreign-types 0.5.0",
+  "libc",
+ ]
+ 
+@@ -1057,6 +1149,15 @@ version = "0.1.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "15b85f9c39137c3a891689859392b1bd49812121d0d61c9caf00d46ed5ce06ae"
+ 
++[[package]]
++name = "cpufeatures"
++version = "0.2.17"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "59ed5838eebb26a2bb2e58f6d5b5316989ae9d08bab10e0e6d103e656d1b0280"
++dependencies = [
++ "libc",
++]
++
+ [[package]]
+ name = "cpufeatures"
+ version = "0.3.1"
+@@ -1106,6 +1207,18 @@ version = "0.2.4"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "460fbee9c2c2f33933d720630a6a0bac33ba7053db5344fac858d4b8952d77d5"
+ 
++[[package]]
++name = "crypto-bigint"
++version = "0.5.5"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "0dc92fb57ca44df6db8059111ab3af99a63d5d0f8375d9972e319a379c6bab76"
++dependencies = [
++ "generic-array",
++ "rand_core 0.6.4",
++ "subtle",
++ "zeroize",
++]
++
+ [[package]]
+ name = "crypto-bigint"
+ version = "0.7.5"
+@@ -1123,6 +1236,17 @@ dependencies = [
+  "zeroize",
+ ]
+ 
++[[package]]
++name = "crypto-common"
++version = "0.1.7"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "78c8292055d1c1df0cce5d180393dc8cce0abec0a7102adb6c7b1eef6016d60a"
++dependencies = [
++ "generic-array",
++ "rand_core 0.6.4",
++ "typenum",
++]
++
+ [[package]]
+ name = "crypto-common"
+ version = "0.2.2"
+@@ -1140,10 +1264,19 @@ version = "0.7.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "3633a51a39c69ebbaa4feaa694bd83d241e4093901c84a0963b19d9bb3f0cf8f"
+ dependencies = [
+- "crypto-bigint",
++ "crypto-bigint 0.7.5",
+  "rand_core 0.10.1",
+ ]
+ 
++[[package]]
++name = "ctr"
++version = "0.9.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "0369ee1ad671834580515889b80f2ea915f23b8be8d0daa4bbaf2ac5c7590835"
++dependencies = [
++ "cipher 0.4.4",
++]
++
+ [[package]]
+ name = "ctutils"
+ version = "0.4.2"
+@@ -1160,6 +1293,33 @@ version = "1.2.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "f27ae1dd37df86211c42e150270f82743308803d90a6f6e6651cd730d5e1732f"
+ 
++[[package]]
++name = "curve25519-dalek"
++version = "4.1.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "97fb8b7c4503de7d6ae7b42ab72a5a59857b4c937ec27a3d4539dba95b5ab2be"
++dependencies = [
++ "cfg-if",
++ "cpufeatures 0.2.17",
++ "curve25519-dalek-derive",
++ "digest 0.10.7",
++ "fiat-crypto 0.2.9",
++ "rustc_version",
++ "subtle",
++ "zeroize",
++]
++
++[[package]]
++name = "curve25519-dalek-derive"
++version = "0.1.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "f46882e17999c6cc590af592290432be3bce0428cb0d5f8b6715e4dc7b383eb3"
++dependencies = [
++ "proc-macro2",
++ "quote",
++ "syn 2.0.119",
++]
++
+ [[package]]
+ name = "dashmap"
+ version = "6.2.1"
+@@ -1180,14 +1340,25 @@ version = "0.3.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "be1e0bca6c3637f992fc1cc7cbc52a78c1ef6db076dbf1059c4323d6a2048376"
+ 
++[[package]]
++name = "der"
++version = "0.7.10"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "e7c1832837b905bbfb5101e07cc24c8deddf52f93225eee6ead5f4d63d53ddcb"
++dependencies = [
++ "const-oid 0.9.6",
++ "pem-rfc7468 0.7.0",
++ "zeroize",
++]
++
+ [[package]]
+ name = "der"
+ version = "0.8.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "a878c850e9e421b20262e9b41f9c860e4785fa07541c266b62ff9d1ef998a80a"
+ dependencies = [
+- "const-oid",
+- "pem-rfc7468",
++ "const-oid 0.10.2",
++ "pem-rfc7468 1.0.0",
+  "zeroize",
+ ]
+ 
+@@ -1203,7 +1374,32 @@ version = "0.9.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "916a94e407b54f9034d71dd748234cd1e516ced6284009906ae246f177eafe5a"
+ dependencies = [
+- "cipher",
++ "cipher 0.5.2",
++]
++
++[[package]]
++name = "dify"
++version = "0.8.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "90ce0fb972943b4e88cd03b8f92953df0c71bb05e0bde8e5b684895d808013cc"
++dependencies = [
++ "anyhow",
++ "colored",
++ "getopts",
++ "image",
++ "rayon",
++]
++
++[[package]]
++name = "digest"
++version = "0.10.7"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "9ed9a281f7bc9b7576e61468ba615a66a5c8cfdff42420a70aa82701a3b1e292"
++dependencies = [
++ "block-buffer 0.10.4",
++ "const-oid 0.9.6",
++ "crypto-common 0.1.7",
++ "subtle",
+ ]
+ 
+ [[package]]
+@@ -1212,12 +1408,33 @@ version = "0.11.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "f1dd6dbb5841937940781866fa1281a1ff7bd3bf827091440879f9994983d5c2"
+ dependencies = [
+- "block-buffer",
+- "const-oid",
+- "crypto-common",
++ "block-buffer 0.12.1",
++ "const-oid 0.10.2",
++ "crypto-common 0.2.2",
+  "ctutils",
+ ]
+ 
++[[package]]
++name = "directories"
++version = "6.0.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "16f5094c54661b38d03bd7e50df373292118db60b585c08a411c6d840017fe7d"
++dependencies = [
++ "dirs-sys",
++]
++
++[[package]]
++name = "dirs-sys"
++version = "0.5.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "e01a3366d27ee9890022452ee61b2b63a67e6f13f58900b651ff5665f0bb1fab"
++dependencies = [
++ "libc",
++ "option-ext",
++ "redox_users",
++ "windows-sys 0.61.2",
++]
++
+ [[package]]
+ name = "dispatch"
+ version = "0.2.0"
+@@ -1309,7 +1526,21 @@ version = "0.2.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "26f2a8b3e564eba0877223dc343703ad0385794e882e6d13f3a4dd5c6b1f41ac"
+ dependencies = [
+- "cipher",
++ "cipher 0.5.2",
++]
++
++[[package]]
++name = "ecdsa"
++version = "0.16.9"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ee27f32b5c5292967d2d4a9d7f1e0b0aed2c15daded5a60300e4abb9d8020bca"
++dependencies = [
++ "der 0.7.10",
++ "digest 0.10.7",
++ "elliptic-curve 0.13.8",
++ "rfc6979 0.4.0",
++ "signature 2.2.0",
++ "spki 0.7.3",
+ ]
+ 
+ [[package]]
+@@ -1318,12 +1549,12 @@ version = "0.17.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "c0681a4fc24c767085329728d8dfba959af91228aa4610cca4f8ce317ba46ae0"
+ dependencies = [
+- "der",
+- "digest",
+- "elliptic-curve",
+- "rfc6979",
+- "signature",
+- "spki",
++ "der 0.8.2",
++ "digest 0.11.3",
++ "elliptic-curve 0.14.1",
++ "rfc6979 0.6.0",
++ "signature 3.0.0",
++ "spki 0.8.0",
+  "zeroize",
+ ]
+ 
+@@ -1338,6 +1569,30 @@ dependencies = [
+  "serde",
+ ]
+ 
++[[package]]
++name = "ed25519"
++version = "2.2.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "115531babc129696a58c64a4fef0a8bf9e9698629fb97e9e40767d235cfbcd53"
++dependencies = [
++ "pkcs8 0.10.2",
++ "signature 2.2.0",
++]
++
++[[package]]
++name = "ed25519-dalek"
++version = "2.2.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "70e796c081cee67dc755e1a36a0a172b897fab85fc3f6bc48307991f64e4eca9"
++dependencies = [
++ "curve25519-dalek",
++ "ed25519",
++ "serde",
++ "sha2 0.10.9",
++ "subtle",
++ "zeroize",
++]
++
+ [[package]]
+ name = "eframe"
+ version = "0.36.2"
+@@ -1476,14 +1731,17 @@ version = "0.36.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "5eb3f3effb2726fee23449293e67acbf6cc6ce35525b1722bd5743bb348114d5"
+ dependencies = [
++ "dify",
+  "eframe",
+  "egui",
+  "egui-wgpu",
+  "image",
+  "kittest",
+  "log",
++ "open",
+  "pollster 1.0.1",
+  "serde",
++ "tempfile",
+  "toml",
+  "wgpu",
+ ]
+@@ -1494,22 +1752,43 @@ version = "1.18.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "252afb9ae5eaa683babdc6a068b3f5726eb19e05070c731f9b2a23a7c3e8ed34"
+ 
++[[package]]
++name = "elliptic-curve"
++version = "0.13.8"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "b5e6043086bf7973472e0c7dff2142ea0b680d30e18d9cc40f267efbf222bd47"
++dependencies = [
++ "base16ct 0.2.0",
++ "crypto-bigint 0.5.5",
++ "digest 0.10.7",
++ "ff 0.13.1",
++ "generic-array",
++ "group 0.13.0",
++ "hkdf",
++ "pem-rfc7468 0.7.0",
++ "pkcs8 0.10.2",
++ "rand_core 0.6.4",
++ "sec1 0.7.3",
++ "subtle",
++ "zeroize",
++]
++
+ [[package]]
+ name = "elliptic-curve"
+ version = "0.14.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "9d65aa39b3a5c1c9c1b745c9a019234bb7a21b77abcb4f4d266d706e2d577d65"
+ dependencies = [
+- "base16ct",
+- "crypto-bigint",
+- "crypto-common",
+- "digest",
+- "ff",
+- "group",
++ "base16ct 1.0.0",
++ "crypto-bigint 0.7.5",
++ "crypto-common 0.2.2",
++ "digest 0.11.3",
++ "ff 0.14.0",
++ "group 0.14.0",
+  "hybrid-array",
+- "pkcs8",
++ "pkcs8 0.11.0",
+  "rand_core 0.10.1",
+- "sec1",
++ "sec1 0.8.1",
+  "subtle",
+  "zeroize",
+ ]
+@@ -1732,6 +2011,16 @@ version = "0.4.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "b97b65636e5b9ef369943878ac74335ba1c55c1cb6adbf1e2c293c624248d693"
+ 
++[[package]]
++name = "ff"
++version = "0.13.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c0b50bfb653653f9ca9095b427bed08ab8d75a137839d9ad64eb11810d5b6393"
++dependencies = [
++ "rand_core 0.6.4",
++ "subtle",
++]
++
+ [[package]]
+ name = "ff"
+ version = "0.14.0"
+@@ -1742,6 +2031,12 @@ dependencies = [
+  "subtle",
+ ]
+ 
++[[package]]
++name = "fiat-crypto"
++version = "0.2.9"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "28dea519a9695b9977216879a3ebfddf92f1c08c05d984f8996aecd6ecdc811d"
++
+ [[package]]
+ name = "fiat-crypto"
+ version = "0.3.0"
+@@ -1829,6 +2124,15 @@ dependencies = [
+  "serde",
+ ]
+ 
++[[package]]
++name = "foreign-types"
++version = "0.3.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "f6f339eb8adc052cd2ca78910fda869aefa38d22d5cb648e6485e4d3fc06f3b1"
++dependencies = [
++ "foreign-types-shared 0.1.1",
++]
++
+ [[package]]
+ name = "foreign-types"
+ version = "0.5.0"
+@@ -1836,7 +2140,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "d737d9aa519fb7b749cbc3b962edcf310a8dd1f4b67c91c4f83975dbdd17d965"
+ dependencies = [
+  "foreign-types-macros",
+- "foreign-types-shared",
++ "foreign-types-shared 0.3.1",
+ ]
+ 
+ [[package]]
+@@ -1850,6 +2154,12 @@ dependencies = [
+  "syn 3.0.6",
+ ]
+ 
++[[package]]
++name = "foreign-types-shared"
++version = "0.1.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
++
+ [[package]]
+ name = "foreign-types-shared"
+ version = "0.3.1"
+@@ -1865,12 +2175,32 @@ dependencies = [
+  "percent-encoding",
+ ]
+ 
++[[package]]
++name = "fs2"
++version = "0.4.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "9564fc758e15025b46aa6643b1b77d047d1a56a1aea6e01002ac0c7026876213"
++dependencies = [
++ "libc",
++ "winapi",
++]
++
+ [[package]]
+ name = "fs_extra"
+ version = "1.3.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "42703706b716c37f96a77aea830392ad231f44c9e9a67872fa5548707e11b11c"
+ 
++[[package]]
++name = "futures-channel"
++version = "0.3.34"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "b1f9e3d69d39e4862ffed03ed071a76f9a13ba1d9109d355b0f0aa6b15e393c4"
++dependencies = [
++ "futures-core",
++ "futures-sink",
++]
++
+ [[package]]
+ name = "futures-concurrency"
+ version = "7.7.1"
+@@ -1920,6 +2250,12 @@ dependencies = [
+  "syn 3.0.6",
+ ]
+ 
++[[package]]
++name = "futures-sink"
++version = "0.3.34"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "1944426bf7d03f1d14f708785e4b33efd750b36d48a157b836b3efc15ede8e1d"
++
+ [[package]]
+ name = "futures-task"
+ version = "0.3.34"
+@@ -1933,12 +2269,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "0d50a92467f8ba5dd6e3ee5d4bd04d73ab2e4e1c44474a0674821dfce14b79bc"
+ dependencies = [
+  "futures-core",
++ "futures-io",
+  "futures-macro",
++ "futures-sink",
+  "futures-task",
++ "memchr",
+  "pin-project-lite",
+  "slab",
+ ]
+ 
++[[package]]
++name = "generic-array"
++version = "0.14.7"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "85649ca51fd72272d7821adaf274ad91c288277713d9c18820d8499a7ff69e9a"
++dependencies = [
++ "typenum",
++ "version_check",
++ "zeroize",
++]
++
+ [[package]]
+ name = "gethostname"
+ version = "1.1.0"
+@@ -1949,6 +2299,15 @@ dependencies = [
+  "windows-link",
+ ]
+ 
++[[package]]
++name = "getopts"
++version = "0.2.24"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "cfe4fbac503b8d1f88e6676011885f34b7174f46e59956bba534ba83abded4df"
++dependencies = [
++ "unicode-width",
++]
++
+ [[package]]
+ name = "getrandom"
+ version = "0.2.17"
+@@ -1986,6 +2345,16 @@ dependencies = [
+  "wasm-bindgen",
+ ]
+ 
++[[package]]
++name = "ghash"
++version = "0.5.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "f0d8a4362ccb29cb0b265253fb0a2728f592895ee6854fd9bc13f2ffda266ff1"
++dependencies = [
++ "opaque-debug",
++ "polyval",
++]
++
+ [[package]]
+ name = "gif"
+ version = "0.14.2"
+@@ -2132,13 +2501,24 @@ dependencies = [
+  "windows",
+ ]
+ 
++[[package]]
++name = "group"
++version = "0.13.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "f0f9ef7462f7c099f518d754361858f86d8a07af53ba9af0fe635bbccb151a63"
++dependencies = [
++ "ff 0.13.1",
++ "rand_core 0.6.4",
++ "subtle",
++]
++
+ [[package]]
+ name = "group"
+ version = "0.14.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "7fd1a1c7a5206c5b7a3f5a0d7ccd3ff85d0c8f5133d62a02680255b0004af5f4"
+ dependencies = [
+- "ff",
++ "ff 0.14.0",
+  "rand_core 0.10.1",
+  "subtle",
+ ]
+@@ -2304,13 +2684,31 @@ version = "0.4.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
+ 
++[[package]]
++name = "hkdf"
++version = "0.12.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "7b5f8eb2ad728638ea2c7d47a21db23b7b58a72ed6a38256b8a1849f15fbbdf7"
++dependencies = [
++ "hmac 0.12.1",
++]
++
++[[package]]
++name = "hmac"
++version = "0.12.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "6c49c37c09c17a53d937dfbb742eb3a961d65a994e6bcdcf37e7399d0cc8ab5e"
++dependencies = [
++ "digest 0.10.7",
++]
++
+ [[package]]
+ name = "hmac"
+ version = "0.13.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "6303bc9732ae41b04cb554b844a762b4115a61bfaa81e3e83050991eeb56863f"
+ dependencies = [
+- "digest",
++ "digest 0.11.3",
+ ]
+ 
+ [[package]]
+@@ -2323,6 +2721,29 @@ dependencies = [
+  "itoa",
+ ]
+ 
++[[package]]
++name = "http-body"
++version = "1.1.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ca2a8f2913ee65f60facd6a5905613afaa448497a0230cc41ce022d93290bc2c"
++dependencies = [
++ "bytes",
++ "http",
++]
++
++[[package]]
++name = "http-body-util"
++version = "0.1.5"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "23169fe34a5fbcdd3f3862e78fb9b6fccd5f02a6dc6f732547005d45631ce71c"
++dependencies = [
++ "bytes",
++ "futures-core",
++ "http",
++ "http-body",
++ "pin-project-lite",
++]
++
+ [[package]]
+ name = "httparse"
+ version = "1.10.1"
+@@ -2340,6 +2761,65 @@ dependencies = [
+  "zeroize",
+ ]
+ 
++[[package]]
++name = "hyper"
++version = "1.12.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "2c3e324da4c95177d6291d4c8730197c0d1822f8a9766814a4a44fa5ab797c9c"
++dependencies = [
++ "atomic-waker",
++ "bytes",
++ "futures-core",
++ "http",
++ "http-body",
++ "httparse",
++ "itoa",
++ "pin-project-lite",
++ "smallvec",
++ "tokio",
++ "want",
++]
++
++[[package]]
++name = "hyper-tls"
++version = "0.6.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "70206fc6890eaca9fde8a0bf71caa2ddfc9fe045ac9e5c70df101a7dbde866e0"
++dependencies = [
++ "bytes",
++ "http-body-util",
++ "hyper",
++ "hyper-util",
++ "native-tls",
++ "tokio",
++ "tokio-native-tls",
++ "tower-service",
++]
++
++[[package]]
++name = "hyper-util"
++version = "0.1.21"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ddc03d96684f9226b8a787cdb71488417b53ab5ea8fdb1dac946cb9431cc8bff"
++dependencies = [
++ "base64 0.23.1",
++ "bytes",
++ "futures-channel",
++ "futures-util",
++ "http",
++ "http-body",
++ "httparse",
++ "hyper",
++ "ipnet",
++ "libc",
++ "percent-encoding",
++ "pin-project-lite",
++ "socket2",
++ "tokio",
++ "tower-service",
++ "tracing",
++]
++
+ [[package]]
+ name = "iana-time-zone"
+ version = "0.1.65"
+@@ -2504,6 +2984,15 @@ dependencies = [
+  "hashbrown 0.17.1",
+ ]
+ 
++[[package]]
++name = "inout"
++version = "0.1.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "879f10e63c20629ecabbb64a8010319738c66a5cd0c29b02d63d272b03751d01"
++dependencies = [
++ "generic-array",
++]
++
+ [[package]]
+ name = "inout"
+ version = "0.2.2"
+@@ -2520,6 +3009,31 @@ version = "0.10.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "4275b20e6057cd7733fd8df8a5a31701e4fe44497dad0f3fa0e1c4fb971506be"
+ 
++[[package]]
++name = "ipnet"
++version = "2.12.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "791930b43c0d5973160d90a8f3894509f2b273430f5c5c73b668636d0287c5c0"
++
++[[package]]
++name = "is-docker"
++version = "0.2.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "928bae27f42bc99b60d9ac7334e3a21d10ad8f1835a4e12ec3ec0464765ed1b3"
++dependencies = [
++ "once_cell",
++]
++
++[[package]]
++name = "is-wsl"
++version = "0.4.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "173609498df190136aa7dea1a91db051746d339e18476eed5ca40521f02d7aa5"
++dependencies = [
++ "is-docker",
++ "once_cell",
++]
++
+ [[package]]
+ name = "itertools"
+ version = "0.15.0"
+@@ -2614,6 +3128,41 @@ dependencies = [
+  "wasm-bindgen",
+ ]
+ 
++[[package]]
++name = "jsonwebtoken"
++version = "10.3.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "0529410abe238729a60b108898784df8984c87f6054c9c4fcacc47e4803c1ce1"
++dependencies = [
++ "base64 0.22.1",
++ "ed25519-dalek",
++ "getrandom 0.2.17",
++ "hmac 0.12.1",
++ "js-sys",
++ "p256 0.13.2",
++ "p384 0.13.1",
++ "pem",
++ "rand 0.8.8",
++ "rsa 0.9.10",
++ "serde",
++ "serde_json",
++ "sha2 0.10.9",
++ "signature 2.2.0",
++ "simple_asn1",
++]
++
++[[package]]
++name = "keyring"
++version = "3.6.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "eebcc3aff044e5944a8fbaf69eb277d11986064cba30c468730e8b9909fb551c"
++dependencies = [
++ "byteorder",
++ "log",
++ "windows-sys 0.60.2",
++ "zeroize",
++]
++
+ [[package]]
+ name = "khronos-egl"
+ version = "6.0.0"
+@@ -2664,6 +3213,15 @@ dependencies = [
+  "smallvec",
+ ]
+ 
++[[package]]
++name = "lazy_static"
++version = "1.5.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "20870f649af7073d53e38067b2a84312175d56ea15217e1b15bc83506ec50afb"
++dependencies = [
++ "spin",
++]
++
+ [[package]]
+ name = "libc"
+ version = "0.2.189"
+@@ -2747,7 +3305,7 @@ checksum = "f9f8bd3e56ce4dfc153cf470fffbfa98c7620958b312ca5c3a4b8d5181fd13c6"
+ name = "lopdf"
+ version = "0.45.0"
+ dependencies = [
+- "aes",
++ "aes 0.9.3",
+  "bitflags 2.13.2",
+  "brotli-decompressor",
+  "cbc",
+@@ -2764,7 +3322,7 @@ dependencies = [
+  "rand 0.10.3",
+  "rangemap",
+  "rayon",
+- "sha2",
++ "sha2 0.11.0",
+  "stringprep",
+  "thiserror 2.0.21",
+  "weezl 0.2.1",
+@@ -2777,7 +3335,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "69b6441f590336821bb897fb28fc622898ccceb1d6cea3fde5ea86b090c4de98"
+ dependencies = [
+  "cfg-if",
+- "digest",
++ "digest 0.11.3",
+ ]
+ 
+ [[package]]
+@@ -2824,6 +3382,17 @@ dependencies = [
+  "simd-adler32",
+ ]
+ 
++[[package]]
++name = "mio"
++version = "1.2.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "1788edb87fdc09c7e26304471e2f5be8cdefb1b6930d6e3985fc02ff53bf86ee"
++dependencies = [
++ "libc",
++ "wasi",
++ "windows-sys 0.61.2",
++]
++
+ [[package]]
+ name = "moxcms"
+ version = "0.8.1"
+@@ -2878,6 +3447,23 @@ dependencies = [
+  "thiserror 2.0.21",
+ ]
+ 
++[[package]]
++name = "native-tls"
++version = "0.2.18"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "465500e14ea162429d264d44189adc38b199b62b1c21eea9f69e4b73cb03bbf2"
++dependencies = [
++ "libc",
++ "log",
++ "openssl",
++ "openssl-probe",
++ "openssl-sys",
++ "schannel",
++ "security-framework",
++ "security-framework-sys",
++ "tempfile",
++]
++
+ [[package]]
+ name = "ndk"
+ version = "0.9.0"
+@@ -2908,6 +3494,18 @@ dependencies = [
+  "jni-sys 0.3.1",
+ ]
+ 
++[[package]]
++name = "nix"
++version = "0.31.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "cf20d2fde8ff38632c426f1165ed7436270b44f199fc55284c38276f9db47c3d"
++dependencies = [
++ "bitflags 2.13.2",
++ "cfg-if",
++ "cfg_aliases",
++ "libc",
++]
++
+ [[package]]
+ name = "nohash-hasher"
+ version = "0.2.0"
+@@ -2923,6 +3521,16 @@ dependencies = [
+  "memchr",
+ ]
+ 
++[[package]]
++name = "num-bigint"
++version = "0.4.8"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c89e69e7e0f03bea5ef08013795c25018e101932225a656383bd384495ecc367"
++dependencies = [
++ "num-integer",
++ "num-traits",
++]
++
+ [[package]]
+ name = "num-bigint"
+ version = "0.5.1"
+@@ -2934,6 +3542,22 @@ dependencies = [
+  "serde",
+ ]
+ 
++[[package]]
++name = "num-bigint-dig"
++version = "0.8.6"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "e661dda6640fad38e827a6d4a310ff4763082116fe217f279885c97f511bb0b7"
++dependencies = [
++ "lazy_static",
++ "libm",
++ "num-integer",
++ "num-iter",
++ "num-traits",
++ "rand 0.8.8",
++ "smallvec",
++ "zeroize",
++]
++
+ [[package]]
+ name = "num-conv"
+ version = "0.2.2"
+@@ -2949,6 +3573,16 @@ dependencies = [
+  "num-traits",
+ ]
+ 
++[[package]]
++name = "num-iter"
++version = "0.1.46"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c92800bd69a1eac91786bcfe9da64a897eb72911b8dc3095decbd07429e8048b"
++dependencies = [
++ "num-integer",
++ "num-traits",
++]
++
+ [[package]]
+ name = "num-traits"
+ version = "0.2.19"
+@@ -3338,12 +3972,71 @@ version = "0.2.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "cfe21416a02c693fb9f980befcb230ecc70b0b3d1cc4abf88b9675c4c1457f0c"
+ 
++[[package]]
++name = "opaque-debug"
++version = "0.3.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c08d65885ee38876c4f86fa503fb49d7b507c2b62552df7c70b2fce627e06381"
++
++[[package]]
++name = "open"
++version = "5.4.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "aa576c76302b7b808eecc68061e67336c47833ef9d22caa74dda10fa9675eebc"
++dependencies = [
++ "is-wsl",
++ "libc",
++]
++
++[[package]]
++name = "openssl"
++version = "0.10.81"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "77823a27f0babb03091cb9ed9ef80af3b39dbc82f97e8fa530374b7dafd87a45"
++dependencies = [
++ "bitflags 2.13.2",
++ "cfg-if",
++ "foreign-types 0.3.2",
++ "libc",
++ "openssl-macros",
++ "openssl-sys",
++]
++
++[[package]]
++name = "openssl-macros"
++version = "0.1.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "a948666b637a0f465e8564c73e89d4dde00d72d4d473cc972f390fc3dcee7d9c"
++dependencies = [
++ "proc-macro2",
++ "quote",
++ "syn 2.0.119",
++]
++
+ [[package]]
+ name = "openssl-probe"
+ version = "0.2.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "7c87def4c32ab89d880effc9e097653c8da5d6ef28e6b539d313baaacfbafcbe"
+ 
++[[package]]
++name = "openssl-sys"
++version = "0.9.117"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "b47e7e6bb2c38cd930d25a23b40fa52e068c10e85f3e03a7f5ba5aaca5713695"
++dependencies = [
++ "cc",
++ "libc",
++ "pkg-config",
++ "vcpkg",
++]
++
++[[package]]
++name = "option-ext"
++version = "0.2.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "04744f49eae99ab78e0d5c0b603ab218f515ea8cfe5a456d7629ad883a3b6e7d"
++
+ [[package]]
+ name = "orbclient"
+ version = "0.3.55"
+@@ -3373,17 +4066,41 @@ dependencies = [
+  "pin-project-lite",
+ ]
+ 
++[[package]]
++name = "p256"
++version = "0.13.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c9863ad85fa8f4460f9c48cb909d38a0d689dba1f6f6988a5e3e0d31071bcd4b"
++dependencies = [
++ "ecdsa 0.16.9",
++ "elliptic-curve 0.13.8",
++ "primeorder 0.13.6",
++ "sha2 0.10.9",
++]
++
+ [[package]]
+ name = "p256"
+ version = "0.14.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "d2c9239b2dbc807adbbe147e8cf72ea7450c3a0aabe62cb8e75ff4ec22e1f72a"
+ dependencies = [
+- "ecdsa",
+- "elliptic-curve",
++ "ecdsa 0.17.0",
++ "elliptic-curve 0.14.1",
+  "primefield",
+- "primeorder",
+- "sha2",
++ "primeorder 0.14.0",
++ "sha2 0.11.0",
++]
++
++[[package]]
++name = "p384"
++version = "0.13.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "fe42f1670a52a47d448f14b6a5c61dd78fce51856e68edaa38f7ae3a46b8d6b6"
++dependencies = [
++ "ecdsa 0.16.9",
++ "elliptic-curve 0.13.8",
++ "primeorder 0.13.6",
++ "sha2 0.10.9",
+ ]
+ 
+ [[package]]
+@@ -3392,12 +4109,12 @@ version = "0.14.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "d17b851e6b3e378ab4ecb07fa2ed23f4d15f075735f8fec9fa1e7bdce5f8301f"
+ dependencies = [
+- "ecdsa",
+- "elliptic-curve",
+- "fiat-crypto",
++ "ecdsa 0.17.0",
++ "elliptic-curve 0.14.1",
++ "fiat-crypto 0.3.0",
+  "primefield",
+- "primeorder",
+- "sha2",
++ "primeorder 0.14.0",
++ "sha2 0.11.0",
+ ]
+ 
+ [[package]]
+@@ -3436,13 +4153,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "2ee67f1008b1ba2321834326597b8e186293b049a023cdef258527550b9935b4"
+ 
+ [[package]]
+-name = "pbkdf2"
+-version = "0.13.0"
++name = "pbkdf2"
++version = "0.13.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "112d82ceb8c5bf524d9af484d4e4970c9fd5a0cc15ba14ad93dccd28873b0629"
++dependencies = [
++ "digest 0.11.3",
++ "hmac 0.13.0",
++]
++
++[[package]]
++name = "pem"
++version = "3.0.6"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "1d30c53c26bc5b31a98cd02d20f25a7c8567146caf63ed593a9d87b2775291be"
++dependencies = [
++ "base64 0.22.1",
++ "serde_core",
++]
++
++[[package]]
++name = "pem-rfc7468"
++version = "0.7.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "112d82ceb8c5bf524d9af484d4e4970c9fd5a0cc15ba14ad93dccd28873b0629"
++checksum = "88b39c9bfcfc231068454382784bb460aae594343fb030d46e9f50a645418412"
+ dependencies = [
+- "digest",
+- "hmac",
++ "base64ct",
+ ]
+ 
+ [[package]]
+@@ -3611,14 +4347,35 @@ dependencies = [
+  "futures-io",
+ ]
+ 
++[[package]]
++name = "pkcs1"
++version = "0.7.5"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c8ffb9f10fa047879315e6625af03c164b16962a5368d724ed16323b68ace47f"
++dependencies = [
++ "der 0.7.10",
++ "pkcs8 0.10.2",
++ "spki 0.7.3",
++]
++
+ [[package]]
+ name = "pkcs1"
+ version = "0.8.0-rc.4"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "986d2e952779af96ea048f160fd9194e1751b4faea78bcf3ceb456efe008088e"
+ dependencies = [
+- "der",
+- "spki",
++ "der 0.8.2",
++ "spki 0.8.0",
++]
++
++[[package]]
++name = "pkcs8"
++version = "0.10.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "f950b2377845cebe5cf8b5165cb3cc1a5e0fa5cfa3e1f7f55707d8fd82e0a7b7"
++dependencies = [
++ "der 0.7.10",
++ "spki 0.7.3",
+ ]
+ 
+ [[package]]
+@@ -3627,8 +4384,8 @@ version = "0.11.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "451913da69c775a56034ea8d9003d27ee8948e12443eae7c038ba100a4f21cb7"
+ dependencies = [
+- "der",
+- "spki",
++ "der 0.8.2",
++ "spki 0.8.0",
+ ]
+ 
+ [[package]]
+@@ -3704,6 +4461,18 @@ dependencies = [
+  "arrayvec",
+ ]
+ 
++[[package]]
++name = "polyval"
++version = "0.6.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "9d1fe60d06143b2430aa532c94cfe9e29783047f06c0d7fd359a9a51b729fa25"
++dependencies = [
++ "cfg-if",
++ "cpufeatures 0.2.17",
++ "opaque-debug",
++ "universal-hash",
++]
++
+ [[package]]
+ name = "portable-atomic"
+ version = "1.15.0"
+@@ -3755,21 +4524,30 @@ version = "0.14.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "c555a6e4eb7d4e158fcb028c835c3b8642206ddc279b5c6b202ef9a8bdb592f4"
+ dependencies = [
+- "crypto-bigint",
+- "crypto-common",
+- "ff",
++ "crypto-bigint 0.7.5",
++ "crypto-common 0.2.2",
++ "ff 0.14.0",
+  "rand_core 0.10.1",
+  "subtle",
+  "zeroize",
+ ]
+ 
++[[package]]
++name = "primeorder"
++version = "0.13.6"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "353e1ca18966c16d9deb1c69278edbc5f194139612772bd9537af60ac231e1e6"
++dependencies = [
++ "elliptic-curve 0.13.8",
++]
++
+ [[package]]
+ name = "primeorder"
+ version = "0.14.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "5c9f42978c78a00e3d68f69fc03e57a234debae69da4020a4fb588fcdcd07b06"
+ dependencies = [
+- "elliptic-curve",
++ "elliptic-curve 0.14.1",
+  "once_cell",
+  "primefield",
+  "serdect",
+@@ -3780,13 +4558,28 @@ dependencies = [
+ name = "printcraft"
+ version = "0.2.1"
+ dependencies = [
++ "aes-gcm",
++ "atomic-write-file",
++ "base64 0.22.1",
++ "directories",
+  "eframe",
+  "egui",
++ "egui_kittest",
+  "fmv-macos-events",
++ "fs2",
++ "getrandom 0.3.4",
++ "jsonwebtoken",
++ "keyring",
++ "open",
+  "printcraft-ui-egui",
++ "reqwest",
+  "rustls-native-certs",
++ "serde",
+  "serde_json",
++ "sha2 0.10.9",
+  "ureq",
++ "url",
++ "uuid",
+  "winresource",
+ ]
+ 
+@@ -3876,10 +4669,10 @@ dependencies = [
+ name = "printcraft-crypt"
+ version = "0.2.1"
+ dependencies = [
+- "aes",
++ "aes 0.9.3",
+  "md-5",
+  "proptest",
+- "sha2",
++ "sha2 0.11.0",
+  "stringprep",
+  "thiserror 2.0.21",
+ ]
+@@ -4063,23 +4856,23 @@ dependencies = [
+ name = "printcraft-sign"
+ version = "0.2.1"
+ dependencies = [
+- "aes",
++ "aes 0.9.3",
+  "aws-lc-rs",
+  "cbc",
+  "des",
+  "getrandom 0.4.3",
+- "hmac",
+- "p256",
+- "p384",
++ "hmac 0.13.0",
++ "p256 0.14.0",
++ "p384 0.14.0",
+  "pbkdf2",
+  "printcraft-annot",
+  "printcraft-cos",
+  "printcraft-fonts",
+  "rc2",
+- "rsa",
++ "rsa 0.10.0-rc.18",
+  "security-framework",
+  "sha1",
+- "sha2",
++ "sha2 0.11.0",
+  "thiserror 2.0.21",
+ ]
+ 
+@@ -4170,7 +4963,7 @@ dependencies = [
+  "bitflags 2.13.2",
+  "num-traits",
+  "rand 0.9.5",
+- "rand_chacha",
++ "rand_chacha 0.9.0",
+  "rand_xorshift",
+  "regex-syntax",
+  "rusty-fork",
+@@ -4226,13 +5019,24 @@ version = "6.0.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
+ 
++[[package]]
++name = "rand"
++version = "0.8.8"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "e058c7de0b26af77780c769414d6257830bb240f3c38477dbc2c16e5f54d6d4c"
++dependencies = [
++ "libc",
++ "rand_chacha 0.3.1",
++ "rand_core 0.6.4",
++]
++
+ [[package]]
+ name = "rand"
+ version = "0.9.5"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "b9ef1d0d795eb7d84685bca4f72f3649f064e6641543d3a8c415898726a57b41"
+ dependencies = [
+- "rand_chacha",
++ "rand_chacha 0.9.0",
+  "rand_core 0.9.5",
+ ]
+ 
+@@ -4247,6 +5051,16 @@ dependencies = [
+  "rand_core 0.10.1",
+ ]
+ 
++[[package]]
++name = "rand_chacha"
++version = "0.3.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "e6c10a63a0fa32252be49d21e7709d4d4baf8d231c2dbce1eaa8141b9b127d88"
++dependencies = [
++ "ppv-lite86",
++ "rand_core 0.6.4",
++]
++
+ [[package]]
+ name = "rand_chacha"
+ version = "0.9.0"
+@@ -4257,6 +5071,15 @@ dependencies = [
+  "rand_core 0.9.5",
+ ]
+ 
++[[package]]
++name = "rand_core"
++version = "0.6.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
++dependencies = [
++ "getrandom 0.2.17",
++]
++
+ [[package]]
+ name = "rand_core"
+ version = "0.9.5"
+@@ -4337,7 +5160,7 @@ version = "0.9.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "ceda21af1ae61033b63175653a1af86cae399d79cd03ca80ba347eb3a6c4a7fe"
+ dependencies = [
+- "cipher",
++ "cipher 0.5.2",
+ ]
+ 
+ [[package]]
+@@ -4399,6 +5222,16 @@ dependencies = [
+  "bitflags 2.13.2",
+ ]
+ 
++[[package]]
++name = "redox_users"
++version = "0.5.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "60dc65c0ff1a7ae1294b0c67b9f14baf70b644404010370171787bfac1038fc0"
++dependencies = [
++ "libredox",
++ "thiserror 2.0.21",
++]
++
+ [[package]]
+ name = "regex-syntax"
+ version = "0.8.11"
+@@ -4420,6 +5253,44 @@ version = "1.1.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "19b30a45b0cd0bcca8037f3d0dc3421eaf95327a17cad11964fb8179b4fc4832"
+ 
++[[package]]
++name = "reqwest"
++version = "0.12.28"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "eddd3ca559203180a307f12d114c268abf583f59b03cb906fd0b3ff8646c1147"
++dependencies = [
++ "base64 0.22.1",
++ "bytes",
++ "futures-channel",
++ "futures-core",
++ "futures-util",
++ "http",
++ "http-body",
++ "http-body-util",
++ "hyper",
++ "hyper-tls",
++ "hyper-util",
++ "js-sys",
++ "log",
++ "native-tls",
++ "percent-encoding",
++ "pin-project-lite",
++ "rustls-pki-types",
++ "serde",
++ "serde_json",
++ "serde_urlencoded",
++ "sync_wrapper",
++ "tokio",
++ "tokio-native-tls",
++ "tower",
++ "tower-http",
++ "tower-service",
++ "url",
++ "wasm-bindgen",
++ "wasm-bindgen-futures",
++ "web-sys",
++]
++
+ [[package]]
+ name = "resvg"
+ version = "0.45.1"
+@@ -4434,14 +5305,24 @@ dependencies = [
+  "usvg",
+ ]
+ 
++[[package]]
++name = "rfc6979"
++version = "0.4.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "f8dd2a808d456c4a54e300a23e9f5a67e122c3024119acbfd73e3bf664491cb2"
++dependencies = [
++ "hmac 0.12.1",
++ "subtle",
++]
++
+ [[package]]
+ name = "rfc6979"
+ version = "0.6.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "b4a459cddafb3fe76b31fd8f1108007566c40301feb64dc7b54656eb7388172b"
+ dependencies = [
+- "crypto-bigint",
+- "hmac",
++ "crypto-bigint 0.7.5",
++ "hmac 0.13.0",
+ ]
+ 
+ [[package]]
+@@ -4514,20 +5395,40 @@ version = "0.20.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "6c20b6793b5c2fa6553b250154b78d6d0db37e72700ae35fad9387a46f487c97"
+ 
++[[package]]
++name = "rsa"
++version = "0.9.10"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "b8573f03f5883dcaebdfcf4725caa1ecb9c15b2ef50c43a07b816e06799bb12d"
++dependencies = [
++ "const-oid 0.9.6",
++ "digest 0.10.7",
++ "num-bigint-dig",
++ "num-integer",
++ "num-traits",
++ "pkcs1 0.7.5",
++ "pkcs8 0.10.2",
++ "rand_core 0.6.4",
++ "signature 2.2.0",
++ "spki 0.7.3",
++ "subtle",
++ "zeroize",
++]
++
+ [[package]]
+ name = "rsa"
+ version = "0.10.0-rc.18"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "30b2aa4ba0d89f73d1e332df05be0eeab8840351c36ca5654341dfdb57bb3caf"
+ dependencies = [
+- "const-oid",
+- "crypto-bigint",
++ "const-oid 0.10.2",
++ "crypto-bigint 0.7.5",
+  "crypto-primes",
+- "digest",
+- "pkcs1",
+- "pkcs8",
++ "digest 0.11.3",
++ "pkcs1 0.8.0-rc.4",
++ "pkcs8 0.11.0",
+  "rand_core 0.10.1",
+- "signature",
++ "signature 3.0.0",
+  "zeroize",
+ ]
+ 
+@@ -4753,6 +5654,12 @@ dependencies = [
+  "wait-timeout",
+ ]
+ 
++[[package]]
++name = "ryu"
++version = "1.0.23"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "9774ba4a74de5f7b1c1451ed6cd5285a32eddb5cccb8cc655a4e50009e06477f"
++
+ [[package]]
+ name = "ryu-js"
+ version = "1.0.3"
+@@ -4789,15 +5696,29 @@ version = "1.2.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
+ 
++[[package]]
++name = "sec1"
++version = "0.7.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "d3e97a565f76233a6003f9f5c54be1d9c5bdfa3eccfb189469f11ec4901c47dc"
++dependencies = [
++ "base16ct 0.2.0",
++ "der 0.7.10",
++ "generic-array",
++ "pkcs8 0.10.2",
++ "subtle",
++ "zeroize",
++]
++
+ [[package]]
+ name = "sec1"
+ version = "0.8.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "d56d437c2f19203ce5f7122e507831de96f3d2d4d3be5af44a0b0a09d8a80e4d"
+ dependencies = [
+- "base16ct",
++ "base16ct 1.0.0",
+  "ctutils",
+- "der",
++ "der 0.8.2",
+  "hybrid-array",
+  "subtle",
+  "zeroize",
+@@ -4901,13 +5822,25 @@ dependencies = [
+  "serde_core",
+ ]
+ 
++[[package]]
++name = "serde_urlencoded"
++version = "0.7.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "d3491c14715ca2294c4d6a88f15e84739788c1d030eed8c110436aafdaa2f3fd"
++dependencies = [
++ "form_urlencoded",
++ "itoa",
++ "ryu",
++ "serde",
++]
++
+ [[package]]
+ name = "serdect"
+ version = "0.4.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "66cf8fedced2fcf12406bcb34223dffb92eaf34908ede12fed414c82b7f00b3e"
+ dependencies = [
+- "base16ct",
++ "base16ct 1.0.0",
+  "serde",
+ ]
+ 
+@@ -4918,8 +5851,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "aacc4cc499359472b4abe1bf11d0b12e688af9a805fa5e3016f9a386dc2d0214"
+ dependencies = [
+  "cfg-if",
+- "cpufeatures",
+- "digest",
++ "cpufeatures 0.3.1",
++ "digest 0.11.3",
++]
++
++[[package]]
++name = "sha2"
++version = "0.10.9"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "a7507d819769d01a365ab707794a4084392c824f54a7a6a7862f8c3d0892b283"
++dependencies = [
++ "cfg-if",
++ "cpufeatures 0.2.17",
++ "digest 0.10.7",
+ ]
+ 
+ [[package]]
+@@ -4929,8 +5873,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "446ba717509524cb3f22f17ecc096f10f4822d76ab5c0b9822c5f9c284e825f4"
+ dependencies = [
+  "cfg-if",
+- "cpufeatures",
+- "digest",
++ "cpufeatures 0.3.1",
++ "digest 0.11.3",
+ ]
+ 
+ [[package]]
+@@ -4949,13 +5893,23 @@ dependencies = [
+  "libc",
+ ]
+ 
++[[package]]
++name = "signature"
++version = "2.2.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "77549399552de45a898a580c1b41d445bf730df867cc44e6c0233bbc4b8329de"
++dependencies = [
++ "digest 0.10.7",
++ "rand_core 0.6.4",
++]
++
+ [[package]]
+ name = "signature"
+ version = "3.0.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "28d567dcbaf0049cb8ac2608a76cd95ff9e4412e1899d389ee400918ca7537f5"
+ dependencies = [
+- "digest",
++ "digest 0.11.3",
+  "rand_core 0.10.1",
+ ]
+ 
+@@ -4981,6 +5935,18 @@ version = "0.1.5"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "e3a9fe34e3e7a50316060351f37187a3f546bce95496156754b601a5fa71b76e"
+ 
++[[package]]
++name = "simple_asn1"
++version = "0.6.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "0d585997b0ac10be3c5ee635f1bab02d512760d14b7c468801ac8a01d9ae5f1d"
++dependencies = [
++ "num-bigint 0.4.8",
++ "num-traits",
++ "thiserror 2.0.21",
++ "time",
++]
++
+ [[package]]
+ name = "simplecss"
+ version = "0.2.2"
+@@ -5131,6 +6097,22 @@ dependencies = [
+  "serde",
+ ]
+ 
++[[package]]
++name = "socket2"
++version = "0.6.5"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c3d1e2c7f27f8d4cb10542a02c49005dbd6e93095799d6f3be745fae9f8fedd4"
++dependencies = [
++ "libc",
++ "windows-sys 0.61.2",
++]
++
++[[package]]
++name = "spin"
++version = "0.9.9"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "3763264f6b73151db08c50ff20d7d8a0b8796e021cdea7ceedad07b80155fa0e"
++
+ [[package]]
+ name = "spirv"
+ version = "0.4.0+sdk-1.4.341.0"
+@@ -5140,6 +6122,16 @@ dependencies = [
+  "bitflags 2.13.2",
+ ]
+ 
++[[package]]
++name = "spki"
++version = "0.7.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "d91ed6c858b01f942cd56b37a94b3e0a1798290327d1236e4d9cf4eaca44d29d"
++dependencies = [
++ "base64ct",
++ "der 0.7.10",
++]
++
+ [[package]]
+ name = "spki"
+ version = "0.8.0"
+@@ -5147,7 +6139,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "1d9efca8738c78ee9484207732f728b1ef517bbb1833d6fc0879ca898a522f6f"
+ dependencies = [
+  "base64ct",
+- "der",
++ "der 0.8.2",
+ ]
+ 
+ [[package]]
+@@ -5241,6 +6233,15 @@ dependencies = [
+  "unicode-ident",
+ ]
+ 
++[[package]]
++name = "sync_wrapper"
++version = "1.0.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "0bf256ce5efdfa370213c1dabab5935a12e49f2c58d15e9eac2870d3b4f27263"
++dependencies = [
++ "futures-core",
++]
++
+ [[package]]
+ name = "synstructure"
+ version = "0.14.0"
+@@ -5427,7 +6428,22 @@ version = "1.53.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "202caea871b69668250d242070849eb495be178ed697a3e98aebce5bc81a0bed"
+ dependencies = [
++ "bytes",
++ "libc",
++ "mio",
+  "pin-project-lite",
++ "socket2",
++ "windows-sys 0.61.2",
++]
++
++[[package]]
++name = "tokio-native-tls"
++version = "0.3.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "bbae76ab933c85776efabc971569dd6119c580d8f5d448769dec1764bf796ef2"
++dependencies = [
++ "native-tls",
++ "tokio",
+ ]
+ 
+ [[package]]
+@@ -5481,6 +6497,51 @@ version = "1.1.2+spec-1.1.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "7d56353a2a665ad0f41a421187180aab746c8c325620617ad883a99a1cbe66d2"
+ 
++[[package]]
++name = "tower"
++version = "0.5.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ebe5ef63511595f1344e2d5cfa636d973292adc0eec1f0ad45fae9f0851ab1d4"
++dependencies = [
++ "futures-core",
++ "futures-util",
++ "pin-project-lite",
++ "sync_wrapper",
++ "tokio",
++ "tower-layer",
++ "tower-service",
++]
++
++[[package]]
++name = "tower-http"
++version = "0.6.11"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "4cfcf7e2740e6fc6d4d688b4ef00650406bb94adf4731e43c096c3a19fe40840"
++dependencies = [
++ "bitflags 2.13.2",
++ "bytes",
++ "futures-util",
++ "http",
++ "http-body",
++ "pin-project-lite",
++ "tower",
++ "tower-layer",
++ "tower-service",
++ "url",
++]
++
++[[package]]
++name = "tower-layer"
++version = "0.3.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "121c2a6cda46980bb0fcd1647ffaf6cd3fc79a013de288782836f6df9c48780e"
++
++[[package]]
++name = "tower-service"
++version = "0.3.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "8df9b6e13f2d32c91b9bd719c00d1958837bc7dec474d94952798cc8e69eeec3"
++
+ [[package]]
+ name = "tracing"
+ version = "0.1.44"
+@@ -5513,6 +6574,12 @@ dependencies = [
+  "once_cell",
+ ]
+ 
++[[package]]
++name = "try-lock"
++version = "0.2.5"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
++
+ [[package]]
+ name = "type-map"
+ version = "0.5.1"
+@@ -5596,6 +6663,16 @@ version = "0.2.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "b4ac048d71ede7ee76d585517add45da530660ef4390e49b098733c6e897f254"
+ 
++[[package]]
++name = "universal-hash"
++version = "0.5.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "fc1de2c688dc15305988b563c3854064043356019f97a4b46276fe734c4f07ea"
++dependencies = [
++ "crypto-common 0.1.7",
++ "subtle",
++]
++
+ [[package]]
+ name = "untrusted"
+ version = "0.9.0"
+@@ -5692,6 +6769,12 @@ dependencies = [
+  "wasm-bindgen",
+ ]
+ 
++[[package]]
++name = "vcpkg"
++version = "0.2.15"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
++
+ [[package]]
+ name = "vello_common"
+ version = "0.0.8"
+@@ -5791,6 +6874,15 @@ dependencies = [
+  "winapi-util",
+ ]
+ 
++[[package]]
++name = "want"
++version = "0.3.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ec4cdd0dd910afe868b7ef477227d8d538b46b3075031afee8a9f2acb0a2ed0b"
++dependencies = [
++ "try-lock",
++]
++
+ [[package]]
+ name = "wasi"
+ version = "0.11.1+wasi-snapshot-preview1"
+@@ -6228,6 +7320,22 @@ dependencies = [
+  "web-sys",
+ ]
+ 
++[[package]]
++name = "winapi"
++version = "0.3.9"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "5c839a674fcd7a98952e593242ea400abe93992746761e38641405d28b00f419"
++dependencies = [
++ "winapi-i686-pc-windows-gnu",
++ "winapi-x86_64-pc-windows-gnu",
++]
++
++[[package]]
++name = "winapi-i686-pc-windows-gnu"
++version = "0.4.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ac3b87c63620426dd9b991e5ce0329eff545bccbbb34f3be09ff6fb6ab51b7b6"
++
+ [[package]]
+ name = "winapi-util"
+ version = "0.1.11"
+@@ -6237,6 +7345,12 @@ dependencies = [
+  "windows-sys 0.61.2",
+ ]
+ 
++[[package]]
++name = "winapi-x86_64-pc-windows-gnu"
++version = "0.4.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
++
+ [[package]]
+ name = "windows"
+ version = "0.62.2"
+@@ -6594,8 +7708,8 @@ version = "0.14.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "795ca18b3fdb5e62bf982199278341ddcf7ebf7d32e25e212ad05d496e95f6fa"
+ dependencies = [
+- "ff",
+- "group",
++ "ff 0.14.0",
++ "group 0.14.0",
+  "hybrid-array",
+  "primefield",
+ ]
+@@ -6690,7 +7804,7 @@ dependencies = [
+  "png 0.18.1",
+  "serde",
+  "serde_json",
+- "sha2",
++ "sha2 0.11.0",
+  "toml",
+ ]
+ 
 diff --git a/apps/printcraft/Cargo.toml b/apps/printcraft/Cargo.toml
-index e021588..d0dcf7c 100644
+index e021588..a0a20c3 100644
 --- a/apps/printcraft/Cargo.toml
 +++ b/apps/printcraft/Cargo.toml
-@@ -27,3 +27,25 @@ fmv-macos-events = "=0.1.0"
+@@ -9,7 +9,7 @@ license.workspace = true
+ workspace = true
+ 
+ [dependencies]
+-# Help ▸ Check for updates (issue #28): one HTTPS request to GitHub, over rustls with the OS's
++# Help â–¸ Check for updates (issue #28): one HTTPS request to GitHub, over rustls with the OS's
+ # trusted roots. No bundled root list (webpki-roots and webpki-root-certs are CDLA-licensed).
+ ureq = { version = "3.4", default-features = false, features = ["rustls-no-provider", "_ring"] }
+ rustls-native-certs = "0.8"
+@@ -27,3 +27,27 @@ fmv-macos-events = "=0.1.0"
  [build-dependencies]
  # Icon + VERSIONINFO for printcraft.exe; build.rs only uses it when targeting Windows.
  winresource = "0.1"
 +
 +[target.'cfg(target_os = "windows")'.dependencies]
++# Keep eframe shutdown ABI consistent when the web workspace enables glow.
++eframe = { workspace = true, features = ["glow"] }
 +
 +# Optional Windows ChatGPT connection; Schannel uses the operating system TLS.
 +aes-gcm = "=0.10.3"
@@ -28,42 +2162,12 @@ index e021588..d0dcf7c 100644
 +[target.'cfg(windows)'.dev-dependencies]
 +jsonwebtoken = { version = "=10.3.0", default-features = false, features = ["rust_crypto", "use_pem"] }
 +egui_kittest = { workspace = true, features = ["eframe", "wgpu", "snapshot"] }
-diff --git a/apps/printcraft/src/main.rs b/apps/printcraft/src/main.rs
-index cf79636..282449f 100644
---- a/apps/printcraft/src/main.rs
-+++ b/apps/printcraft/src/main.rs
-@@ -33,7 +33,17 @@ const APP_ICON_PNG: &[u8] = include_bytes!("../../../assets/app-icon/printcraft-
- #[cfg(not(target_os = "macos"))]
- const APP_ICON_PNG: &[u8] = include_bytes!("../../../assets/app-icon/hicolor/256x256/apps/ai.storyteller.printcraft.png");
- 
-+#[cfg(windows)]
-+mod chatgpt;
-+#[cfg(not(windows))]
-+#[path = "chatgpt_unsupported.rs"]
-+mod chatgpt;
-+
- fn main() -> eframe::Result {
-+    if let Some(result) = chatgpt::cli() {
-+        return result.map_err(|error| eframe::Error::AppCreation(Box::new(std::io::Error::other(error))));
-+    }
-+
-     // Last-resort guard (AGENTS.md §4): commands, edits, opens and saves catch panics and report
-     // them; this hook logs every panic, caught or not, with a backtrace when RUST_BACKTRACE is set.
-     std::panic::set_hook(Box::new(|info| {
-@@ -121,7 +131,7 @@ fn main() -> eframe::Result {
-                     eprintln!("printcraft: --{k} {v}: {e}");
-                 }
-             }
--            Ok(Box::new(app))
-+            Ok(Box::new(chatgpt::wrap(app)))
-         }),
-     )
- }
 diff --git a/apps/printcraft/src/chatgpt.rs b/apps/printcraft/src/chatgpt.rs
 new file mode 100644
+index 0000000..1d2cc25
 --- /dev/null
 +++ b/apps/printcraft/src/chatgpt.rs
-@@ -0,0 +1,900 @@
+@@ -0,0 +1,927 @@
 +//! Native, optional ChatGPT connection. Credentials never enter document/UI state.
 +#![forbid(unsafe_code)]
 +use aes_gcm::{
@@ -289,7 +2393,8 @@ new file mode 100644
 +    validation.set_required_spec_claims(&["sub", "exp", "iat", "iss", "aud"]);
 +    validation.leeway = 5;
 +    validation.validate_nbf = true;
-+    let claims = decode::<Claims>(token, &key, &validation).map_err(|_| "OpenAI ID-token signature, issuer, audience or expiry did not validate")?.claims;
++    let claims =
++        decode::<Claims>(token, &key, &validation).map_err(|_| "OpenAI ID-token signature, issuer, audience or expiry did not validate")?.claims;
 +    if claims.iat > now()?.saturating_add(5) || claims.sub.is_empty() || nonce.is_some_and(|n| claims.nonce.as_deref() != Some(n)) {
 +        return Err("OpenAI ID-token identity or nonce did not validate".into());
 +    }
@@ -299,8 +2404,9 @@ new file mode 100644
 +    Ok(claims)
 +}
 +fn exchange(client: &Client, params: &[(&str, &str)], client_id: &str, nonce: Option<&str>, previous: Option<&Account>) -> Result<Account, String> {
-+    let data =
-+        json_response(client.post(format!("{ISSUER}/api/accounts/oauth/token")).form(params).send().map_err(|_| "Could not exchange ChatGPT authorization")?)?;
++    let data = json_response(
++        client.post(format!("{ISSUER}/api/accounts/oauth/token")).form(params).send().map_err(|_| "Could not exchange ChatGPT authorization")?,
++    )?;
 +    let tokens: Tokens = serde_json::from_value(data).map_err(|_| "OpenAI returned an incomplete token response")?;
 +    if !tokens.token_type.eq_ignore_ascii_case("Bearer") || tokens.access_token.is_empty() || tokens.expires_in == 0 {
 +        return Err("OpenAI returned invalid access-token metadata".into());
@@ -308,7 +2414,8 @@ new file mode 100644
 +    let id_token = tokens.id_token.or_else(|| previous.map(|p| p.id_token.clone())).ok_or("OpenAI did not return an ID token")?;
 +    // Refresh may omit an ID token: retain the previously verified identity in that case.
 +    let identity = if nonce.is_some() || previous.is_none() || previous.is_some_and(|p| p.id_token != id_token) {
-+        let value = json_response(client.get(format!("{ISSUER}/.well-known/jwks.json")).send().map_err(|_| "Could not retrieve OpenAI signing keys")?)?;
++        let value =
++            json_response(client.get(format!("{ISSUER}/.well-known/jwks.json")).send().map_err(|_| "Could not retrieve OpenAI signing keys")?)?;
 +        let keys = serde_json::from_value(value).map_err(|_| "OpenAI signing-key response is invalid")?;
 +        validate_claims(&id_token, client_id, nonce, previous, &keys)?
 +    } else {
@@ -577,7 +2684,7 @@ new file mode 100644
 +}
 +impl Runtime {
 +    fn new() -> Self {
-+        let status = Arc::new(Mutex::new(Status { busy: true, message: "Loading ChatGPT connection…".into(), ..Default::default() }));
++        let status = Arc::new(Mutex::new(Status { busy: true, message: "Loading ChatGPT connectionâ€¦".into(), ..Default::default() }));
 +        let cancel = Arc::new(AtomicBool::new(false));
 +        let (sender, rx) = mpsc::sync_channel::<String>(1);
 +        let shared = status.clone();
@@ -627,7 +2734,7 @@ new file mode 100644
 +                            if revoked {
 +                                "ChatGPT disconnected.".into()
 +                            } else {
-+                                "Disconnected locally. Remote revocation was not confirmed; remove this app in ChatGPT Settings → Usage.".into()
++                                "Disconnected locally. Remote revocation was not confirmed; remove this app in ChatGPT Settings â†’ Usage.".into()
 +                            }
 +                        }),
 +                        _ => Err("Unknown ChatGPT connection command".into()),
@@ -645,7 +2752,8 @@ new file mode 100644
 +                _ => None,
 +            };
 +            if let Some(message) = issue {
-+                *shared.lock().unwrap_or_else(std::sync::PoisonError::into_inner) = Status { message, last_action_ok: Some(false), ..Default::default() };
++                *shared.lock().unwrap_or_else(std::sync::PoisonError::into_inner) =
++                    Status { message, last_action_ok: Some(false), ..Default::default() };
 +            }
 +        });
 +        if result.is_err() {
@@ -671,7 +2779,7 @@ new file mode 100644
 +        status.busy = true;
 +        status.last_action_ok = None;
 +        status.message = match self.sender.try_send(action.into()) {
-+            Ok(()) => "Waiting for ChatGPT…".into(),
++            Ok(()) => "Waiting for ChatGPTâ€¦".into(),
 +            Err(_) => {
 +                status.busy = false;
 +                status.last_action_ok = Some(false);
@@ -702,56 +2810,59 @@ new file mode 100644
 +    fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
 +        let ctx = ui.ctx().clone();
 +        self.inner.ui(ui, frame);
-+        egui::Area::new(egui::Id::new("chatgpt.connection.button")).anchor(egui::Align2::RIGHT_BOTTOM, [-12.0, -12.0]).order(egui::Order::Foreground).show(
-+            &ctx,
-+            |ui| {
-+                if ui.button("ChatGPT connection…").clicked() {
++        egui::Area::new(egui::Id::new("chatgpt.connection.button"))
++            .anchor(egui::Align2::RIGHT_BOTTOM, [-12.0, -12.0])
++            .order(egui::Order::Foreground)
++            .show(&ctx, |ui| {
++                if ui.button("ChatGPT connectionâ€¦").clicked() {
 +                    self.panel = true;
 +                }
-+            },
-+        );
++            });
 +        if !self.panel {
 +            return;
 +        }
 +        let status = self.runtime.status();
-+        egui::Window::new(format!("{APP} · ChatGPT")).id(egui::Id::new("chatgpt.connection")).open(&mut self.panel).resizable(false).show(&ctx, |ui| {
-+            ui.label("Connect your ChatGPT account");
-+            ui.label("This connects your account and requests optional plan usage. It does not run AI or read your ChatGPT conversations.");
-+            if let Some(email) = &status.email {
-+                ui.label(email);
-+            }
-+            ui.label(if status.connected { "Connected" } else { "Disconnected or session expired" });
-+            if status.plan_usage {
-+                ui.label("ChatGPT plan permission granted. AI editing is not implemented in this change.");
-+            }
-+            ui.label(&status.message);
-+            ui.add_enabled_ui(!status.busy, |ui| {
-+                if ui.button("Continue with ChatGPT").clicked() {
-+                    self.runtime.dispatch("sign_in");
++        egui::Window::new(format!("{APP} Â· ChatGPT")).id(egui::Id::new("chatgpt.connection")).open(&mut self.panel).resizable(false).show(
++            &ctx,
++            |ui| {
++                ui.label("Connect your ChatGPT account");
++                ui.label("This connects your account and requests optional plan usage. It does not run AI or read your ChatGPT conversations.");
++                if let Some(email) = &status.email {
++                    ui.label(email);
 +                }
-+                if status.expires_at.is_some() && ui.button("Renew connection").clicked() {
-+                    self.runtime.dispatch("refresh");
++                ui.label(if status.connected { "Connected" } else { "Disconnected or session expired" });
++                if status.plan_usage {
++                    ui.label("ChatGPT plan permission granted. AI editing is not implemented in this change.");
 +                }
-+                if ui.button("Disconnect").clicked() {
-+                    self.runtime.dispatch("disconnect");
++                ui.label(&status.message);
++                ui.add_enabled_ui(!status.busy, |ui| {
++                    if ui.button("Continue with ChatGPT").clicked() {
++                        self.runtime.dispatch("sign_in");
++                    }
++                    if status.expires_at.is_some() && ui.button("Renew connection").clicked() {
++                        self.runtime.dispatch("refresh");
++                    }
++                    if ui.button("Disconnect").clicked() {
++                        self.runtime.dispatch("disconnect");
++                    }
++                });
++                if status.busy {
++                    ui.spinner();
++                    if ui.button("Cancel sign-in").clicked() {
++                        self.runtime.cancel.store(true, Ordering::SeqCst);
++                    }
++                    ctx.request_repaint_after(Duration::from_millis(100));
 +                }
-+            });
-+            if status.busy {
-+                ui.spinner();
-+                if ui.button("Cancel sign-in").clicked() {
-+                    self.runtime.cancel.store(true, Ordering::SeqCst);
-+                }
-+                ctx.request_repaint_after(Duration::from_millis(100));
-+            }
-+            ui.hyperlink_to("Manage usage in ChatGPT", "https://chatgpt.com/settings/usage");
-+        });
++                ui.hyperlink_to("Manage usage in ChatGPT", "https://chatgpt.com/settings/usage");
++            },
++        );
 +    }
 +    fn save(&mut self, storage: &mut dyn eframe::Storage) {
 +        self.inner.save(storage);
 +    }
-+    fn on_exit(&mut self) {
++    fn on_exit(&mut self, gl: Option<&eframe::glow::Context>) {
 +        self.runtime.cancel.store(true, Ordering::SeqCst);
-+        self.inner.on_exit();
++        self.inner.on_exit(gl);
 +    }
 +    fn auto_save_interval(&self) -> Duration {
 +        self.inner.auto_save_interval()
@@ -813,8 +2924,15 @@ new file mode 100644
 +    use super::*;
 +    #[test]
 +    fn pkce_rfc7636_vector_and_new_registration() {
-+        let url = authorization("urn:uuid:test", "http://127.0.0.1:1455/auth/callback", "state", "nonce", "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk", None)
-+            .unwrap();
++        let url = authorization(
++            "urn:uuid:test",
++            "http://127.0.0.1:1455/auth/callback",
++            "state",
++            "nonce",
++            "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",
++            None,
++        )
++        .unwrap();
 +        let q: HashMap<_, _> = url.query_pairs().collect();
 +        assert_eq!(q.get("code_challenge").unwrap(), "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM");
 +        assert_eq!(q.get("client_id").unwrap(), "dynamic_agent_client");
@@ -911,7 +3029,7 @@ new file mode 100644
 +    struct TestEditor;
 +    impl eframe::App for TestEditor {
 +        fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
-+            ui.label("Editor surface · connection panel preview");
++            ui.label("Editor surface Â· connection panel preview");
 +        }
 +    }
 +
@@ -930,13 +3048,28 @@ new file mode 100644
 +    }
 +
 +    #[test]
++    fn chatgpt_shutdown_forwards_editor_cleanup() {
++        struct ExitEditor(Arc<AtomicBool>);
++        impl eframe::App for ExitEditor {
++            fn ui(&mut self, _ui: &mut egui::Ui, _frame: &mut eframe::Frame) {}
++            fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {
++                self.0.store(true, Ordering::SeqCst);
++            }
++        }
++        let cleaned = Arc::new(AtomicBool::new(false));
++        let (fixture, _receiver) = preview_app();
++        let cancelled = fixture.runtime.cancel.clone();
++        let mut app = ConnectedApp { inner: ExitEditor(cleaned.clone()), runtime: fixture.runtime, panel: false };
++        eframe::App::on_exit(&mut app, None);
++        assert!(cleaned.load(Ordering::SeqCst));
++        assert!(cancelled.load(Ordering::SeqCst));
++    }
++
++    #[test]
 +    fn chatgpt_panel_dispatches_sign_in_and_cancellation() {
 +        use egui_kittest::kittest::Queryable;
 +        let (app, receiver) = preview_app();
-+        let mut harness = egui_kittest::Harness::builder()
-+            .with_size(egui::vec2(960.0, 640.0))
-+            .with_max_steps(64)
-+            .build_eframe(move |_| app);
++        let mut harness = egui_kittest::Harness::builder().with_size(egui::vec2(960.0, 640.0)).with_max_steps(64).build_eframe(move |_| app);
 +        harness.run_steps(8);
 +        harness.get_by_label("Continue with ChatGPT").click();
 +        harness.run_steps(4);
@@ -958,30 +3091,94 @@ new file mode 100644
 +            .wgpu()
 +            .build_eframe(move |_| app);
 +        harness.run_steps(12);
-+        let output = std::env::var_os("CRAFT_SNAPSHOT_PATH")
-+            .expect("CI must choose a scratch output path for the panel preview");
-+        harness.render().expect("Render the actual connection panel")
-+            .save(output).expect("Save the connection panel preview");
++        let output = std::env::var_os("CRAFT_SNAPSHOT_PATH").expect("CI must choose a scratch output path for the panel preview");
++        harness.render().expect("Render the actual connection panel").save(output).expect("Save the connection panel preview");
 +    }
 +}
 diff --git a/apps/printcraft/src/chatgpt_unsupported.rs b/apps/printcraft/src/chatgpt_unsupported.rs
 new file mode 100644
+index 0000000..e3ba4d7
 --- /dev/null
 +++ b/apps/printcraft/src/chatgpt_unsupported.rs
-@@ -0,0 +1,11 @@
+@@ -0,0 +1,14 @@
 +//! Windows-only ChatGPT connection: other platforms keep the original desktop app.
 +#![forbid(unsafe_code)]
-+pub fn wrap<A: eframe::App>(inner: A) -> A { inner }
++pub fn wrap<A: eframe::App>(inner: A) -> A {
++    inner
++}
 +pub fn cli() -> Option<Result<(), String>> {
 +    let argument = std::env::args().nth(1)?;
 +    match argument.as_str() {
-+        "--chatgpt-status" | "--chatgpt-sign-in" | "--chatgpt-disconnect" | "--chatgpt-refresh" =>
-+            Some(Err("This ChatGPT connection draft supports Windows only".into())),
++        "--chatgpt-status" | "--chatgpt-sign-in" | "--chatgpt-disconnect" | "--chatgpt-refresh" => {
++            Some(Err("This ChatGPT connection draft supports Windows only".into()))
++        }
 +        _ => None,
 +    }
 +}
+diff --git a/apps/printcraft/src/main.rs b/apps/printcraft/src/main.rs
+index cf79636..19d9a34 100644
+--- a/apps/printcraft/src/main.rs
++++ b/apps/printcraft/src/main.rs
+@@ -1,6 +1,6 @@
+ //! PrintCraft desktop app.
+ //!
+-//! Usage: `printcraft [options] [files…]`
++//! Usage: `printcraft [options] [filesâ€¦]`
+ //!
+ //! View options (applied after the files open; also the seed of the UI control channel):
+ //! `--page N  --zoom 150  --layout continuous|two-up|single  --panel comments|bookmarks|pages|fields|layers|attachments|none
+@@ -9,7 +9,7 @@
+ //!
+ //! `--control <file>` enables the UI control channel (off by default): the app listens on a random
+ //! loopback port and writes `{"port", "token", "pid"}` to `<file>` (owner-only permissions).
+-//! Agents then drive it with `printcraft-cli ui --control <file> <method> …`.
++//! Agents then drive it with `printcraft-cli ui --control <file> <method> â€¦`.
+ 
+ // Release builds on Windows are GUI-subsystem programs, so launching the app doesn't open a console
+ // window next to it (#57). `--version` and diagnostics then go nowhere when started from a terminal
+@@ -33,8 +33,18 @@ const APP_ICON_PNG: &[u8] = include_bytes!("../../../assets/app-icon/printcraft-
+ #[cfg(not(target_os = "macos"))]
+ const APP_ICON_PNG: &[u8] = include_bytes!("../../../assets/app-icon/hicolor/256x256/apps/ai.storyteller.printcraft.png");
+ 
++#[cfg(windows)]
++mod chatgpt;
++#[cfg(not(windows))]
++#[path = "chatgpt_unsupported.rs"]
++mod chatgpt;
++
+ fn main() -> eframe::Result {
+-    // Last-resort guard (AGENTS.md §4): commands, edits, opens and saves catch panics and report
++    if let Some(result) = chatgpt::cli() {
++        return result.map_err(|error| eframe::Error::AppCreation(Box::new(std::io::Error::other(error))));
++    }
++
++    // Last-resort guard (AGENTS.md Â§4): commands, edits, opens and saves catch panics and report
+     // them; this hook logs every panic, caught or not, with a backtrace when RUST_BACKTRACE is set.
+     std::panic::set_hook(Box::new(|info| {
+         eprintln!("printcraft: internal error: {info}");
+@@ -81,6 +91,10 @@ fn main() -> eframe::Result {
+     let persistence_path = eframe::storage_dir("PrintCraft").map(|d| d.join("app.ron"));
+     let mut native = eframe::NativeOptions { viewport, persistence_path, ..Default::default() };
+     configure_gpu(&mut native);
++    #[cfg(windows)]
++    {
++        native.renderer = eframe::Renderer::Wgpu;
++    }
+     // Finder, Open With and the Dock deliver files as Apple events, not arguments; catch the one
+     // that launched us as well as later ones. Lives until the event loop returns.
+     #[cfg(target_os = "macos")]
+@@ -121,7 +135,7 @@ fn main() -> eframe::Result {
+                     eprintln!("printcraft: --{k} {v}: {e}");
+                 }
+             }
+-            Ok(Box::new(app))
++            Ok(Box::new(chatgpt::wrap(app)))
+         }),
+     )
+ }
 diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
 new file mode 100644
+index 0000000..11a32d7
 --- /dev/null
 +++ b/docs/chatgpt-connection.md
 @@ -0,0 +1,54 @@

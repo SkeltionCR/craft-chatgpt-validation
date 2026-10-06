@@ -14,7 +14,8 @@ renewal, disconnect, and headless account commands. They do not implement AI edi
 The manually dispatched **Windows validation** workflow runs on a standard GitHub-hosted
 Windows runner, with read-only repository permission. Select `photocraft` first, then
 each other project. It checks out the exact upstream commit, verifies and applies its
-patch, formats source, generates the dependency lockfile, runs the app's ChatGPT tests,
+patch, formats source, updates the dependency lockfile while retaining upstream pins,
+runs the app's ChatGPT tests,
 exercises the connection controls, renders the actual connection panel offscreen,
 checks Clippy, and runs the upstream `cargo xtask ci` gate.
 

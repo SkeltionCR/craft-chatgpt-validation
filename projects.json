@@ -3,42 +3,42 @@
     "repo": "photocraft",
     "name": "PhotoCraft",
     "upstream": "a0d49de0478fbaa91733517297432e7bbe5b479f",
-    "patch_sha256": "ef4c6a91052a13385eb8475ac2f4535b0fc1263f3b1af10aed09dcb6a64a1320"
+    "patch_sha256": "fab09ba76c6654bd1dc0f04043c54cde78612c90a332b632e532f1981ac7e8e8"
   },
   {
     "repo": "vectorcraft",
     "name": "VectorCraft",
     "upstream": "81e7b915afb6750d3b86df6aa14fcd1c8de3f738",
-    "patch_sha256": "e5fcffb0c4fc4a7ae2692cdad8f1c5ada36c2cd230926dddb894915d63aea28f"
+    "patch_sha256": "6aa9b7c3451b648a6465c387245ecfdeadec6b92df77c289059f23bfd4820dbf"
   },
   {
     "repo": "filmcraft",
     "name": "FilmCraft",
     "upstream": "771b614ad4c3fbefda5d668ce4384504b8c13f6d",
-    "patch_sha256": "bc3344ab440e297d7c19447821bdc9609b03adfe70fcf14a75fd992908580e49"
+    "patch_sha256": "6839f3fdd0935d9c117cc3c69bcd5cac1ff39a1b81d7bfbd4010e89dfc631cba"
   },
   {
     "repo": "lightcraft",
     "name": "LightCraft",
     "upstream": "265248c86fa3267709aea45633d0d135331e180c",
-    "patch_sha256": "c6d442372f16befdd12e831038230c69ff4244f4e5cb9b069847c614326c6d30"
+    "patch_sha256": "b2d809983b1287f3762ffb3a7aa2aed87140d4c4fa52382bcb2976516255c30e"
   },
   {
     "repo": "printcraft",
     "name": "PrintCraft",
     "upstream": "55c581760ab389b88f08997ab235eecdf1a1b002",
-    "patch_sha256": "0e7d2963abf4b647b8ad7cb4734b671af47b71bf22ed72a9915ffb2a3796b38f"
+    "patch_sha256": "05bef9b5d6713e5fcf02f0c3dab1d8c0d17d94315fca64f0e584c595d49868f9"
   },
   {
     "repo": "effectcraft",
     "name": "EffectCraft",
     "upstream": "2fadd14f09bb064cab8f1f8fe85af601a08b6e53",
-    "patch_sha256": "8c5280f4f9dcc163337d205c701400318d3fa942137c2bdd754d1de987dbd140"
+    "patch_sha256": "a7904e6c9f517083399fe8ff89300999b47fb8a2c9cc05adf82014a446e60dcb"
   },
   {
     "repo": "designcraft",
     "name": "DesignCraft",
     "upstream": "d582277cc79c4bc9cee174b25b13fb11e6957aa5",
-    "patch_sha256": "53099b775d8662549443c442026e8acedd5c14b92f16dd7f8214b4f204e49e74"
+    "patch_sha256": "496856619c402e83e8efee7135e2b8c63f9ac33e678e520096ce6050824f90fd"
   }
 ]

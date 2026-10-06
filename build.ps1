@@ -62,8 +62,9 @@ Set-Location -LiteralPath $sourceRoot
 Invoke-Checked -Command rustup -Arguments @('toolchain','install','stable','--profile','minimal','--component','rustfmt','--component','clippy')
 Invoke-Checked -Command rustup -Arguments @('target','add','wasm32-unknown-unknown','--toolchain','stable')
 Invoke-Checked -Command cargo -Arguments @('+stable','fmt','--all')
-Invoke-Checked -Command cargo -Arguments @('+stable','generate-lockfile')
-Invoke-Checked -Command cargo -Arguments @('+stable','test','-p',$App,'chatgpt','--locked')
+# This first resolution preserves upstream's existing lockfile pins and adds only
+# dependencies required by the reviewed patch. Subsequent checks enforce that lock.
+Invoke-Checked -Command cargo -Arguments @('+stable','test','-p',$App,'chatgpt')
 $env:CRAFT_SNAPSHOT_PATH = Join-Path $recipeRoot 'panel-preview.png'
 Invoke-Checked -Command cargo -Arguments @('+stable','test','-p',$App,'chatgpt_panel_offscreen_preview','--locked','--','--ignored')
 Invoke-Checked -Command cargo -Arguments @('+stable','clippy','-p',$App,'--all-targets','--locked','--','-D','warnings')

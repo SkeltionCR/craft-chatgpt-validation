@@ -1,8 +1,8 @@
 diff --git a/apps/printcraft/Cargo.toml b/apps/printcraft/Cargo.toml
-index e021588..7c10103 100644
+index e021588..d0dcf7c 100644
 --- a/apps/printcraft/Cargo.toml
 +++ b/apps/printcraft/Cargo.toml
-@@ -27,3 +27,24 @@ fmv-macos-events = "=0.1.0"
+@@ -27,3 +27,25 @@ fmv-macos-events = "=0.1.0"
  [build-dependencies]
  # Icon + VERSIONINFO for printcraft.exe; build.rs only uses it when targeting Windows.
  winresource = "0.1"
@@ -26,6 +26,7 @@ index e021588..7c10103 100644
 +keyring = { version = "=3.6.3", default-features = false, features = ["windows-native"] }
 +
 +[target.'cfg(windows)'.dev-dependencies]
++jsonwebtoken = { version = "=10.3.0", default-features = false, features = ["rust_crypto", "use_pem"] }
 +egui_kittest = { workspace = true, features = ["eframe", "wgpu", "snapshot"] }
 diff --git a/apps/printcraft/src/main.rs b/apps/printcraft/src/main.rs
 index cf79636..282449f 100644
@@ -62,17 +63,30 @@ diff --git a/apps/printcraft/src/chatgpt.rs b/apps/printcraft/src/chatgpt.rs
 new file mode 100644
 --- /dev/null
 +++ b/apps/printcraft/src/chatgpt.rs
-@@ -0,0 +1,528 @@
+@@ -0,0 +1,900 @@
 +//! Native, optional ChatGPT connection. Credentials never enter document/UI state.
 +#![forbid(unsafe_code)]
-+use aes_gcm::{Aes256Gcm, Nonce, aead::{Aead, KeyInit}};
++use aes_gcm::{
++    Aes256Gcm, Nonce,
++    aead::{Aead, KeyInit},
++};
 +use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
 +use jsonwebtoken::{Algorithm, DecodingKey, Validation, decode, decode_header, jwk::JwkSet};
 +use reqwest::blocking::Client;
 +use serde::{Deserialize, Serialize};
 +use sha2::{Digest, Sha256};
-+use std::{collections::HashMap, io::{Read, Write}, net::{TcpListener, TcpStream}, path::PathBuf,
-+    sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}, mpsc}, time::{Duration, Instant, SystemTime, UNIX_EPOCH}};
++use std::{
++    collections::HashMap,
++    io::{Read, Write},
++    net::{TcpListener, TcpStream},
++    path::PathBuf,
++    sync::{
++        Arc, Mutex,
++        atomic::{AtomicBool, Ordering},
++        mpsc,
++    },
++    time::{Duration, Instant, SystemTime, UNIX_EPOCH},
++};
 +use url::Url;
 +
 +const APP: &str = "PrintCraft";
@@ -83,34 +97,74 @@ new file mode 100644
 +const LIMIT: u64 = 128 * 1024;
 +
 +#[derive(Clone, Default, Serialize)]
-+struct Status { last_action_ok: Option<bool>, busy: bool, connected: bool, plan_usage: bool, email: Option<String>, expires_at: Option<u64>, message: String }
++struct Status {
++    last_action_ok: Option<bool>,
++    busy: bool,
++    connected: bool,
++    plan_usage: bool,
++    email: Option<String>,
++    expires_at: Option<u64>,
++    message: String,
++}
 +#[derive(Clone, Serialize, Deserialize)]
 +struct Account {
-+    client_id: String, subject: String, email: Option<String>, id_token: String,
-+    access_token: String, refresh_token: Option<String>, scopes: Vec<String>, expires_at: u64,
++    client_id: String,
++    subject: String,
++    email: Option<String>,
++    id_token: String,
++    access_token: String,
++    refresh_token: Option<String>,
++    scopes: Vec<String>,
++    expires_at: u64,
 +}
 +#[derive(Deserialize)]
-+struct Tokens { id_token: Option<String>, access_token: String, refresh_token: Option<String>,
-+    scope: Option<String>, token_type: String, expires_in: u64 }
++struct Tokens {
++    id_token: Option<String>,
++    access_token: String,
++    refresh_token: Option<String>,
++    scope: Option<String>,
++    token_type: String,
++    expires_in: u64,
++}
 +#[derive(Clone, Deserialize)]
-+struct Claims { iat: u64, sub: String, email: Option<String>, nonce: Option<String> }
++struct Claims {
++    iat: u64,
++    sub: String,
++    email: Option<String>,
++    nonce: Option<String>,
++}
 +
-+fn now() -> Result<u64, String> { SystemTime::now().duration_since(UNIX_EPOCH).map(|n| n.as_secs()).map_err(|_| "System clock is invalid".into()) }
++fn now() -> Result<u64, String> {
++    SystemTime::now().duration_since(UNIX_EPOCH).map(|n| n.as_secs()).map_err(|_| "System clock is invalid".into())
++}
 +fn random<const N: usize>() -> Result<[u8; N], String> {
-+    let mut bytes = [0; N]; getrandom::fill(&mut bytes).map_err(|_| "Secure randomness is unavailable")?; Ok(bytes)
++    let mut bytes = [0; N];
++    getrandom::fill(&mut bytes).map_err(|_| "Secure randomness is unavailable")?;
++    Ok(bytes)
 +}
 +fn http() -> Result<Client, String> {
-+    Client::builder().timeout(Duration::from_secs(20)).redirect(reqwest::redirect::Policy::none())
-+        .user_agent(concat!("Craft-ChatGPT/", env!("CARGO_PKG_VERSION"))).build().map_err(|_| "Could not initialize HTTPS".into())
++    Client::builder()
++        .timeout(Duration::from_secs(20))
++        .redirect(reqwest::redirect::Policy::none())
++        .user_agent(concat!("Craft-ChatGPT/", env!("CARGO_PKG_VERSION")))
++        .build()
++        .map_err(|_| "Could not initialize HTTPS".into())
 +}
 +fn json_response(response: reqwest::blocking::Response) -> Result<serde_json::Value, String> {
-+    if !response.status().is_success() { return Err(format!("OpenAI request failed (HTTP {}). Reconnect or try again.", response.status().as_u16())); }
-+    let mut bytes = Vec::new(); response.take(LIMIT + 1).read_to_end(&mut bytes).map_err(|_| "Could not read OpenAI response")?;
-+    if bytes.len() as u64 > LIMIT { return Err("OpenAI response exceeded the local size limit".into()); }
++    if !response.status().is_success() {
++        return Err(format!("OpenAI request failed (HTTP {}). Reconnect or try again.", response.status().as_u16()));
++    }
++    let mut bytes = Vec::new();
++    response.take(LIMIT + 1).read_to_end(&mut bytes).map_err(|_| "Could not read OpenAI response")?;
++    if bytes.len() as u64 > LIMIT {
++        return Err("OpenAI response exceeded the local size limit".into());
++    }
 +    serde_json::from_slice(&bytes).map_err(|_| "OpenAI returned invalid JSON".into())
 +}
 +
-+struct Store { dir: PathBuf }
++struct Store {
++    dir: PathBuf,
++}
 +impl Store {
 +    fn new() -> Result<Self, String> {
 +        let dirs = directories::ProjectDirs::from("ai", "storyteller", "printcraft-chatgpt").ok_or("No user configuration directory")?;
@@ -118,7 +172,12 @@ new file mode 100644
 +    }
 +    fn lock(&self) -> Result<std::fs::File, String> {
 +        std::fs::create_dir_all(&self.dir).map_err(|_| "Could not create ChatGPT configuration directory")?;
-+        let file = std::fs::OpenOptions::new().read(true).write(true).create(true).truncate(false).open(self.dir.join("connection.lock"))
++        let file = std::fs::OpenOptions::new()
++            .read(true)
++            .write(true)
++            .create(true)
++            .truncate(false)
++            .open(self.dir.join("connection.lock"))
 +            .map_err(|_| "Could not open ChatGPT connection lock")?;
 +        fs2::FileExt::try_lock_exclusive(&file).map_err(|_| "ChatGPT credentials are in use by another instance of this app")?;
 +        Ok(file)
@@ -127,7 +186,9 @@ new file mode 100644
 +        let file = std::fs::File::open(self.dir.join(name)).map_err(|_| "Could not read ChatGPT registration metadata")?;
 +        let mut bytes = Vec::new();
 +        file.take(LIMIT + 1).read_to_end(&mut bytes).map_err(|_| "Could not read ChatGPT registration metadata")?;
-+        if bytes.len() as u64 > LIMIT { return Err("ChatGPT registration metadata is too large".into()); }
++        if bytes.len() as u64 > LIMIT {
++            return Err("ChatGPT registration metadata is too large".into());
++        }
 +        String::from_utf8(bytes).map_err(|_| "ChatGPT registration metadata is not UTF-8".into())
 +    }
 +    fn host(&self) -> Result<String, String> {
@@ -136,7 +197,9 @@ new file mode 100644
 +            let text = self.read_public("host.json")?;
 +            let id: String = serde_json::from_str(&text).map_err(|_| "ChatGPT host ID is corrupt; restore host.json before reconnecting")?;
 +            let parsed = id.strip_prefix("urn:uuid:").and_then(|x| uuid::Uuid::parse_str(x).ok()).ok_or("ChatGPT host ID is invalid")?;
-+            if parsed.is_nil() { return Err("ChatGPT host ID is invalid".into()); }
++            if parsed.is_nil() {
++                return Err("ChatGPT host ID is invalid".into());
++            }
 +            return Ok(id);
 +        }
 +        let id = format!("urn:uuid:{}", uuid::Builder::from_random_bytes(random::<16>()?).into_uuid());
@@ -148,16 +211,23 @@ new file mode 100644
 +        let key = match entry.get_secret() {
 +            Ok(key) => key,
 +            Err(keyring::Error::NoEntry) if create => {
-+                let key = random::<32>()?.to_vec(); entry.set_secret(&key).map_err(|_| "Could not protect the ChatGPT encryption key")?; key
++                let key = random::<32>()?.to_vec();
++                entry.set_secret(&key).map_err(|_| "Could not protect the ChatGPT encryption key")?;
++                key
 +            }
 +            _ => return Err("ChatGPT credential key is missing or the OS credential store is locked. No plaintext fallback is used.".into()),
 +        };
 +        Aes256Gcm::new_from_slice(&key).map_err(|_| "ChatGPT encryption key has an invalid length".into())
 +    }
 +    fn load(&self) -> Result<Option<Account>, String> {
-+        let path = self.dir.join("account.enc"); if !path.exists() { return Ok(None); }
++        let path = self.dir.join("account.enc");
++        if !path.exists() {
++            return Ok(None);
++        }
 +        let metadata = std::fs::metadata(&path).map_err(|_| "Could not inspect ChatGPT credentials")?;
-+        if metadata.len() > LIMIT { return Err("ChatGPT credential file exceeds the local size limit".into()); }
++        if metadata.len() > LIMIT {
++            return Err("ChatGPT credential file exceeds the local size limit".into());
++        }
 +        let bytes = std::fs::read(path).map_err(|_| "Could not read ChatGPT credentials")?;
 +        let nonce: [u8; 12] = bytes.get(..12).ok_or("Truncated ChatGPT credentials")?.try_into().map_err(|_| "Invalid nonce")?;
 +        let encrypted = bytes.get(12..).ok_or("Truncated ChatGPT credentials")?;
@@ -168,13 +238,17 @@ new file mode 100644
 +        let plain = serde_json::to_vec(account).map_err(|_| "Could not serialize ChatGPT credentials")?;
 +        let nonce = random::<12>()?;
 +        let encrypted = self.cipher(true)?.encrypt(&Nonce::from(nonce), plain.as_slice()).map_err(|_| "Could not encrypt ChatGPT credentials")?;
-+        let mut bytes = nonce.to_vec(); bytes.extend(encrypted);
-+        if bytes.len() as u64 > LIMIT { return Err("ChatGPT credentials exceed the local size limit".into()); }
++        let mut bytes = nonce.to_vec();
++        bytes.extend(encrypted);
++        if bytes.len() as u64 > LIMIT {
++            return Err("ChatGPT credentials exceed the local size limit".into());
++        }
 +        self.write("account.enc", &bytes)
 +    }
 +    fn write(&self, name: &str, bytes: &[u8]) -> Result<(), String> {
 +        std::fs::create_dir_all(&self.dir).map_err(|_| "Could not create ChatGPT configuration directory")?;
-+        #[cfg(unix)] {
++        #[cfg(unix)]
++        {
 +            use std::os::unix::fs::PermissionsExt;
 +            std::fs::set_permissions(&self.dir, std::fs::Permissions::from_mode(0o700)).map_err(|_| "Could not protect ChatGPT directory")?;
 +        }
@@ -183,7 +257,8 @@ new file mode 100644
 +        let mut out = atomic_write_file::AtomicWriteFile::open(&path).map_err(|_| "Could not prepare ChatGPT credential replacement")?;
 +        out.write_all(bytes).map_err(|_| "Could not write ChatGPT connection")?;
 +        out.commit().map_err(|_| "Could not atomically replace ChatGPT connection")?;
-+        #[cfg(unix)] {
++        #[cfg(unix)]
++        {
 +            use std::os::unix::fs::PermissionsExt;
 +            std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o600)).map_err(|_| "Could not protect ChatGPT file")?;
 +        }
@@ -192,7 +267,9 @@ new file mode 100644
 +    fn clear(&self) -> Result<(), String> {
 +        for name in ["account.enc", "registration.json"] {
 +            match std::fs::remove_file(self.dir.join(name)) {
-+                Ok(()) => {}, Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}, _ => return Err("Could not remove saved ChatGPT credentials".into()),
++                Ok(()) => {}
++                Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
++                _ => return Err("Could not remove saved ChatGPT credentials".into()),
 +            }
 +        }
 +        Ok(())
@@ -201,21 +278,33 @@ new file mode 100644
 +
 +fn validate_claims(token: &str, client_id: &str, nonce: Option<&str>, previous: Option<&Account>, keys: &JwkSet) -> Result<Claims, String> {
 +    let header = decode_header(token).map_err(|_| "Invalid OpenAI ID token")?;
-+    if !matches!(header.alg, Algorithm::RS256 | Algorithm::ES256) { return Err("Unsupported OpenAI ID-token algorithm".into()); }
++    if !matches!(header.alg, Algorithm::RS256 | Algorithm::ES256) {
++        return Err("Unsupported OpenAI ID-token algorithm".into());
++    }
 +    let key = keys.find(header.kid.as_deref().ok_or("ID token has no key ID")?).ok_or("OpenAI signing key was not found")?;
 +    let key = DecodingKey::from_jwk(key).map_err(|_| "Invalid OpenAI signing key")?;
 +    let mut validation = Validation::new(header.alg);
-+    validation.set_audience(&[client_id]); validation.set_issuer(&[ISSUER]); validation.set_required_spec_claims(&["sub", "exp", "iat", "iss", "aud"]);
-+    validation.leeway = 5; validation.validate_nbf = true;
++    validation.set_audience(&[client_id]);
++    validation.set_issuer(&[ISSUER]);
++    validation.set_required_spec_claims(&["sub", "exp", "iat", "iss", "aud"]);
++    validation.leeway = 5;
++    validation.validate_nbf = true;
 +    let claims = decode::<Claims>(token, &key, &validation).map_err(|_| "OpenAI ID-token signature, issuer, audience or expiry did not validate")?.claims;
-+    if claims.iat > now()?.saturating_add(5) || claims.sub.is_empty() || nonce.is_some_and(|n| claims.nonce.as_deref() != Some(n)) { return Err("OpenAI ID-token identity or nonce did not validate".into()); }
-+    if previous.is_some_and(|p| p.subject != claims.sub || p.client_id != client_id) { return Err("Sign-in returned a different account; disconnect before switching accounts".into()); }
++    if claims.iat > now()?.saturating_add(5) || claims.sub.is_empty() || nonce.is_some_and(|n| claims.nonce.as_deref() != Some(n)) {
++        return Err("OpenAI ID-token identity or nonce did not validate".into());
++    }
++    if previous.is_some_and(|p| p.subject != claims.sub || p.client_id != client_id) {
++        return Err("Sign-in returned a different account; disconnect before switching accounts".into());
++    }
 +    Ok(claims)
 +}
 +fn exchange(client: &Client, params: &[(&str, &str)], client_id: &str, nonce: Option<&str>, previous: Option<&Account>) -> Result<Account, String> {
-+    let data = json_response(client.post(format!("{ISSUER}/api/accounts/oauth/token")).form(params).send().map_err(|_| "Could not exchange ChatGPT authorization")?)?;
++    let data =
++        json_response(client.post(format!("{ISSUER}/api/accounts/oauth/token")).form(params).send().map_err(|_| "Could not exchange ChatGPT authorization")?)?;
 +    let tokens: Tokens = serde_json::from_value(data).map_err(|_| "OpenAI returned an incomplete token response")?;
-+    if !tokens.token_type.eq_ignore_ascii_case("Bearer") || tokens.access_token.is_empty() || tokens.expires_in == 0 { return Err("OpenAI returned invalid access-token metadata".into()); }
++    if !tokens.token_type.eq_ignore_ascii_case("Bearer") || tokens.access_token.is_empty() || tokens.expires_in == 0 {
++        return Err("OpenAI returned invalid access-token metadata".into());
++    }
 +    let id_token = tokens.id_token.or_else(|| previous.map(|p| p.id_token.clone())).ok_or("OpenAI did not return an ID token")?;
 +    // Refresh may omit an ID token: retain the previously verified identity in that case.
 +    let identity = if nonce.is_some() || previous.is_none() || previous.is_some_and(|p| p.id_token != id_token) {
@@ -223,113 +312,222 @@ new file mode 100644
 +        let keys = serde_json::from_value(value).map_err(|_| "OpenAI signing-key response is invalid")?;
 +        validate_claims(&id_token, client_id, nonce, previous, &keys)?
 +    } else {
-+        let p = previous.ok_or("No verified previous account")?; Claims { iat: 0, sub: p.subject.clone(), email: p.email.clone(), nonce: None }
++        let p = previous.ok_or("No verified previous account")?;
++        Claims { iat: 0, sub: p.subject.clone(), email: p.email.clone(), nonce: None }
 +    };
 +    let scopes = match tokens.scope {
 +        Some(s) => s.split_whitespace().map(str::to_owned).collect(),
 +        None if nonce.is_none() => previous.ok_or("No previous granted scopes")?.scopes.clone(),
 +        None => return Err("OpenAI did not return granted scopes".into()),
 +    };
-+    Ok(Account { client_id: client_id.into(), subject: identity.sub, email: identity.email, id_token,
-+        access_token: tokens.access_token, refresh_token: tokens.refresh_token.or_else(|| previous.and_then(|p| p.refresh_token.clone())),
-+        scopes, expires_at: now()?.checked_add(tokens.expires_in).ok_or("Invalid token expiry")? })
++    Ok(Account {
++        client_id: client_id.into(),
++        subject: identity.sub,
++        email: identity.email,
++        id_token,
++        access_token: tokens.access_token,
++        refresh_token: tokens.refresh_token.or_else(|| previous.and_then(|p| p.refresh_token.clone())),
++        scopes,
++        expires_at: now()?.checked_add(tokens.expires_in).ok_or("Invalid token expiry")?,
++    })
 +}
 +
 +fn authorization(host: &str, redirect: &str, state: &str, nonce: &str, verifier: &str, previous: Option<&Account>) -> Result<Url, String> {
 +    let mut url = Url::parse(&format!("{ISSUER}/api/accounts/authorize")).map_err(|_| "Invalid authorization URL")?;
 +    let challenge = URL_SAFE_NO_PAD.encode(Sha256::digest(verifier.as_bytes()));
 +    let mut q = url.query_pairs_mut();
-+    q.extend_pairs([("client_id", previous.map_or("dynamic_agent_client", |p| p.client_id.as_str())),
-+        ("ext_agent_host_id", host), ("response_type", "code"), ("redirect_uri", redirect), ("scope", SCOPES),
-+        ("resource", RESOURCE), ("state", state), ("nonce", nonce), ("code_challenge_method", "S256"), ("code_challenge", &challenge)]);
-+    if let Some(p) = previous { q.append_pair("id_token_hint", &p.id_token); }
-+    else { q.append_pair("agent_name_hint", APP); }
-+    drop(q); Ok(url)
++    q.extend_pairs([
++        ("client_id", previous.map_or("dynamic_agent_client", |p| p.client_id.as_str())),
++        ("ext_agent_host_id", host),
++        ("response_type", "code"),
++        ("redirect_uri", redirect),
++        ("scope", SCOPES),
++        ("resource", RESOURCE),
++        ("state", state),
++        ("nonce", nonce),
++        ("code_challenge_method", "S256"),
++        ("code_challenge", &challenge),
++    ]);
++    if let Some(p) = previous {
++        q.append_pair("id_token_hint", &p.id_token);
++    } else {
++        q.append_pair("agent_name_hint", APP);
++    }
++    drop(q);
++    Ok(url)
 +}
 +fn callback(target: &str, state: &str, previous: Option<&Account>) -> Result<(String, String), String> {
-+    if !target.starts_with("/auth/callback?") { return Err("Not an OAuth callback".into()); }
++    if !target.starts_with("/auth/callback?") {
++        return Err("Not an OAuth callback".into());
++    }
 +    let url = Url::parse(&format!("http://127.0.0.1{target}")).map_err(|_| "Invalid OAuth callback")?;
 +    let mut values = HashMap::new();
-+    for (k, v) in url.query_pairs() { if values.insert(k.into_owned(), v.into_owned()).is_some() { return Err("Duplicate OAuth callback parameter".into()); } }
++    for (k, v) in url.query_pairs() {
++        if values.insert(k.into_owned(), v.into_owned()).is_some() {
++            return Err("Duplicate OAuth callback parameter".into());
++        }
++    }
 +    let returned = values.get("state").ok_or("OAuth callback has no state")?;
-+    if returned.len() != state.len() || returned.bytes().zip(state.bytes()).fold(0u8, |a, (x, y)| a | (x ^ y)) != 0 { return Err("OAuth callback state did not match".into()); }
-+    if values.contains_key("error") { return Err("ChatGPT authorization was declined or failed".into()); }
++    if returned.len() != state.len() || returned.bytes().zip(state.bytes()).fold(0u8, |a, (x, y)| a | (x ^ y)) != 0 {
++        return Err("OAuth callback state did not match".into());
++    }
++    if values.contains_key("error") {
++        return Err("ChatGPT authorization was declined or failed".into());
++    }
 +    let id = match (previous, values.get("client_id")) {
-+        (Some(p), Some(id)) if id == &p.client_id => id.clone(), (Some(p), None) => p.client_id.clone(),
-+        (None, Some(id)) if id.starts_with("oaiapp_") => id.clone(), _ => return Err("OAuth callback has a missing or unexpected client ID".into()),
++        (Some(p), Some(id)) if id == &p.client_id => id.clone(),
++        (Some(p), None) => p.client_id.clone(),
++        (None, Some(id)) if id.starts_with("oaiapp_") => id.clone(),
++        _ => return Err("OAuth callback has a missing or unexpected client ID".into()),
 +    };
-+    let code = values.get("code").filter(|x| !x.is_empty()).ok_or("OAuth callback has no code")?.clone(); Ok((id, code))
++    let code = values.get("code").filter(|x| !x.is_empty()).ok_or("OAuth callback has no code")?.clone();
++    Ok((id, code))
 +}
 +fn request_target(stream: &mut TcpStream, host: &str) -> Result<String, String> {
 +    stream.set_read_timeout(Some(Duration::from_secs(2))).map_err(|_| "Could not set callback timeout")?;
 +    stream.set_write_timeout(Some(Duration::from_secs(2))).map_err(|_| "Could not set callback timeout")?;
-+    let mut data = Vec::new(); let mut chunk = [0; 512];
++    let mut data = Vec::new();
++    let mut chunk = [0; 512];
 +    while data.len() < 16 * 1024 {
-+        let n = stream.read(&mut chunk).map_err(|_| "Could not read callback")?; if n == 0 { break; }
++        let n = stream.read(&mut chunk).map_err(|_| "Could not read callback")?;
++        if n == 0 {
++            break;
++        }
 +        data.extend_from_slice(chunk.get(..n).ok_or("Invalid callback read")?);
-+        if data.windows(4).any(|x| x == b"\r\n\r\n") { break; }
++        if data.windows(4).any(|x| x == b"\r\n\r\n") {
++            break;
++        }
 +    }
-+    if !data.windows(4).any(|x| x == b"\r\n\r\n") { return Err("Incomplete callback headers".into()); }
-+    if data.len() >= 16 * 1024 { return Err("Callback headers are too large".into()); }
++    if !data.windows(4).any(|x| x == b"\r\n\r\n") {
++        return Err("Incomplete callback headers".into());
++    }
++    if data.len() >= 16 * 1024 {
++        return Err("Callback headers are too large".into());
++    }
 +    let text = std::str::from_utf8(&data).map_err(|_| "Callback is not UTF-8")?;
-+    let mut lines = text.split("\r\n"); let mut parts = lines.next().ok_or("Callback has no request line")?.split_whitespace();
-+    if parts.next() != Some("GET") { return Err("Callback must use GET".into()); }
++    let mut lines = text.split("\r\n");
++    let mut parts = lines.next().ok_or("Callback has no request line")?.split_whitespace();
++    if parts.next() != Some("GET") {
++        return Err("Callback must use GET".into());
++    }
 +    let target = parts.next().ok_or("Callback has no path")?;
 +    if !matches!(parts.next(), Some("HTTP/1.1" | "HTTP/1.0")) || parts.next().is_some() {
 +        return Err("Invalid callback request line".into());
 +    }
 +    let hosts: Vec<_> = lines.filter_map(|line| line.split_once(':')).filter(|(k, _)| k.eq_ignore_ascii_case("host")).collect();
-+    if hosts.len() != 1 || hosts.first().is_none_or(|(_, v)| v.trim() != host) { return Err("Invalid callback host".into()); }
++    if hosts.len() != 1 || hosts.first().is_none_or(|(_, v)| v.trim() != host) {
++        return Err("Invalid callback host".into());
++    }
 +    Ok(target.to_owned())
 +}
 +fn reply(stream: &mut TcpStream, code: &str, message: &str) {
-+    let text = format!("HTTP/1.1 {code}\r\nContent-Type: text/plain; charset=utf-8\r\nCache-Control: no-store\r\nReferrer-Policy: no-referrer\r\nConnection: close\r\nContent-Length: {}\r\n\r\n{message}", message.len());
++    let text = format!(
++        "HTTP/1.1 {code}\r\nContent-Type: text/plain; charset=utf-8\r\nCache-Control: no-store\r\nReferrer-Policy: no-referrer\r\nConnection: close\r\nContent-Length: {}\r\n\r\n{message}",
++        message.len()
++    );
 +    // Browser disconnection must not invalidate an otherwise validated OAuth callback.
 +    let _ = stream.write_all(text.as_bytes());
 +}
 +fn sign_in(store: &Store, previous: Option<&Account>, cancelled: &AtomicBool) -> Result<Account, String> {
 +    let _cipher = store.cipher(true)?;
-+    let host = store.host()?; let listener = TcpListener::bind(("127.0.0.1", 0)).map_err(|_| "Could not bind the local ChatGPT callback")?;
++    let host = store.host()?;
++    let listener = TcpListener::bind(("127.0.0.1", 0)).map_err(|_| "Could not bind the local ChatGPT callback")?;
 +    listener.set_nonblocking(true).map_err(|_| "Could not configure ChatGPT callback")?;
 +    let address = listener.local_addr().map_err(|_| "Could not read callback address")?;
-+    let redirect = format!("http://{address}/auth/callback"); let state = URL_SAFE_NO_PAD.encode(random::<32>()?);
-+    let nonce = URL_SAFE_NO_PAD.encode(random::<32>()?); let verifier = URL_SAFE_NO_PAD.encode(random::<32>()?);
++    let redirect = format!("http://{address}/auth/callback");
++    let state = URL_SAFE_NO_PAD.encode(random::<32>()?);
++    let nonce = URL_SAFE_NO_PAD.encode(random::<32>()?);
++    let verifier = URL_SAFE_NO_PAD.encode(random::<32>()?);
 +    let registration = store.dir.join("registration.json");
 +    let retained: Option<String> = if previous.is_none() && registration.exists() {
 +        let text = store.read_public("registration.json")?;
 +        let id: String = serde_json::from_str(&text).map_err(|_| "Saved ChatGPT registration is invalid")?;
-+        if !id.starts_with("oaiapp_") { return Err("Saved ChatGPT registration is invalid".into()); } Some(id)
-+    } else { None };
++        if !id.starts_with("oaiapp_") {
++            return Err("Saved ChatGPT registration is invalid".into());
++        }
++        Some(id)
++    } else {
++        None
++    };
 +    let mut url = authorization(&host, &redirect, &state, &nonce, &verifier, previous)?;
 +    if let Some(id) = retained.as_deref() {
-+        let pairs: Vec<(String, String)> = url.query_pairs().filter(|(k, _)| k != "client_id" && k != "agent_name_hint").map(|(k, v)| (k.into_owned(), v.into_owned())).collect();
-+        url.set_query(None); url.query_pairs_mut().extend_pairs(pairs).append_pair("client_id", id);
++        let pairs: Vec<(String, String)> =
++            url.query_pairs().filter(|(k, _)| k != "client_id" && k != "agent_name_hint").map(|(k, v)| (k.into_owned(), v.into_owned())).collect();
++        url.set_query(None);
++        url.query_pairs_mut().extend_pairs(pairs).append_pair("client_id", id);
 +    }
-+    if cancelled.load(Ordering::SeqCst) { return Err("ChatGPT sign-in cancelled".into()); }
++    if cancelled.load(Ordering::SeqCst) {
++        return Err("ChatGPT sign-in cancelled".into());
++    }
 +    open::that(url.as_str()).map_err(|_| "Could not open the system browser")?;
 +    let deadline = Instant::now() + Duration::from_secs(180);
 +    while Instant::now() < deadline {
-+        if cancelled.load(Ordering::SeqCst) { return Err("ChatGPT sign-in cancelled".into()); }
++        if cancelled.load(Ordering::SeqCst) {
++            return Err("ChatGPT sign-in cancelled".into());
++        }
 +        match listener.accept() {
 +            Ok((mut stream, _)) => {
-+                let target = match request_target(&mut stream, &address.to_string()) { Ok(t) => t, Err(_) => { reply(&mut stream, "400 Bad Request", "Invalid callback request."); continue; } };
++                let target = match request_target(&mut stream, &address.to_string()) {
++                    Ok(t) => t,
++                    Err(_) => {
++                        reply(&mut stream, "400 Bad Request", "Invalid callback request.");
++                        continue;
++                    }
++                };
 +                // Stray browser requests and forged states do not consume the active attempt.
 +                let checked = callback(&target, &state, previous);
-+                if checked.as_ref().is_err_and(|e| e == "OAuth callback state did not match" || e == "Not an OAuth callback" || e == "OAuth callback has no state" || e == "Duplicate OAuth callback parameter") {
-+                    reply(&mut stream, "400 Bad Request", "This request does not belong to the pending sign-in."); continue;
++                if checked.as_ref().is_err_and(|e| {
++                    e == "OAuth callback state did not match"
++                        || e == "Not an OAuth callback"
++                        || e == "OAuth callback has no state"
++                        || e == "Duplicate OAuth callback parameter"
++                }) {
++                    reply(&mut stream, "400 Bad Request", "This request does not belong to the pending sign-in.");
++                    continue;
 +                }
 +                let checked = if retained.is_some() && previous.is_none() {
 +                    // Returning registration callbacks may omit client_id. Bind it to the pending request.
-+                    let pending = Account { client_id: retained.clone().ok_or("Missing pending registration")?, subject: String::new(), email: None,
-+                        id_token: String::new(), access_token: String::new(), refresh_token: None, scopes: vec![], expires_at: 0 };
++                    let pending = Account {
++                        client_id: retained.clone().ok_or("Missing pending registration")?,
++                        subject: String::new(),
++                        email: None,
++                        id_token: String::new(),
++                        access_token: String::new(),
++                        refresh_token: None,
++                        scopes: vec![],
++                        expires_at: 0,
++                    };
 +                    callback(&target, &state, Some(&pending))
-+                } else { checked };
-+                let (client_id, code) = match checked { Ok(x) => x, Err(e) => { reply(&mut stream, "400 Bad Request", "ChatGPT authorization failed. Return to the app."); return Err(e); } };
++                } else {
++                    checked
++                };
++                let (client_id, code) = match checked {
++                    Ok(x) => x,
++                    Err(e) => {
++                        reply(&mut stream, "400 Bad Request", "ChatGPT authorization failed. Return to the app.");
++                        return Err(e);
++                    }
++                };
 +                store.write("registration.json", &serde_json::to_vec(&client_id).map_err(|_| "Could not save issued ChatGPT client ID")?)?;
 +                reply(&mut stream, "200 OK", "Authorization received. Return to the app to check connection status.");
-+                let account = exchange(&http()?, &[("grant_type", "authorization_code"), ("client_id", &client_id), ("code", &code),
-+                    ("code_verifier", &verifier), ("redirect_uri", &redirect), ("resource", RESOURCE)], &client_id, Some(&nonce), previous)?;
-+                if cancelled.load(Ordering::SeqCst) { return Err("ChatGPT sign-in cancelled".into()); } return Ok(account);
++                let account = exchange(
++                    &http()?,
++                    &[
++                        ("grant_type", "authorization_code"),
++                        ("client_id", &client_id),
++                        ("code", &code),
++                        ("code_verifier", &verifier),
++                        ("redirect_uri", &redirect),
++                        ("resource", RESOURCE),
++                    ],
++                    &client_id,
++                    Some(&nonce),
++                    previous,
++                )?;
++                if cancelled.load(Ordering::SeqCst) {
++                    return Err("ChatGPT sign-in cancelled".into());
++                }
++                return Ok(account);
 +            }
 +            Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => std::thread::sleep(Duration::from_millis(50)),
 +            Err(_) => return Err("ChatGPT callback listener failed".into()),
@@ -343,48 +541,94 @@ new file mode 100644
 +        let discovery = json_response(client.get(format!("{ISSUER}/.well-known/openid-configuration")).send().map_err(|_| "Discovery failed")?)?;
 +        let endpoint = discovery.get("revocation_endpoint").and_then(serde_json::Value::as_str).ok_or("No revocation endpoint")?;
 +        let endpoint = Url::parse(endpoint).map_err(|_| "Invalid revocation endpoint")?;
-+        if endpoint.origin().ascii_serialization() != ISSUER { return Err("Revocation origin did not match".into()); }
++        if endpoint.origin().ascii_serialization() != ISSUER {
++            return Err("Revocation origin did not match".into());
++        }
 +        let token = account.refresh_token.as_deref().unwrap_or(&account.access_token);
 +        let hint = if account.refresh_token.is_some() { "refresh_token" } else { "access_token" };
-+        let response = client.post(endpoint).form(&[("client_id", account.client_id.as_str()), ("token", token), ("token_type_hint", hint)]).send().map_err(|_| "Revocation failed")?;
++        let response = client
++            .post(endpoint)
++            .form(&[("client_id", account.client_id.as_str()), ("token", token), ("token_type_hint", hint)])
++            .send()
++            .map_err(|_| "Revocation failed")?;
 +        if response.status().is_success() { Ok(()) } else { Err("Revocation failed".into()) }
 +    })();
-+    let result: Result<(), String> = result; result.is_ok()
++    let result: Result<(), String> = result;
++    result.is_ok()
 +}
 +fn snapshot(account: Option<&Account>, message: String) -> Status {
 +    let connected = account.is_some_and(|a| now().is_ok_and(|n| a.expires_at > n));
-+    Status { last_action_ok: None, busy: false, connected, plan_usage: connected && account.is_some_and(|a| a.scopes.iter().any(|s| s == "chatgpt.tokens.use.direct") && a.scopes.iter().any(|s| s == "resource.invoke")),
-+        email: account.and_then(|a| a.email.clone()), expires_at: account.map(|a| a.expires_at), message }
++    Status {
++        last_action_ok: None,
++        busy: false,
++        connected,
++        plan_usage: connected
++            && account.is_some_and(|a| a.scopes.iter().any(|s| s == "chatgpt.tokens.use.direct") && a.scopes.iter().any(|s| s == "resource.invoke")),
++        email: account.and_then(|a| a.email.clone()),
++        expires_at: account.map(|a| a.expires_at),
++        message,
++    }
 +}
 +
-+struct Runtime { status: Arc<Mutex<Status>>, sender: mpsc::SyncSender<String>, cancel: Arc<AtomicBool> }
++struct Runtime {
++    status: Arc<Mutex<Status>>,
++    sender: mpsc::SyncSender<String>,
++    cancel: Arc<AtomicBool>,
++}
 +impl Runtime {
 +    fn new() -> Self {
 +        let status = Arc::new(Mutex::new(Status { busy: true, message: "Loading ChatGPT connection…".into(), ..Default::default() }));
-+        let cancel = Arc::new(AtomicBool::new(false)); let (sender, rx) = mpsc::sync_channel::<String>(1);
-+        let shared = status.clone(); let cancelled = cancel.clone();
++        let cancel = Arc::new(AtomicBool::new(false));
++        let (sender, rx) = mpsc::sync_channel::<String>(1);
++        let shared = status.clone();
++        let cancelled = cancel.clone();
 +        let result = std::thread::Builder::new().name("chatgpt-connection".into()).spawn(move || {
 +            let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-+                let store = Store::new()?; let _lock = store.lock()?;
-+                let (mut account, mut load_error) = match store.load() { Ok(a) => (a, None), Err(e) => (None, Some(e)) };
-+                *shared.lock().unwrap_or_else(std::sync::PoisonError::into_inner) = snapshot(account.as_ref(), load_error.clone().unwrap_or_else(|| "ChatGPT connection is optional. No AI requests run automatically.".into()));
++                let store = Store::new()?;
++                let _lock = store.lock()?;
++                let (mut account, mut load_error) = match store.load() {
++                    Ok(a) => (a, None),
++                    Err(e) => (None, Some(e)),
++                };
++                *shared.lock().unwrap_or_else(std::sync::PoisonError::into_inner) = snapshot(
++                    account.as_ref(),
++                    load_error.clone().unwrap_or_else(|| "ChatGPT connection is optional. No AI requests run automatically.".into()),
++                );
 +                while let Ok(action) = rx.recv() {
 +                    let result = match action.as_str() {
-+                        "sign_in" if load_error.is_some() => Err("Existing credentials could not be read. Disconnect explicitly before starting a new registration.".into()),
++                        "sign_in" if load_error.is_some() => {
++                            Err("Existing credentials could not be read. Disconnect explicitly before starting a new registration.".into())
++                        }
 +                        "sign_in" => sign_in(&store, account.as_ref(), &cancelled).and_then(|new| {
-+                            if cancelled.load(Ordering::SeqCst) { return Err("ChatGPT sign-in cancelled".into()); }
-+                            store.save(&new)?; account = Some(new); Ok("ChatGPT identity verified and connection saved.".to_owned())
++                            if cancelled.load(Ordering::SeqCst) {
++                                return Err("ChatGPT sign-in cancelled".into());
++                            }
++                            store.save(&new)?;
++                            account = Some(new);
++                            Ok("ChatGPT identity verified and connection saved.".to_owned())
 +                        }),
 +                        "refresh" => (|| {
 +                            let old = account.as_ref().ok_or("No saved ChatGPT account")?;
 +                            let token = old.refresh_token.as_deref().ok_or("No refresh token; reconnect with ChatGPT")?;
-+                            let new = exchange(&http()?, &[("grant_type", "refresh_token"), ("client_id", &old.client_id), ("refresh_token", token), ("resource", RESOURCE)], &old.client_id, None, Some(old))?;
-+                            store.save(&new)?; account = Some(new); Ok("ChatGPT credentials renewed.".to_owned())
++                            let new = exchange(
++                                &http()?,
++                                &[("grant_type", "refresh_token"), ("client_id", &old.client_id), ("refresh_token", token), ("resource", RESOURCE)],
++                                &old.client_id,
++                                None,
++                                Some(old),
++                            )?;
++                            store.save(&new)?;
++                            account = Some(new);
++                            Ok("ChatGPT credentials renewed.".to_owned())
 +                        })(),
 +                        "disconnect" => store.clear().map(|()| {
 +                            let unreadable = load_error.take().is_some();
 +                            let revoked = account.take().as_ref().map_or(!unreadable, revoke);
-+                            if revoked { "ChatGPT disconnected.".into() } else { "Disconnected locally. Remote revocation was not confirmed; remove this app in ChatGPT Settings → Usage.".into() }
++                            if revoked {
++                                "ChatGPT disconnected.".into()
++                            } else {
++                                "Disconnected locally. Remote revocation was not confirmed; remove this app in ChatGPT Settings → Usage.".into()
++                            }
 +                        }),
 +                        _ => Err("Unknown ChatGPT connection command".into()),
 +                    };
@@ -395,76 +639,171 @@ new file mode 100644
 +                }
 +                Ok::<(), String>(())
 +            }));
-+            let issue = match outcome { Ok(Err(e)) => Some(e), Err(_) => Some("ChatGPT connection worker failed. Your document was not changed.".into()), _ => None };
-+            if let Some(message) = issue { *shared.lock().unwrap_or_else(std::sync::PoisonError::into_inner) = Status { message, last_action_ok: Some(false), ..Default::default() }; }
++            let issue = match outcome {
++                Ok(Err(e)) => Some(e),
++                Err(_) => Some("ChatGPT connection worker failed. Your document was not changed.".into()),
++                _ => None,
++            };
++            if let Some(message) = issue {
++                *shared.lock().unwrap_or_else(std::sync::PoisonError::into_inner) = Status { message, last_action_ok: Some(false), ..Default::default() };
++            }
 +        });
-+        if result.is_err() { *status.lock().unwrap_or_else(std::sync::PoisonError::into_inner) = Status { message: "Could not start ChatGPT connection worker".into(), last_action_ok: Some(false), ..Default::default() }; }
++        if result.is_err() {
++            *status.lock().unwrap_or_else(std::sync::PoisonError::into_inner) =
++                Status { message: "Could not start ChatGPT connection worker".into(), last_action_ok: Some(false), ..Default::default() };
++        }
 +        Self { status, sender, cancel }
 +    }
 +    fn status(&self) -> Status {
 +        let mut s = self.status.lock().unwrap_or_else(std::sync::PoisonError::into_inner).clone();
-+        if s.expires_at.is_some_and(|expiry| now().map_or(true, |n| n >= expiry)) { s.connected = false; s.plan_usage = false; }
++        if s.expires_at.is_some_and(|expiry| now().map_or(true, |n| n >= expiry)) {
++            s.connected = false;
++            s.plan_usage = false;
++        }
 +        s
 +    }
 +    fn dispatch(&self, action: &str) {
 +        let mut status = self.status.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
-+        if status.busy { return; } self.cancel.store(false, Ordering::SeqCst); status.busy = true; status.last_action_ok = None;
-+        status.message = match self.sender.try_send(action.into()) { Ok(()) => "Waiting for ChatGPT…".into(), Err(_) => { status.busy = false; status.last_action_ok = Some(false); "ChatGPT connection worker is unavailable".into() } };
++        if status.busy {
++            return;
++        }
++        self.cancel.store(false, Ordering::SeqCst);
++        status.busy = true;
++        status.last_action_ok = None;
++        status.message = match self.sender.try_send(action.into()) {
++            Ok(()) => "Waiting for ChatGPT…".into(),
++            Err(_) => {
++                status.busy = false;
++                status.last_action_ok = Some(false);
++                "ChatGPT connection worker is unavailable".into()
++            }
++        };
 +    }
 +}
-+impl Drop for Runtime { fn drop(&mut self) { self.cancel.store(true, Ordering::SeqCst); } }
++impl Drop for Runtime {
++    fn drop(&mut self) {
++        self.cancel.store(true, Ordering::SeqCst);
++    }
++}
 +
 +/// Desktop-only decoration: forward every App lifecycle hook to the original editor.
-+pub struct ConnectedApp<A> { inner: A, runtime: Runtime, panel: bool }
-+pub fn wrap<A: eframe::App>(inner: A) -> ConnectedApp<A> { ConnectedApp { inner, runtime: Runtime::new(), panel: false } }
++pub struct ConnectedApp<A> {
++    inner: A,
++    runtime: Runtime,
++    panel: bool,
++}
++pub fn wrap<A: eframe::App>(inner: A) -> ConnectedApp<A> {
++    ConnectedApp { inner, runtime: Runtime::new(), panel: false }
++}
 +impl<A: eframe::App> eframe::App for ConnectedApp<A> {
-+    fn logic(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) { self.inner.logic(ctx, frame); }
++    fn logic(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
++        self.inner.logic(ctx, frame);
++    }
 +    fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
-+        let ctx = ui.ctx().clone(); self.inner.ui(ui, frame);
-+        egui::Area::new(egui::Id::new("chatgpt.connection.button")).anchor(egui::Align2::RIGHT_BOTTOM, [-12.0, -12.0]).order(egui::Order::Foreground).show(&ctx, |ui| {
-+            if ui.button("ChatGPT connection…").clicked() { self.panel = true; }
-+        });
-+        if !self.panel { return; }
++        let ctx = ui.ctx().clone();
++        self.inner.ui(ui, frame);
++        egui::Area::new(egui::Id::new("chatgpt.connection.button")).anchor(egui::Align2::RIGHT_BOTTOM, [-12.0, -12.0]).order(egui::Order::Foreground).show(
++            &ctx,
++            |ui| {
++                if ui.button("ChatGPT connection…").clicked() {
++                    self.panel = true;
++                }
++            },
++        );
++        if !self.panel {
++            return;
++        }
 +        let status = self.runtime.status();
 +        egui::Window::new(format!("{APP} · ChatGPT")).id(egui::Id::new("chatgpt.connection")).open(&mut self.panel).resizable(false).show(&ctx, |ui| {
 +            ui.label("Connect your ChatGPT account");
 +            ui.label("This connects your account and requests optional plan usage. It does not run AI or read your ChatGPT conversations.");
-+            if let Some(email) = &status.email { ui.label(email); }
++            if let Some(email) = &status.email {
++                ui.label(email);
++            }
 +            ui.label(if status.connected { "Connected" } else { "Disconnected or session expired" });
-+            if status.plan_usage { ui.label("ChatGPT plan permission granted. AI editing is not implemented in this change."); }
++            if status.plan_usage {
++                ui.label("ChatGPT plan permission granted. AI editing is not implemented in this change.");
++            }
 +            ui.label(&status.message);
 +            ui.add_enabled_ui(!status.busy, |ui| {
-+                if ui.button("Continue with ChatGPT").clicked() { self.runtime.dispatch("sign_in"); }
-+                if status.expires_at.is_some() && ui.button("Renew connection").clicked() { self.runtime.dispatch("refresh"); }
-+                if ui.button("Disconnect").clicked() { self.runtime.dispatch("disconnect"); }
++                if ui.button("Continue with ChatGPT").clicked() {
++                    self.runtime.dispatch("sign_in");
++                }
++                if status.expires_at.is_some() && ui.button("Renew connection").clicked() {
++                    self.runtime.dispatch("refresh");
++                }
++                if ui.button("Disconnect").clicked() {
++                    self.runtime.dispatch("disconnect");
++                }
 +            });
-+            if status.busy { ui.spinner(); if ui.button("Cancel sign-in").clicked() { self.runtime.cancel.store(true, Ordering::SeqCst); } ctx.request_repaint_after(Duration::from_millis(100)); }
++            if status.busy {
++                ui.spinner();
++                if ui.button("Cancel sign-in").clicked() {
++                    self.runtime.cancel.store(true, Ordering::SeqCst);
++                }
++                ctx.request_repaint_after(Duration::from_millis(100));
++            }
 +            ui.hyperlink_to("Manage usage in ChatGPT", "https://chatgpt.com/settings/usage");
 +        });
 +    }
-+    fn save(&mut self, storage: &mut dyn eframe::Storage) { self.inner.save(storage); }
-+    fn on_exit(&mut self) { self.runtime.cancel.store(true, Ordering::SeqCst); self.inner.on_exit(); }
-+    fn auto_save_interval(&self) -> Duration { self.inner.auto_save_interval() }
-+    fn clear_color(&self, visuals: &egui::Visuals) -> [f32; 4] { self.inner.clear_color(visuals) }
-+    fn persist_egui_memory(&self) -> bool { self.inner.persist_egui_memory() }
-+    fn raw_input_hook(&mut self, ctx: &egui::Context, raw: &mut egui::RawInput) { self.inner.raw_input_hook(ctx, raw); }
++    fn save(&mut self, storage: &mut dyn eframe::Storage) {
++        self.inner.save(storage);
++    }
++    fn on_exit(&mut self) {
++        self.runtime.cancel.store(true, Ordering::SeqCst);
++        self.inner.on_exit();
++    }
++    fn auto_save_interval(&self) -> Duration {
++        self.inner.auto_save_interval()
++    }
++    fn clear_color(&self, visuals: &egui::Visuals) -> [f32; 4] {
++        self.inner.clear_color(visuals)
++    }
++    fn persist_egui_memory(&self) -> bool {
++        self.inner.persist_egui_memory()
++    }
++    fn raw_input_hook(&mut self, ctx: &egui::Context, raw: &mut egui::RawInput) {
++        self.inner.raw_input_hook(ctx, raw);
++    }
 +}
 +
 +/// Read-only status and explicit auth commands for headless automation. Never emit tokens.
 +pub fn cli() -> Option<Result<(), String>> {
 +    let argument = std::env::args().nth(1)?;
-+    let action = match argument.as_str() { "--chatgpt-status" => None, "--chatgpt-sign-in" => Some("sign_in"), "--chatgpt-disconnect" => Some("disconnect"), "--chatgpt-refresh" => Some("refresh"), _ => return None };
++    let action = match argument.as_str() {
++        "--chatgpt-status" => None,
++        "--chatgpt-sign-in" => Some("sign_in"),
++        "--chatgpt-disconnect" => Some("disconnect"),
++        "--chatgpt-refresh" => Some("refresh"),
++        _ => return None,
++    };
 +    Some((|| {
-+        let runtime = Runtime::new(); let deadline = Instant::now() + Duration::from_secs(240);
-+        while runtime.status().busy && Instant::now() < deadline { std::thread::sleep(Duration::from_millis(50)); }
-+        if runtime.status().busy { return Err("ChatGPT connection initialization timed out".into()); }
-+        if runtime.status().last_action_ok == Some(false) { return Err(runtime.status().message); }
-+        if let Some(action) = action { runtime.dispatch(action); }
-+        while runtime.status().busy && Instant::now() < deadline { std::thread::sleep(Duration::from_millis(50)); }
-+        if runtime.status().busy { return Err("ChatGPT command timed out".into()); }
++        let runtime = Runtime::new();
++        let deadline = Instant::now() + Duration::from_secs(240);
++        while runtime.status().busy && Instant::now() < deadline {
++            std::thread::sleep(Duration::from_millis(50));
++        }
++        if runtime.status().busy {
++            return Err("ChatGPT connection initialization timed out".into());
++        }
++        if runtime.status().last_action_ok == Some(false) {
++            return Err(runtime.status().message);
++        }
++        if let Some(action) = action {
++            runtime.dispatch(action);
++        }
++        while runtime.status().busy && Instant::now() < deadline {
++            std::thread::sleep(Duration::from_millis(50));
++        }
++        if runtime.status().busy {
++            return Err("ChatGPT command timed out".into());
++        }
 +        let status = runtime.status();
-+        println!("{}", serde_json::to_string(&status).map_err(|_| "Could not serialize connection status")?);
-+        if status.last_action_ok == Some(false) { return Err(status.message); }
++        let output = serde_json::to_string(&status).map_err(|_| "Could not serialize connection status")?;
++        writeln!(std::io::stdout().lock(), "{output}").map_err(|_| "Could not write ChatGPT command status")?;
++        if status.last_action_ok == Some(false) {
++            return Err(status.message);
++        }
 +        Ok(())
 +    })())
 +}
@@ -472,34 +811,59 @@ new file mode 100644
 +#[cfg(test)]
 +mod tests {
 +    use super::*;
-+    #[test] fn pkce_rfc7636_vector_and_new_registration() {
-+        let url = authorization("urn:uuid:test", "http://127.0.0.1:1455/auth/callback", "state", "nonce", "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk", None).unwrap();
++    #[test]
++    fn pkce_rfc7636_vector_and_new_registration() {
++        let url = authorization("urn:uuid:test", "http://127.0.0.1:1455/auth/callback", "state", "nonce", "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk", None)
++            .unwrap();
 +        let q: HashMap<_, _> = url.query_pairs().collect();
 +        assert_eq!(q.get("code_challenge").unwrap(), "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM");
-+        assert_eq!(q.get("client_id").unwrap(), "dynamic_agent_client"); assert_eq!(q.get("agent_name_hint").unwrap(), APP);
++        assert_eq!(q.get("client_id").unwrap(), "dynamic_agent_client");
++        assert_eq!(q.get("agent_name_hint").unwrap(), APP);
 +        assert_eq!(q.get("redirect_uri").unwrap(), "http://127.0.0.1:1455/auth/callback");
 +    }
-+    #[test] fn callback_requires_state_code_and_issued_client() {
++    #[test]
++    fn callback_requires_state_code_and_issued_client() {
 +        assert!(callback("/auth/callback?state=wrong&code=x&client_id=oaiapp_x", "right", None).is_err());
 +        assert!(callback("/auth/callback?state=s&code=x&client_id=dynamic_agent_client", "s", None).is_err());
 +        assert!(callback("/auth/callback?state=s&state=s&code=x&client_id=oaiapp_x", "s", None).is_err());
 +        assert!(callback("/auth/callback?state=s&error=access_denied", "s", None).is_err());
 +        assert_eq!(callback("/auth/callback?state=s&code=x&client_id=oaiapp_x", "s", None).unwrap(), ("oaiapp_x".into(), "x".into()));
 +    }
-+    fn account() -> Account { Account { client_id: "oaiapp_test".into(), subject: "sub".into(), email: Some("a@example.test".into()), id_token: "secret-id".into(), access_token: "secret-access".into(), refresh_token: Some("secret-refresh".into()), scopes: vec!["chatgpt.tokens.use.direct".into(), "resource.invoke".into()], expires_at: u64::MAX } }
-+    #[test] fn returning_callback_cannot_replace_client() {
-+        let a = account(); assert!(callback("/auth/callback?state=s&code=x&client_id=oaiapp_other", "s", Some(&a)).is_err());
++    fn account() -> Account {
++        Account {
++            client_id: "oaiapp_test".into(),
++            subject: "sub".into(),
++            email: Some("a@example.test".into()),
++            id_token: "secret-id".into(),
++            access_token: "secret-access".into(),
++            refresh_token: Some("secret-refresh".into()),
++            scopes: vec!["chatgpt.tokens.use.direct".into(), "resource.invoke".into()],
++            expires_at: u64::MAX,
++        }
++    }
++    #[test]
++    fn returning_callback_cannot_replace_client() {
++        let a = account();
++        assert!(callback("/auth/callback?state=s&code=x&client_id=oaiapp_other", "s", Some(&a)).is_err());
 +        assert_eq!(callback("/auth/callback?state=s&code=x", "s", Some(&a)).unwrap().0, a.client_id);
 +        let url = authorization("host", "http://127.0.0.1:42/auth/callback", "s", "n", "v", Some(&a)).unwrap();
 +        assert!(!url.query_pairs().any(|(k, _)| k == "agent_name_hint"));
 +    }
-+    #[test] fn status_never_exposes_tokens_and_requires_both_scopes() {
-+        let mut a = account(); let state = snapshot(Some(&a), "test".into()); assert!(state.plan_usage);
-+        let json = serde_json::to_string(&state).unwrap(); assert!(!json.contains("secret-")); assert!(!json.contains("token"));
-+        a.scopes.pop(); assert!(!snapshot(Some(&a), String::new()).plan_usage);
-+        a.expires_at = 0; assert!(!snapshot(Some(&a), String::new()).connected);
++    #[test]
++    fn status_never_exposes_tokens_and_requires_both_scopes() {
++        let mut a = account();
++        let state = snapshot(Some(&a), "test".into());
++        assert!(state.plan_usage);
++        let json = serde_json::to_string(&state).unwrap();
++        assert!(!json.contains("secret-"));
++        assert!(!json.contains("token"));
++        a.scopes.pop();
++        assert!(!snapshot(Some(&a), String::new()).plan_usage);
++        a.expires_at = 0;
++        assert!(!snapshot(Some(&a), String::new()).connected);
 +    }
-+    #[test] fn forged_id_token_is_rejected() {
++    #[test]
++    fn forged_id_token_is_rejected() {
 +        let keys = JwkSet { keys: vec![] };
 +        assert!(validate_claims("not-a-jwt", "oaiapp_x", Some("n"), None, &keys).is_err());
 +    }
@@ -513,26 +877,35 @@ new file mode 100644
 +        let keys = serde_json::from_str("{\"keys\": [{\"kty\": \"EC\", \"x\": \"HqdTupWrCnLHYflf4l7M2VwhlfI6qGIQhvXqWk6ARZ4\", \"y\": \"wA3YLi93giQUTtW-gnLp1b2whB-3xY2lqCBrT0FDKjE\", \"crv\": \"P-256\", \"kid\": \"test-only\", \"alg\": \"ES256\", \"use\": \"sig\"}]}").unwrap();
 +        (token, keys)
 +    }
-+    #[test] fn signed_identity_requires_issuer_audience_nonce_and_expiry() {
++    #[test]
++    fn signed_identity_requires_issuer_audience_nonce_and_expiry() {
 +        let time = now().unwrap();
 +        let claims = serde_json::json!({"sub": "sub", "email": "test@example.test", "iat": time,
 +            "exp": time + 300, "iss": ISSUER, "aud": "oaiapp_test", "nonce": "nonce"});
 +        let (token, keys) = signed_claims(&claims);
 +        assert!(validate_claims(&token, "oaiapp_test", Some("nonce"), Some(&account()), &keys).is_ok());
-+        for (field, value) in [("iss", serde_json::json!("https://invalid.test")),
-+            ("aud", serde_json::json!("oaiapp_other")), ("nonce", serde_json::json!("wrong")),
-+            ("sub", serde_json::json!("other-user")), ("exp", serde_json::json!(0)),
-+            ("iat", serde_json::json!(time + 600))] {
-+            let mut changed = claims.clone(); changed[field] = value;
++        for (field, value) in [
++            ("iss", serde_json::json!("https://invalid.test")),
++            ("aud", serde_json::json!("oaiapp_other")),
++            ("nonce", serde_json::json!("wrong")),
++            ("sub", serde_json::json!("other-user")),
++            ("exp", serde_json::json!(0)),
++            ("iat", serde_json::json!(time + 600)),
++        ] {
++            let mut changed = claims.clone();
++            changed[field] = value;
 +            let (token, keys) = signed_claims(&changed);
 +            assert!(validate_claims(&token, "oaiapp_test", Some("nonce"), Some(&account()), &keys).is_err(), "accepted invalid {field}");
 +        }
 +    }
-+    #[test] fn encryption_rejects_corruption() {
-+        let cipher = Aes256Gcm::new_from_slice(&[7u8; 32]).unwrap(); let nonce = Nonce::from([1u8; 12]);
++    #[test]
++    fn encryption_rejects_corruption() {
++        let cipher = Aes256Gcm::new_from_slice(&[7u8; 32]).unwrap();
++        let nonce = Nonce::from([1u8; 12]);
 +        let mut encrypted = cipher.encrypt(&nonce, b"credential".as_ref()).unwrap();
 +        assert_eq!(cipher.decrypt(&nonce, encrypted.as_slice()).unwrap(), b"credential");
-+        *encrypted.first_mut().unwrap() ^= 1; assert!(cipher.decrypt(&nonce, encrypted.as_slice()).is_err());
++        *encrypted.first_mut().unwrap() ^= 1;
++        assert!(cipher.decrypt(&nonce, encrypted.as_slice()).is_err());
 +    }
 +
 +    struct TestEditor;
@@ -611,7 +984,7 @@ diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
 new file mode 100644
 --- /dev/null
 +++ b/docs/chatgpt-connection.md
-@@ -0,0 +1,50 @@
+@@ -0,0 +1,54 @@
 +# PrintCraft ChatGPT connection
 +
 +This local modification adds an optional native ChatGPT connection to the Windows desktop app.
@@ -644,7 +1017,9 @@ new file mode 100644
 +Rust syntax and TOML can be inspected here, but compilation, Rust tests, Clippy,
 +visual UI verification, and a real account sign-in remain UNVERIFIED.
 +Cargo.lock must be regenerated by an allowed Cargo toolchain before release.
-+This checkout is a draft, not a tested installer. No code was pushed or published.
++This checkout remains a draft. Source patches and Windows validation jobs are published
++at https://github.com/SkeltionCR/craft-chatgpt-validation. Check its Actions results
++for the current compilation/test outcome. A real account sign-in remains unverified.
 +
 +On an authorized build machine, run:
 +
@@ -658,6 +1033,8 @@ new file mode 100644
 +
 +Tests cover the RFC 7636 PKCE vector, hostile callbacks, returning client binding,
 +scope/expiry checks, token-redacted status, signed identity claims, forged ID tokens, and encrypted-data corruption.
++The control test exercises sign-in dispatch and cancellation without reading credentials.
++An explicitly requested offscreen test renders the actual connection panel on a test editor surface.
 +Then test a real sign-in, restart, renewal, cancellation, disconnect, and editor save/quit.
 +
 +Source contract: https://developers.openai.com/siwc/token-sharing-open-source/sign-in

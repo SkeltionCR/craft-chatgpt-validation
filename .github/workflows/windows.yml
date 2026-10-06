@@ -1,0 +1,38 @@
+name: Windows validation
+on:
+  workflow_dispatch:
+    inputs:
+      app:
+        description: Editor to build and test
+        type: choice
+        required: true
+        default: photocraft
+        options:
+          - photocraft
+          - vectorcraft
+          - filmcraft
+          - lightcraft
+          - printcraft
+          - effectcraft
+          - designcraft
+permissions:
+  contents: read
+concurrency:
+  group: craft-${{ inputs.app }}
+  cancel-in-progress: false
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 90
+    env:
+      CARGO_TERM_COLOR: never
+      RUST_BACKTRACE: 1
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Build and test pinned editor
+        shell: pwsh
+        run: ./build.ps1 -App '${{ inputs.app }}'
+      - name: Collect formatted source patch and lockfile
+        if: always()
+        shell: pwsh
+        run: ./build.ps1 -App '${{ inputs.app }}' -CollectOnly

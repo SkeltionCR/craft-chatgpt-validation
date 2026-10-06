@@ -39,6 +39,7 @@
     "repo": "designcraft",
     "name": "DesignCraft",
     "upstream": "d582277cc79c4bc9cee174b25b13fb11e6957aa5",
-    "patch_sha256": "496856619c402e83e8efee7135e2b8c63f9ac33e678e520096ce6050824f90fd"
+    "patch_sha256": "697e2e881e9ae860e9c4dd01bf084f7e51d80911b423295948a82f09d8546ed4",
+    "validated_run": "https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526643074"
   }
 ]

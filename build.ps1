@@ -32,6 +32,18 @@ if ($CollectOnly) {
         Write-Output ('CRAFT_PATCH_CHUNK:' + $encoded.Substring($offset,$length))
     }
     Write-Output "CRAFT_PATCH_END:$App"
+    $imageFile = Join-Path $recipeRoot 'panel-preview.png'
+    if (Test-Path -LiteralPath $imageFile) {
+        $imageBytes = [IO.File]::ReadAllBytes($imageFile)
+        $imageEncoded = [Convert]::ToBase64String($imageBytes)
+        $imageChecksum = (Get-FileHash -LiteralPath $imageFile -Algorithm SHA256).Hash.ToLowerInvariant()
+        Write-Output "CRAFT_IMAGE_START:$App`:$imageChecksum"
+        for ($offset = 0; $offset -lt $imageEncoded.Length; $offset += 4000) {
+            $length = [Math]::Min(4000, $imageEncoded.Length - $offset)
+            Write-Output ('CRAFT_IMAGE_CHUNK:' + $imageEncoded.Substring($offset,$length))
+        }
+        Write-Output "CRAFT_IMAGE_END:$App"
+    }
     return
 }
 
@@ -52,5 +64,7 @@ Invoke-Checked -Command rustup -Arguments @('target','add','wasm32-unknown-unkno
 Invoke-Checked -Command cargo -Arguments @('+stable','fmt','--all')
 Invoke-Checked -Command cargo -Arguments @('+stable','generate-lockfile')
 Invoke-Checked -Command cargo -Arguments @('+stable','test','-p',$App,'chatgpt','--locked')
+$env:CRAFT_SNAPSHOT_PATH = Join-Path $recipeRoot 'panel-preview.png'
+Invoke-Checked -Command cargo -Arguments @('+stable','test','-p',$App,'chatgpt_panel_offscreen_preview','--locked','--','--ignored')
 Invoke-Checked -Command cargo -Arguments @('+stable','clippy','-p',$App,'--all-targets','--locked','--','-D','warnings')
 Invoke-Checked -Command cargo -Arguments @('+stable','xtask','ci')

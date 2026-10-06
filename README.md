@@ -15,12 +15,16 @@ The manually dispatched **Windows validation** workflow runs on a standard GitHu
 Windows runner, with read-only repository permission. Select `photocraft` first, then
 each other project. It checks out the exact upstream commit, verifies and applies its
 patch, formats source, generates the dependency lockfile, runs the app's ChatGPT tests,
+exercises the connection controls, renders the actual connection panel offscreen,
 checks Clippy, and runs the upstream `cargo xtask ci` gate.
 
 The job log includes a SHA-256-verified, base64-encoded final source patch between
 `CRAFT_PATCH_START` and `CRAFT_PATCH_END`, allowing the local checkout to receive
 formatting and lockfile changes even when validation reports a failure. No binary,
 cache, or artifact storage is requested by this workflow.
+The panel preview uses a synthetic disconnected account and a test editor surface;
+it never opens a browser or reads a person's stored credentials. Its PNG is returned
+in the job log between `CRAFT_IMAGE_START` and `CRAFT_IMAGE_END` with a checksum.
 
 Status is authoritative only in the workflow results. Source parsing is not compilation,
 and a passing test suite does not imply that an actual ChatGPT account has been connected.

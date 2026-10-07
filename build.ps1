@@ -71,8 +71,10 @@ if ($App -eq 'printcraft') {
 # This first resolution preserves upstream's existing lockfile pins and adds only
 # dependencies required by the reviewed patch. Subsequent checks enforce that lock.
 # Use the same workspace feature union as upstream CI to reuse compilation outputs.
-Invoke-Checked -Command cargo -Arguments @('+stable','test','--workspace','chatgpt')
+$profileArguments = if ($App -in @('filmcraft','effectcraft')) { @('--release') } else { @() }
+Invoke-Checked -Command cargo -Arguments (@('+stable','test','--workspace','chatgpt') + $profileArguments)
 $env:CRAFT_SNAPSHOT_PATH = Join-Path $recipeRoot 'panel-preview.png'
-Invoke-Checked -Command cargo -Arguments @('+stable','test','--workspace','chatgpt_panel_offscreen_preview','--locked','--','--ignored')
-Invoke-Checked -Command cargo -Arguments @('+stable','clippy','--workspace','--all-targets','--locked','--','-D','warnings')
+Invoke-Checked -Command cargo -Arguments (@('+stable','test','--workspace','chatgpt_panel_offscreen_preview','--locked') + $profileArguments + @('--','--ignored'))
+Invoke-Checked -Command cargo -Arguments (@('+stable','clippy','--workspace','--all-targets','--locked') + $profileArguments + @('--','-D','warnings'))
 Invoke-Checked -Command cargo -Arguments @('+stable','xtask','ci')
+Write-Output "CRAFT_FULL_CI_PASSED:$App"

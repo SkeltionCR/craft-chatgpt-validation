@@ -18,6 +18,9 @@ patch, formats source, updates the dependency lockfile while retaining upstream 
 runs the app's ChatGPT tests,
 exercises the connection controls, renders the actual connection panel offscreen,
 checks Clippy, and runs the upstream `cargo xtask ci` gate.
+FilmCraft and EffectCraft checks use the release profile required by their upstream
+gate. The job permits up to 180 minutes for a cold build. PrintCraft also installs
+the pinned dependency checker and runs its unchanged license/advisory policy first.
 
 The job log includes a SHA-256-verified, base64-encoded final source patch between
 `CRAFT_PATCH_START` and `CRAFT_PATCH_END`, allowing the local checkout to receive
@@ -44,5 +47,6 @@ assets from upstream remain in its ephemeral build checkout and are not redistri
 | designcraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526643074) | Not exercised |
 | vectorcraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526641875) | Not exercised |
 | photocraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526632188) | Not exercised |
+| printcraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37536527821) | Not exercised |
 
 Other selected runs are pending. Panel previews use synthetic accounts and a test editor.

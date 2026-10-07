@@ -17,25 +17,26 @@
     "repo": "filmcraft",
     "name": "FilmCraft",
     "upstream": "771b614ad4c3fbefda5d668ce4384504b8c13f6d",
-    "patch_sha256": "6839f3fdd0935d9c117cc3c69bcd5cac1ff39a1b81d7bfbd4010e89dfc631cba"
+    "patch_sha256": "67b934d76fa21280418321f4eb7de8c4d135f4160f1c5627eb1ec2fd2968cfe0"
   },
   {
     "repo": "lightcraft",
     "name": "LightCraft",
     "upstream": "265248c86fa3267709aea45633d0d135331e180c",
-    "patch_sha256": "5539493241931274be32b901d1722f19289462e2b5d4b5d69987431a4a09b534"
+    "patch_sha256": "95f9defa4a67ac04fe8d9f92308c0a5d428aabe73c4a398f4a2e46a58c9f28ce"
   },
   {
     "repo": "printcraft",
     "name": "PrintCraft",
     "upstream": "55c581760ab389b88f08997ab235eecdf1a1b002",
-    "patch_sha256": "d484f3833c0291cdbaad70ef450d93734667fc6b0822e3d5322ccef559a932b9"
+    "patch_sha256": "5b6a4ab7b606dd6399f99546eb518b4adede9a879ab6492ee2e0ecc21958b00d",
+    "validated_run": "https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37536527821"
   },
   {
     "repo": "effectcraft",
     "name": "EffectCraft",
     "upstream": "2fadd14f09bb064cab8f1f8fe85af601a08b6e53",
-    "patch_sha256": "a7904e6c9f517083399fe8ff89300999b47fb8a2c9cc05adf82014a446e60dcb"
+    "patch_sha256": "85d0956d9f5c59145ccea427c1b0139e2535db1e51b77e955f7942df75d073f0"
   },
   {
     "repo": "designcraft",

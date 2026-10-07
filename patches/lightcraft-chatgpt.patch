@@ -3369,7 +3369,7 @@ index 27fc5fb..086a085 100644
          };
          assert_eq!(path(&s, 1), "/p/Trip-1.jpg");
 diff --git a/crates/engine/src/tests_import.rs b/crates/engine/src/tests_import.rs
-index dd3f7ca..cd2c37a 100644
+index dd3f7ca..3d8d8ba 100644
 --- a/crates/engine/src/tests_import.rs
 +++ b/crates/engine/src/tests_import.rs
 @@ -161,9 +161,9 @@ fn renamed_and_ambiguous_scene(tag: &str) -> (std::path::PathBuf, Session) {
@@ -3384,18 +3384,22 @@ index dd3f7ca..cd2c37a 100644
      impostor(&dir.join("old/c.png"), &dir.join("moved/c.png"));
      impostor(&dir.join("old/c.png"), &dir.join("moved/real/c.png"));
      std::fs::remove_file(dir.join("old/c.png")).unwrap();
-@@ -181,8 +181,8 @@ fn find_missing_matches_renamed_files_by_content() {
+@@ -181,8 +181,12 @@ fn find_missing_matches_renamed_files_by_content() {
      let to = |name: &str| {
          found.iter().find(|f| f["from"].as_str().unwrap().ends_with(name)).map(|f| (f["to"].as_str().unwrap().to_string(), f["by"].clone()))
      };
 -    assert_eq!(to("a.png"), Some((dir.join("moved/Trip-001.png").to_string_lossy().to_string(), json!("content"))));
 -    assert_eq!(to("b.png"), Some((dir.join("moved/real/Trip-002.png").to_string_lossy().to_string(), json!("content"))), "not the impostor");
 +    assert_eq!(to("a.png"), Some((dir.join("moved").join("Trip-001.png").to_string_lossy().to_string(), json!("content"))));
-+    assert_eq!(to("b.png"), Some((dir.join("moved").join("real").join("Trip-002.png").to_string_lossy().to_string(), json!("content"))), "not the impostor");
++    assert_eq!(
++        to("b.png"),
++        Some((dir.join("moved").join("real").join("Trip-002.png").to_string_lossy().to_string(), json!("content"))),
++        "not the impostor"
++    );
      assert_eq!(r["missing"], 1);
      assert_eq!(r["ambiguous"][0]["candidates"].as_array().map(Vec::len), Some(2), "{r}");
      let _ = std::fs::remove_dir_all(&dir);
-@@ -582,7 +582,7 @@ fn folders_rename_and_move_with_their_photos() {
+@@ -582,7 +586,7 @@ fn folders_rename_and_move_with_their_photos() {
      assert!(s.execute("folder.move", &json!({"path": b.to_string_lossy(), "into": b.join("deeper").to_string_lossy()})).is_err(), "not into itself");
      let r = s.execute("folder.move", &json!({"path": b.to_string_lossy(), "into": root.join("Archive").to_string_lossy()})).unwrap();
      assert_eq!(r["relinked"], 1);
@@ -3423,6 +3427,55 @@ index 9094149..ba18545 100644
      let n0 = s.catalog.len();
      let undo0 = s.undo.len();
      let pv = s.execute("library.importPreview", &json!({"paths": [src.to_string_lossy()]})).unwrap();
+diff --git a/crates/ui-egui/src/headless.rs b/crates/ui-egui/src/headless.rs
+index a78fe66..8825a2e 100644
+--- a/crates/ui-egui/src/headless.rs
++++ b/crates/ui-egui/src/headless.rs
+@@ -858,7 +858,7 @@ mod tests {
+         }
+         let s = |p: std::path::PathBuf| p.to_string_lossy().to_string();
+         let (photos, day1, day2, other) =
+-            (s(base.join("Photos")), s(base.join("Photos/2026/20260101")), s(base.join("Photos/2026/20260114")), s(base.join("Other")));
++            (s(base.join("Photos")), s(base.join("Photos").join("2026").join("20260101")), s(base.join("Photos").join("2026").join("20260114")), s(base.join("Other")));
+         let exec = |h: &mut Headless, c: &str, p: Value| h.request("engine.execute", json!({"command": c, "params": p}), t);
+         let rects = |h: &mut Headless| -> std::collections::HashMap<String, f64> {
+             let w = h.request("ui.widgets", json!({"filter": "lc-ui-roots-"}), t);
+diff --git a/crates/ui-egui/src/tests_masking.rs b/crates/ui-egui/src/tests_masking.rs
+index 1e4c0d1..58e8ab7 100644
+--- a/crates/ui-egui/src/tests_masking.rs
++++ b/crates/ui-egui/src/tests_masking.rs
+@@ -362,7 +362,7 @@ fn b_adds_to_quick_collection_in_the_grid_and_brushes_in_edit() {
+ fn local_folder_tree_expands_and_browses() {
+     let base = std::env::temp_dir().join(format!("lc-ui-tree-{}", std::process::id()));
+     let _ = std::fs::remove_dir_all(&base);
+-    std::fs::create_dir_all(base.join("Trip/Day 1")).unwrap();
++    std::fs::create_dir_all(base.join("Trip").join("Day 1")).unwrap();
+     std::fs::create_dir_all(base.join(".hidden")).unwrap();
+     let mut h = detail("panel.edit");
+     exec(&mut h, "view.leftPanel", json!({"show": true}));
+@@ -371,10 +371,20 @@ fn local_folder_tree_expands_and_browses() {
+     let base_s = base.to_string_lossy().to_string();
+     let r = h.request("ui.clickWidget", json!({"id": format!("folderToggle:{base_s}")}), T);
+     assert_eq!(r["ok"], true, "{r}");
+-    for _ in 0..3 {
++    let trip = base.join("Trip").to_string_lossy().to_string();
++    // The tree reads directories on a worker. Wait for its actual result instead
++    // of assuming that three frames give the worker enough scheduling time.
++    let target = format!("source:local:{trip}");
++    let started = std::time::Instant::now();
++    loop {
+         h.step();
++        let widgets = h.request("ui.widgets", json!({"filter": target}), T);
++        if widgets["result"].as_array().is_some_and(|rows| rows.iter().any(|row| row["id"].as_str() == Some(target.as_str()))) {
++            break;
++        }
++        assert!(started.elapsed() < T, "the folder listing must finish: {widgets}");
++        std::thread::sleep(Duration::from_millis(5));
+     }
+-    let trip = base.join("Trip").to_string_lossy().to_string();
+     let r = h.request("ui.clickWidget", json!({"id": format!("source:local:{trip}")}), T);
+     assert_eq!(r["ok"], true, "the subfolder is listed: {r}");
+     assert_eq!(h.app.session.browse.as_ref().map(|b| b.path.clone()), Some(trip.clone()), "clicking it browses it");
 diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
 new file mode 100644
 index 0000000..75b401e

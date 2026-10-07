@@ -1,3 +1,1836 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 564eaac..9467bdb 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -121,6 +121,41 @@ version = "2.0.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
+ 
++[[package]]
++name = "aead"
++version = "0.5.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "d122413f284cf2d62fb1b7db97e02edb8cda96d769b16e443a4f6195e35662b0"
++dependencies = [
++ "crypto-common",
++ "generic-array",
++]
++
++[[package]]
++name = "aes"
++version = "0.8.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "b169f7a6d4742236a0a00c541b845991d0ac43e546831af1249753ab4c3aa3a0"
++dependencies = [
++ "cfg-if",
++ "cipher",
++ "cpufeatures 0.2.17",
++]
++
++[[package]]
++name = "aes-gcm"
++version = "0.10.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "831010a0f742e1209b3bcea8fab6a8e149051ba6099432c8cb2cc117dec3ead1"
++dependencies = [
++ "aead",
++ "aes",
++ "cipher",
++ "ctr",
++ "ghash",
++ "subtle",
++]
++
+ [[package]]
+ name = "ahash"
+ version = "0.8.12"
+@@ -205,6 +240,12 @@ dependencies = [
+  "libc",
+ ]
+ 
++[[package]]
++name = "anyhow"
++version = "1.0.104"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
++
+ [[package]]
+ name = "arboard"
+ version = "3.6.1"
+@@ -392,6 +433,16 @@ version = "1.1.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
+ 
++[[package]]
++name = "atomic-write-file"
++version = "0.3.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ae67d5c03ee972c101a1d8db3ddbf8a9c819ad1ea9d6fd9cd385605547b60edb"
++dependencies = [
++ "nix",
++ "rand 0.10.3",
++]
++
+ [[package]]
+ name = "atspi"
+ version = "0.29.0"
+@@ -435,6 +486,30 @@ version = "1.5.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "f2032f911046de80f0a198e0901378627c33f59ea0ac00e363d481118bd70a53"
+ 
++[[package]]
++name = "base16ct"
++version = "0.2.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "4c7f02d4ea65f2c1853089ffd8d2787bdbc63de2f0d29dedbcf8ccdfa0ccd4cf"
++
++[[package]]
++name = "base64"
++version = "0.22.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
++
++[[package]]
++name = "base64"
++version = "0.23.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ac07cdecf99051d9a5238b80f35af32cdeba5b336e55d957b318b50137e18da5"
++
++[[package]]
++name = "base64ct"
++version = "1.8.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "2af50177e190e07a26ab74f8b1efbfe2ef87da2116221318cb1c2e82baf7de06"
++
+ [[package]]
+ name = "bit-set"
+ version = "0.8.0"
+@@ -483,6 +558,15 @@ version = "2.13.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "3ded4057c258ba199e2d26386d3af3780957ecaee6c4ef4041c6b4b8b97c0b06"
+ 
++[[package]]
++name = "block-buffer"
++version = "0.10.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "3078c7629b62d3f0439517fa394996acacc5cbc91c5a20d8c658e77abd503a71"
++dependencies = [
++ "generic-array",
++]
++
+ [[package]]
+ name = "block2"
+ version = "0.5.1"
+@@ -525,7 +609,7 @@ dependencies = [
+  "boa_macros",
+  "boa_string",
+  "indexmap",
+- "num-bigint",
++ "num-bigint 0.5.1",
+  "rustc-hash 2.1.3",
+  "strum",
+ ]
+@@ -560,7 +644,7 @@ dependencies = [
+  "indexmap",
+  "intrusive-collections",
+  "itertools",
+- "num-bigint",
++ "num-bigint 0.5.1",
+  "num-integer",
+  "num-traits",
+  "num_enum",
+@@ -638,7 +722,7 @@ dependencies = [
+  "boa_macros",
+  "fast-float2",
+  "icu_properties",
+- "num-bigint",
++ "num-bigint 0.5.1",
+  "num-traits",
+  "regress",
+  "rustc-hash 2.1.3",
+@@ -684,6 +768,12 @@ dependencies = [
+  "syn 3.0.6",
+ ]
+ 
++[[package]]
++name = "byteorder"
++version = "1.5.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "1fd0f2584146f6f2ef48085050886acf353beff7305ebd1ae69500e27c67f64b"
++
+ [[package]]
+ name = "byteorder-lite"
+ version = "0.1.0"
+@@ -793,10 +883,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "65c35e4b699c7e15ccbe7ee35c005e4fc0a278d22238a2857e6ce2dadeda1b06"
+ dependencies = [
+  "cfg-if",
+- "cpufeatures",
++ "cpufeatures 0.3.1",
+  "rand_core 0.10.1",
+ ]
+ 
++[[package]]
++name = "cipher"
++version = "0.4.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "773f3b9af64447d2ce9850330c473515014aa235e6a783b02db81ff39e4a3dad"
++dependencies = [
++ "crypto-common",
++ "inout",
++]
++
+ [[package]]
+ name = "clipboard-win"
+ version = "5.4.1"
+@@ -832,6 +932,16 @@ version = "1.1.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "3d7b894f5411737b7867f4827955924d7c254fc9f4d91a6aad6b097804b1018b"
+ 
++[[package]]
++name = "colored"
++version = "2.2.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "117725a109d387c937a1533ce01b450cbde6b88abceea8473c4d7a85853cda3c"
++dependencies = [
++ "lazy_static",
++ "windows-sys 0.59.0",
++]
++
+ [[package]]
+ name = "combine"
+ version = "4.6.8"
+@@ -851,6 +961,12 @@ dependencies = [
+  "crossbeam-utils",
+ ]
+ 
++[[package]]
++name = "const-oid"
++version = "0.9.6"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8"
++
+ [[package]]
+ name = "core-foundation"
+ version = "0.9.4"
+@@ -861,6 +977,16 @@ dependencies = [
+  "libc",
+ ]
+ 
++[[package]]
++name = "core-foundation"
++version = "0.10.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "b2a6cd9ae233e7f62ba4e9353e81a88df7fc8a5987b8d445b4d90c879bd156f6"
++dependencies = [
++ "core-foundation-sys",
++ "libc",
++]
++
+ [[package]]
+ name = "core-foundation-sys"
+ version = "0.8.7"
+@@ -874,9 +1000,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "c07782be35f9e1140080c6b96f0d44b739e2278479f64e02fdab4e32dfd8b081"
+ dependencies = [
+  "bitflags 1.3.2",
+- "core-foundation",
++ "core-foundation 0.9.4",
+  "core-graphics-types",
+- "foreign-types",
++ "foreign-types 0.5.0",
+  "libc",
+ ]
+ 
+@@ -887,7 +1013,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "45390e6114f68f718cc7a830514a96f903cccd70d02a8f6d9f643ac4ba45afaf"
+ dependencies = [
+  "bitflags 1.3.2",
+- "core-foundation",
++ "core-foundation 0.9.4",
+  "libc",
+ ]
+ 
+@@ -953,6 +1079,15 @@ dependencies = [
+  "winapi",
+ ]
+ 
++[[package]]
++name = "cpufeatures"
++version = "0.2.17"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "59ed5838eebb26a2bb2e58f6d5b5316989ae9d08bab10e0e6d103e656d1b0280"
++dependencies = [
++ "libc",
++]
++
+ [[package]]
+ name = "cpufeatures"
+ version = "0.3.1"
+@@ -1011,12 +1146,71 @@ version = "0.2.4"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "460fbee9c2c2f33933d720630a6a0bac33ba7053db5344fac858d4b8952d77d5"
+ 
++[[package]]
++name = "crypto-bigint"
++version = "0.5.5"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "0dc92fb57ca44df6db8059111ab3af99a63d5d0f8375d9972e319a379c6bab76"
++dependencies = [
++ "generic-array",
++ "rand_core 0.6.4",
++ "subtle",
++ "zeroize",
++]
++
++[[package]]
++name = "crypto-common"
++version = "0.1.7"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "78c8292055d1c1df0cce5d180393dc8cce0abec0a7102adb6c7b1eef6016d60a"
++dependencies = [
++ "generic-array",
++ "rand_core 0.6.4",
++ "typenum",
++]
++
++[[package]]
++name = "ctr"
++version = "0.9.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "0369ee1ad671834580515889b80f2ea915f23b8be8d0daa4bbaf2ac5c7590835"
++dependencies = [
++ "cipher",
++]
++
+ [[package]]
+ name = "cursor-icon"
+ version = "1.2.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "f27ae1dd37df86211c42e150270f82743308803d90a6f6e6651cd730d5e1732f"
+ 
++[[package]]
++name = "curve25519-dalek"
++version = "4.1.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "97fb8b7c4503de7d6ae7b42ab72a5a59857b4c937ec27a3d4539dba95b5ab2be"
++dependencies = [
++ "cfg-if",
++ "cpufeatures 0.2.17",
++ "curve25519-dalek-derive",
++ "digest",
++ "fiat-crypto",
++ "rustc_version",
++ "subtle",
++ "zeroize",
++]
++
++[[package]]
++name = "curve25519-dalek-derive"
++version = "0.1.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "f46882e17999c6cc590af592290432be3bce0428cb0d5f8b6715e4dc7b383eb3"
++dependencies = [
++ "proc-macro2",
++ "quote",
++ "syn 2.0.119",
++]
++
+ [[package]]
+ name = "dashmap"
+ version = "6.2.1"
+@@ -1037,12 +1231,69 @@ version = "0.11.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "0c87e182de0887fd5361989c677c4e8f5000cd9491d6d563161a8f3a5519fc7f"
+ 
++[[package]]
++name = "der"
++version = "0.7.10"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "e7c1832837b905bbfb5101e07cc24c8deddf52f93225eee6ead5f4d63d53ddcb"
++dependencies = [
++ "const-oid",
++ "pem-rfc7468",
++ "zeroize",
++]
++
+ [[package]]
+ name = "deranged"
+ version = "0.5.8"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "7cd812cc2bc1d69d4764bd80df88b4317eaef9e773c75226407d9bc0876b211c"
+ 
++[[package]]
++name = "dify"
++version = "0.8.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "90ce0fb972943b4e88cd03b8f92953df0c71bb05e0bde8e5b684895d808013cc"
++dependencies = [
++ "anyhow",
++ "colored",
++ "getopts",
++ "image",
++ "rayon",
++]
++
++[[package]]
++name = "digest"
++version = "0.10.7"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "9ed9a281f7bc9b7576e61468ba615a66a5c8cfdff42420a70aa82701a3b1e292"
++dependencies = [
++ "block-buffer",
++ "const-oid",
++ "crypto-common",
++ "subtle",
++]
++
++[[package]]
++name = "directories"
++version = "6.0.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "16f5094c54661b38d03bd7e50df373292118db60b585c08a411c6d840017fe7d"
++dependencies = [
++ "dirs-sys",
++]
++
++[[package]]
++name = "dirs-sys"
++version = "0.5.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "e01a3366d27ee9890022452ee61b2b63a67e6f13f58900b651ff5665f0bb1fab"
++dependencies = [
++ "libc",
++ "option-ext",
++ "redox_users",
++ "windows-sys 0.61.2",
++]
++
+ [[package]]
+ name = "dispatch"
+ version = "0.2.0"
+@@ -1122,6 +1373,20 @@ dependencies = [
+  "syn 2.0.119",
+ ]
+ 
++[[package]]
++name = "ecdsa"
++version = "0.16.9"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ee27f32b5c5292967d2d4a9d7f1e0b0aed2c15daded5a60300e4abb9d8020bca"
++dependencies = [
++ "der",
++ "digest",
++ "elliptic-curve",
++ "rfc6979",
++ "signature",
++ "spki",
++]
++
+ [[package]]
+ name = "ecolor"
+ version = "0.36.2"
+@@ -1132,23 +1397,62 @@ dependencies = [
+  "emath",
+ ]
+ 
++[[package]]
++name = "ed25519"
++version = "2.2.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "115531babc129696a58c64a4fef0a8bf9e9698629fb97e9e40767d235cfbcd53"
++dependencies = [
++ "pkcs8",
++ "signature",
++]
++
++[[package]]
++name = "ed25519-dalek"
++version = "2.2.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "70e796c081cee67dc755e1a36a0a172b897fab85fc3f6bc48307991f64e4eca9"
++dependencies = [
++ "curve25519-dalek",
++ "ed25519",
++ "serde",
++ "sha2",
++ "subtle",
++ "zeroize",
++]
++
+ [[package]]
+ name = "effectcraft"
+ version = "0.3.1"
+ dependencies = [
++ "aes-gcm",
++ "atomic-write-file",
++ "base64 0.22.1",
+  "cpal",
++ "directories",
+  "effectcraft-engine",
+  "effectcraft-host",
+  "effectcraft-ui-egui",
+  "eframe",
+  "egui",
++ "egui_kittest",
++ "fs2",
++ "getrandom 0.3.4",
++ "jsonwebtoken",
++ "keyring",
+  "log",
+  "muda",
+  "objc2 0.6.4",
+  "objc2-app-kit 0.3.2",
+  "objc2-foundation 0.3.2",
++ "open",
++ "reqwest",
+  "rfd",
++ "serde",
+  "serde_json",
++ "sha2",
++ "url",
++ "uuid",
+  "winit",
+  "winresource",
+ ]
+@@ -1768,14 +2072,17 @@ version = "0.36.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "5eb3f3effb2726fee23449293e67acbf6cc6ce35525b1722bd5743bb348114d5"
+ dependencies = [
++ "dify",
+  "eframe",
+  "egui",
+  "egui-wgpu",
+  "image",
+  "kittest",
+  "log",
++ "open",
+  "pollster 1.0.1",
+  "serde",
++ "tempfile",
+  "toml",
+  "wgpu",
+ ]
+@@ -1786,6 +2093,27 @@ version = "1.18.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "252afb9ae5eaa683babdc6a068b3f5726eb19e05070c731f9b2a23a7c3e8ed34"
+ 
++[[package]]
++name = "elliptic-curve"
++version = "0.13.8"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "b5e6043086bf7973472e0c7dff2142ea0b680d30e18d9cc40f267efbf222bd47"
++dependencies = [
++ "base16ct",
++ "crypto-bigint",
++ "digest",
++ "ff",
++ "generic-array",
++ "group",
++ "hkdf",
++ "pem-rfc7468",
++ "pkcs8",
++ "rand_core 0.6.4",
++ "sec1",
++ "subtle",
++ "zeroize",
++]
++
+ [[package]]
+ name = "emath"
+ version = "0.36.2"
+@@ -1994,6 +2322,22 @@ version = "0.4.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "b97b65636e5b9ef369943878ac74335ba1c55c1cb6adbf1e2c293c624248d693"
+ 
++[[package]]
++name = "ff"
++version = "0.13.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c0b50bfb653653f9ca9095b427bed08ab8d75a137839d9ad64eb11810d5b6393"
++dependencies = [
++ "rand_core 0.6.4",
++ "subtle",
++]
++
++[[package]]
++name = "fiat-crypto"
++version = "0.2.9"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "28dea519a9695b9977216879a3ebfddf92f1c08c05d984f8996aecd6ecdc811d"
++
+ [[package]]
+ name = "filmcraft-aac"
+ version = "0.1.1"
+@@ -2299,6 +2643,15 @@ dependencies = [
+  "bytemuck",
+ ]
+ 
++[[package]]
++name = "foreign-types"
++version = "0.3.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "f6f339eb8adc052cd2ca78910fda869aefa38d22d5cb648e6485e4d3fc06f3b1"
++dependencies = [
++ "foreign-types-shared 0.1.1",
++]
++
+ [[package]]
+ name = "foreign-types"
+ version = "0.5.0"
+@@ -2306,7 +2659,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "d737d9aa519fb7b749cbc3b962edcf310a8dd1f4b67c91c4f83975dbdd17d965"
+ dependencies = [
+  "foreign-types-macros",
+- "foreign-types-shared",
++ "foreign-types-shared 0.3.1",
+ ]
+ 
+ [[package]]
+@@ -2320,6 +2673,12 @@ dependencies = [
+  "syn 3.0.6",
+ ]
+ 
++[[package]]
++name = "foreign-types-shared"
++version = "0.1.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
++
+ [[package]]
+ name = "foreign-types-shared"
+ version = "0.3.1"
+@@ -2335,6 +2694,26 @@ dependencies = [
+  "percent-encoding",
+ ]
+ 
++[[package]]
++name = "fs2"
++version = "0.4.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "9564fc758e15025b46aa6643b1b77d047d1a56a1aea6e01002ac0c7026876213"
++dependencies = [
++ "libc",
++ "winapi",
++]
++
++[[package]]
++name = "futures-channel"
++version = "0.3.34"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "b1f9e3d69d39e4862ffed03ed071a76f9a13ba1d9109d355b0f0aa6b15e393c4"
++dependencies = [
++ "futures-core",
++ "futures-sink",
++]
++
+ [[package]]
+ name = "futures-concurrency"
+ version = "7.7.1"
+@@ -2384,6 +2763,12 @@ dependencies = [
+  "syn 3.0.6",
+ ]
+ 
++[[package]]
++name = "futures-sink"
++version = "0.3.34"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "1944426bf7d03f1d14f708785e4b33efd750b36d48a157b836b3efc15ede8e1d"
++
+ [[package]]
+ name = "futures-task"
+ version = "0.3.34"
+@@ -2397,12 +2782,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "0d50a92467f8ba5dd6e3ee5d4bd04d73ab2e4e1c44474a0674821dfce14b79bc"
+ dependencies = [
+  "futures-core",
++ "futures-io",
+  "futures-macro",
++ "futures-sink",
+  "futures-task",
++ "memchr",
+  "pin-project-lite",
+  "slab",
+ ]
+ 
++[[package]]
++name = "generic-array"
++version = "0.14.7"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "85649ca51fd72272d7821adaf274ad91c288277713d9c18820d8499a7ff69e9a"
++dependencies = [
++ "typenum",
++ "version_check",
++ "zeroize",
++]
++
+ [[package]]
+ name = "gethostname"
+ version = "1.1.0"
+@@ -2413,6 +2812,26 @@ dependencies = [
+  "windows-link",
+ ]
+ 
++[[package]]
++name = "getopts"
++version = "0.2.24"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "cfe4fbac503b8d1f88e6676011885f34b7174f46e59956bba534ba83abded4df"
++dependencies = [
++ "unicode-width",
++]
++
++[[package]]
++name = "getrandom"
++version = "0.2.17"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ff2abc00be7fca6ebc474524697ae276ad847ad0a6b3faa4bcb027e9a4614ad0"
++dependencies = [
++ "cfg-if",
++ "libc",
++ "wasi",
++]
++
+ [[package]]
+ name = "getrandom"
+ version = "0.3.4"
+@@ -2439,6 +2858,16 @@ dependencies = [
+  "wasm-bindgen",
+ ]
+ 
++[[package]]
++name = "ghash"
++version = "0.5.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "f0d8a4362ccb29cb0b265253fb0a2728f592895ee6854fd9bc13f2ffda266ff1"
++dependencies = [
++ "opaque-debug",
++ "polyval",
++]
++
+ [[package]]
+ name = "gif"
+ version = "0.14.2"
+@@ -2568,6 +2997,17 @@ dependencies = [
+  "windows 0.62.2",
+ ]
+ 
++[[package]]
++name = "group"
++version = "0.13.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "f0f9ef7462f7c099f518d754361858f86d8a07af53ba9af0fe635bbccb151a63"
++dependencies = [
++ "ff",
++ "rand_core 0.6.4",
++ "subtle",
++]
++
+ [[package]]
+ name = "guillotiere"
+ version = "0.7.0"
+@@ -2656,6 +3096,122 @@ version = "0.4.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
+ 
++[[package]]
++name = "hkdf"
++version = "0.12.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "7b5f8eb2ad728638ea2c7d47a21db23b7b58a72ed6a38256b8a1849f15fbbdf7"
++dependencies = [
++ "hmac",
++]
++
++[[package]]
++name = "hmac"
++version = "0.12.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "6c49c37c09c17a53d937dfbb742eb3a961d65a994e6bcdcf37e7399d0cc8ab5e"
++dependencies = [
++ "digest",
++]
++
++[[package]]
++name = "http"
++version = "1.5.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "918d3568bebf352712bc2ef3d46a8bcf1a75b373be6539de198e9105cbbf9ce0"
++dependencies = [
++ "bytes",
++ "itoa",
++]
++
++[[package]]
++name = "http-body"
++version = "1.1.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ca2a8f2913ee65f60facd6a5905613afaa448497a0230cc41ce022d93290bc2c"
++dependencies = [
++ "bytes",
++ "http",
++]
++
++[[package]]
++name = "http-body-util"
++version = "0.1.5"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "23169fe34a5fbcdd3f3862e78fb9b6fccd5f02a6dc6f732547005d45631ce71c"
++dependencies = [
++ "bytes",
++ "futures-core",
++ "http",
++ "http-body",
++ "pin-project-lite",
++]
++
++[[package]]
++name = "httparse"
++version = "1.10.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "6dbf3de79e51f3d586ab4cb9d5c3e2c14aa28ed23d180cf89b4df0454a69cc87"
++
++[[package]]
++name = "hyper"
++version = "1.12.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "2c3e324da4c95177d6291d4c8730197c0d1822f8a9766814a4a44fa5ab797c9c"
++dependencies = [
++ "atomic-waker",
++ "bytes",
++ "futures-core",
++ "http",
++ "http-body",
++ "httparse",
++ "itoa",
++ "pin-project-lite",
++ "smallvec",
++ "tokio",
++ "want",
++]
++
++[[package]]
++name = "hyper-tls"
++version = "0.6.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "70206fc6890eaca9fde8a0bf71caa2ddfc9fe045ac9e5c70df101a7dbde866e0"
++dependencies = [
++ "bytes",
++ "http-body-util",
++ "hyper",
++ "hyper-util",
++ "native-tls",
++ "tokio",
++ "tokio-native-tls",
++ "tower-service",
++]
++
++[[package]]
++name = "hyper-util"
++version = "0.1.21"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ddc03d96684f9226b8a787cdb71488417b53ab5ea8fdb1dac946cb9431cc8bff"
++dependencies = [
++ "base64 0.23.1",
++ "bytes",
++ "futures-channel",
++ "futures-util",
++ "http",
++ "http-body",
++ "httparse",
++ "hyper",
++ "ipnet",
++ "libc",
++ "percent-encoding",
++ "pin-project-lite",
++ "socket2",
++ "tokio",
++ "tower-service",
++ "tracing",
++]
++
+ [[package]]
+ name = "icu_collections"
+ version = "2.3.0"
+@@ -2802,12 +3358,46 @@ dependencies = [
+  "hashbrown 0.17.1",
+ ]
+ 
++[[package]]
++name = "inout"
++version = "0.1.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "879f10e63c20629ecabbb64a8010319738c66a5cd0c29b02d63d272b03751d01"
++dependencies = [
++ "generic-array",
++]
++
+ [[package]]
+ name = "intrusive-collections"
+ version = "0.10.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "4275b20e6057cd7733fd8df8a5a31701e4fe44497dad0f3fa0e1c4fb971506be"
+ 
++[[package]]
++name = "ipnet"
++version = "2.12.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "791930b43c0d5973160d90a8f3894509f2b273430f5c5c73b668636d0287c5c0"
++
++[[package]]
++name = "is-docker"
++version = "0.2.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "928bae27f42bc99b60d9ac7334e3a21d10ad8f1835a4e12ec3ec0464765ed1b3"
++dependencies = [
++ "once_cell",
++]
++
++[[package]]
++name = "is-wsl"
++version = "0.4.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "173609498df190136aa7dea1a91db051746d339e18476eed5ca40521f02d7aa5"
++dependencies = [
++ "is-docker",
++ "once_cell",
++]
++
+ [[package]]
+ name = "itertools"
+ version = "0.15.0"
+@@ -2918,6 +3508,29 @@ dependencies = [
+  "wasm-bindgen",
+ ]
+ 
++[[package]]
++name = "jsonwebtoken"
++version = "10.3.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "0529410abe238729a60b108898784df8984c87f6054c9c4fcacc47e4803c1ce1"
++dependencies = [
++ "base64 0.22.1",
++ "ed25519-dalek",
++ "getrandom 0.2.17",
++ "hmac",
++ "js-sys",
++ "p256",
++ "p384",
++ "pem",
++ "rand 0.8.8",
++ "rsa",
++ "serde",
++ "serde_json",
++ "sha2",
++ "signature",
++ "simple_asn1",
++]
++
+ [[package]]
+ name = "keyboard-types"
+ version = "0.8.3"
+@@ -2928,6 +3541,18 @@ dependencies = [
+  "serde",
+ ]
+ 
++[[package]]
++name = "keyring"
++version = "3.6.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "eebcc3aff044e5944a8fbaf69eb277d11986064cba30c468730e8b9909fb551c"
++dependencies = [
++ "byteorder",
++ "log",
++ "windows-sys 0.60.2",
++ "zeroize",
++]
++
+ [[package]]
+ name = "khronos-egl"
+ version = "6.0.0"
+@@ -2973,6 +3598,9 @@ name = "lazy_static"
+ version = "1.5.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "20870f649af7073d53e38067b2a84312175d56ea15217e1b15bc83506ec50afb"
++dependencies = [
++ "spin",
++]
+ 
+ [[package]]
+ name = "leb128fmt"
+@@ -3147,6 +3775,17 @@ dependencies = [
+  "simd-adler32",
+ ]
+ 
++[[package]]
++name = "mio"
++version = "1.2.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "1788edb87fdc09c7e26304471e2f5be8cdefb1b6930d6e3985fc02ff53bf86ee"
++dependencies = [
++ "libc",
++ "wasi",
++ "windows-sys 0.61.2",
++]
++
+ [[package]]
+ name = "moxcms"
+ version = "0.8.1"
+@@ -3220,6 +3859,23 @@ dependencies = [
+  "thiserror 2.0.21",
+ ]
+ 
++[[package]]
++name = "native-tls"
++version = "0.2.18"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "465500e14ea162429d264d44189adc38b199b62b1c21eea9f69e4b73cb03bbf2"
++dependencies = [
++ "libc",
++ "log",
++ "openssl",
++ "openssl-probe",
++ "openssl-sys",
++ "schannel",
++ "security-framework",
++ "security-framework-sys",
++ "tempfile",
++]
++
+ [[package]]
+ name = "ndarray"
+ version = "0.17.2"
+@@ -3265,12 +3921,34 @@ dependencies = [
+  "jni-sys 0.3.1",
+ ]
+ 
++[[package]]
++name = "nix"
++version = "0.31.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "cf20d2fde8ff38632c426f1165ed7436270b44f199fc55284c38276f9db47c3d"
++dependencies = [
++ "bitflags 2.13.2",
++ "cfg-if",
++ "cfg_aliases",
++ "libc",
++]
++
+ [[package]]
+ name = "nohash-hasher"
+ version = "0.2.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "2bf50223579dc7cdcfb3bfcacf7069ff68243f8c363f62ffa99cf000a6b9c451"
+ 
++[[package]]
++name = "num-bigint"
++version = "0.4.8"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c89e69e7e0f03bea5ef08013795c25018e101932225a656383bd384495ecc367"
++dependencies = [
++ "num-integer",
++ "num-traits",
++]
++
+ [[package]]
+ name = "num-bigint"
+ version = "0.5.1"
+@@ -3282,6 +3960,22 @@ dependencies = [
+  "serde",
+ ]
+ 
++[[package]]
++name = "num-bigint-dig"
++version = "0.8.6"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "e661dda6640fad38e827a6d4a310ff4763082116fe217f279885c97f511bb0b7"
++dependencies = [
++ "lazy_static",
++ "libm",
++ "num-integer",
++ "num-iter",
++ "num-traits",
++ "rand 0.8.8",
++ "smallvec",
++ "zeroize",
++]
++
+ [[package]]
+ name = "num-complex"
+ version = "0.4.6"
+@@ -3318,6 +4012,16 @@ dependencies = [
+  "num-traits",
+ ]
+ 
++[[package]]
++name = "num-iter"
++version = "0.1.46"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c92800bd69a1eac91786bcfe9da64a897eb72911b8dc3095decbd07429e8048b"
++dependencies = [
++ "num-integer",
++ "num-traits",
++]
++
+ [[package]]
+ name = "num-traits"
+ version = "0.2.19"
+@@ -3719,6 +4423,71 @@ version = "0.2.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "cfe21416a02c693fb9f980befcb230ecc70b0b3d1cc4abf88b9675c4c1457f0c"
+ 
++[[package]]
++name = "opaque-debug"
++version = "0.3.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c08d65885ee38876c4f86fa503fb49d7b507c2b62552df7c70b2fce627e06381"
++
++[[package]]
++name = "open"
++version = "5.4.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "aa576c76302b7b808eecc68061e67336c47833ef9d22caa74dda10fa9675eebc"
++dependencies = [
++ "is-wsl",
++ "libc",
++]
++
++[[package]]
++name = "openssl"
++version = "0.10.81"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "77823a27f0babb03091cb9ed9ef80af3b39dbc82f97e8fa530374b7dafd87a45"
++dependencies = [
++ "bitflags 2.13.2",
++ "cfg-if",
++ "foreign-types 0.3.2",
++ "libc",
++ "openssl-macros",
++ "openssl-sys",
++]
++
++[[package]]
++name = "openssl-macros"
++version = "0.1.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "a948666b637a0f465e8564c73e89d4dde00d72d4d473cc972f390fc3dcee7d9c"
++dependencies = [
++ "proc-macro2",
++ "quote",
++ "syn 2.0.119",
++]
++
++[[package]]
++name = "openssl-probe"
++version = "0.2.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "7c87def4c32ab89d880effc9e097653c8da5d6ef28e6b539d313baaacfbafcbe"
++
++[[package]]
++name = "openssl-sys"
++version = "0.9.117"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "b47e7e6bb2c38cd930d25a23b40fa52e068c10e85f3e03a7f5ba5aaca5713695"
++dependencies = [
++ "cc",
++ "libc",
++ "pkg-config",
++ "vcpkg",
++]
++
++[[package]]
++name = "option-ext"
++version = "0.2.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "04744f49eae99ab78e0d5c0b603ab218f515ea8cfe5a456d7629ad883a3b6e7d"
++
+ [[package]]
+ name = "orbclient"
+ version = "0.3.55"
+@@ -3744,8 +4513,32 @@ version = "0.2.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "9aa2b01e1d916879f73a53d01d1d6cee68adbb31d6d9177a8cfce093cced1d50"
+ dependencies = [
+- "futures-core",
+- "pin-project-lite",
++ "futures-core",
++ "pin-project-lite",
++]
++
++[[package]]
++name = "p256"
++version = "0.13.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c9863ad85fa8f4460f9c48cb909d38a0d689dba1f6f6988a5e3e0d31071bcd4b"
++dependencies = [
++ "ecdsa",
++ "elliptic-curve",
++ "primeorder",
++ "sha2",
++]
++
++[[package]]
++name = "p384"
++version = "0.13.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "fe42f1670a52a47d448f14b6a5c61dd78fce51856e68edaa38f7ae3a46b8d6b6"
++dependencies = [
++ "ecdsa",
++ "elliptic-curve",
++ "primeorder",
++ "sha2",
+ ]
+ 
+ [[package]]
+@@ -3789,6 +4582,25 @@ version = "0.2.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "2ee67f1008b1ba2321834326597b8e186293b049a023cdef258527550b9935b4"
+ 
++[[package]]
++name = "pem"
++version = "3.0.6"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "1d30c53c26bc5b31a98cd02d20f25a7c8567146caf63ed593a9d87b2775291be"
++dependencies = [
++ "base64 0.22.1",
++ "serde_core",
++]
++
++[[package]]
++name = "pem-rfc7468"
++version = "0.7.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "88b39c9bfcfc231068454382784bb460aae594343fb030d46e9f50a645418412"
++dependencies = [
++ "base64ct",
++]
++
+ [[package]]
+ name = "peniko"
+ version = "0.6.1"
+@@ -3930,6 +4742,27 @@ dependencies = [
+  "futures-io",
+ ]
+ 
++[[package]]
++name = "pkcs1"
++version = "0.7.5"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c8ffb9f10fa047879315e6625af03c164b16962a5368d724ed16323b68ace47f"
++dependencies = [
++ "der",
++ "pkcs8",
++ "spki",
++]
++
++[[package]]
++name = "pkcs8"
++version = "0.10.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "f950b2377845cebe5cf8b5165cb3cc1a5e0fa5cfa3e1f7f55707d8fd82e0a7b7"
++dependencies = [
++ "der",
++ "spki",
++]
++
+ [[package]]
+ name = "pkg-config"
+ version = "0.3.34"
+@@ -3990,6 +4823,18 @@ dependencies = [
+  "arrayvec",
+ ]
+ 
++[[package]]
++name = "polyval"
++version = "0.6.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "9d1fe60d06143b2430aa532c94cfe9e29783047f06c0d7fd359a9a51b729fa25"
++dependencies = [
++ "cfg-if",
++ "cpufeatures 0.2.17",
++ "opaque-debug",
++ "universal-hash",
++]
++
+ [[package]]
+ name = "portable-atomic"
+ version = "1.15.0"
+@@ -4035,6 +4880,15 @@ version = "0.3.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "e8cf8e6a8aa66ce33f63993ffc4ea4271eb5b0530a9002db8455ea6050c77bfa"
+ 
++[[package]]
++name = "primeorder"
++version = "0.13.6"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "353e1ca18966c16d9deb1c69278edbc5f194139612772bd9537af60ac231e1e6"
++dependencies = [
++ "elliptic-curve",
++]
++
+ [[package]]
+ name = "proc-macro-crate"
+ version = "3.5.0"
+@@ -4070,7 +4924,7 @@ dependencies = [
+  "bitflags 2.13.2",
+  "num-traits",
+  "rand 0.9.5",
+- "rand_chacha",
++ "rand_chacha 0.9.0",
+  "rand_xorshift",
+  "regex-syntax",
+  "rusty-fork",
+@@ -4149,13 +5003,24 @@ version = "6.0.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
+ 
++[[package]]
++name = "rand"
++version = "0.8.8"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "e058c7de0b26af77780c769414d6257830bb240f3c38477dbc2c16e5f54d6d4c"
++dependencies = [
++ "libc",
++ "rand_chacha 0.3.1",
++ "rand_core 0.6.4",
++]
++
+ [[package]]
+ name = "rand"
+ version = "0.9.5"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "b9ef1d0d795eb7d84685bca4f72f3649f064e6641543d3a8c415898726a57b41"
+ dependencies = [
+- "rand_chacha",
++ "rand_chacha 0.9.0",
+  "rand_core 0.9.5",
+ ]
+ 
+@@ -4170,6 +5035,16 @@ dependencies = [
+  "rand_core 0.10.1",
+ ]
+ 
++[[package]]
++name = "rand_chacha"
++version = "0.3.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "e6c10a63a0fa32252be49d21e7709d4d4baf8d231c2dbce1eaa8141b9b127d88"
++dependencies = [
++ "ppv-lite86",
++ "rand_core 0.6.4",
++]
++
+ [[package]]
+ name = "rand_chacha"
+ version = "0.9.0"
+@@ -4180,6 +5055,15 @@ dependencies = [
+  "rand_core 0.9.5",
+ ]
+ 
++[[package]]
++name = "rand_core"
++version = "0.6.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
++dependencies = [
++ "getrandom 0.2.17",
++]
++
+ [[package]]
+ name = "rand_core"
+ version = "0.9.5"
+@@ -4307,6 +5191,16 @@ dependencies = [
+  "bitflags 2.13.2",
+ ]
+ 
++[[package]]
++name = "redox_users"
++version = "0.5.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "60dc65c0ff1a7ae1294b0c67b9f14baf70b644404010370171787bfac1038fc0"
++dependencies = [
++ "libredox",
++ "thiserror 2.0.21",
++]
++
+ [[package]]
+ name = "regex-syntax"
+ version = "0.8.11"
+@@ -4328,6 +5222,54 @@ version = "1.1.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "19b30a45b0cd0bcca8037f3d0dc3421eaf95327a17cad11964fb8179b4fc4832"
+ 
++[[package]]
++name = "reqwest"
++version = "0.12.28"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "eddd3ca559203180a307f12d114c268abf583f59b03cb906fd0b3ff8646c1147"
++dependencies = [
++ "base64 0.22.1",
++ "bytes",
++ "futures-channel",
++ "futures-core",
++ "futures-util",
++ "http",
++ "http-body",
++ "http-body-util",
++ "hyper",
++ "hyper-tls",
++ "hyper-util",
++ "js-sys",
++ "log",
++ "native-tls",
++ "percent-encoding",
++ "pin-project-lite",
++ "rustls-pki-types",
++ "serde",
++ "serde_json",
++ "serde_urlencoded",
++ "sync_wrapper",
++ "tokio",
++ "tokio-native-tls",
++ "tower",
++ "tower-http",
++ "tower-service",
++ "url",
++ "wasm-bindgen",
++ "wasm-bindgen-futures",
++ "web-sys",
++]
++
++[[package]]
++name = "rfc6979"
++version = "0.4.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "f8dd2a808d456c4a54e300a23e9f5a67e122c3024119acbfd73e3bf664491cb2"
++dependencies = [
++ "hmac",
++ "subtle",
++]
++
+ [[package]]
+ name = "rfd"
+ version = "0.17.2"
+@@ -4364,6 +5306,26 @@ dependencies = [
+  "memchr",
+ ]
+ 
++[[package]]
++name = "rsa"
++version = "0.9.10"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "b8573f03f5883dcaebdfcf4725caa1ecb9c15b2ef50c43a07b816e06799bb12d"
++dependencies = [
++ "const-oid",
++ "digest",
++ "num-bigint-dig",
++ "num-integer",
++ "num-traits",
++ "pkcs1",
++ "pkcs8",
++ "rand_core 0.6.4",
++ "signature",
++ "spki",
++ "subtle",
++ "zeroize",
++]
++
+ [[package]]
+ name = "rustc-hash"
+ version = "1.1.0"
+@@ -4411,6 +5373,15 @@ dependencies = [
+  "windows-sys 0.61.2",
+ ]
+ 
++[[package]]
++name = "rustls-pki-types"
++version = "1.15.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "2f4925028c7eb5d1fcdaf196971378ed9d2c1c4efc7dc5d011256f76c99c0a96"
++dependencies = [
++ "zeroize",
++]
++
+ [[package]]
+ name = "rustversion"
+ version = "1.0.23"
+@@ -4429,6 +5400,12 @@ dependencies = [
+  "wait-timeout",
+ ]
+ 
++[[package]]
++name = "ryu"
++version = "1.0.23"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "9774ba4a74de5f7b1c1451ed6cd5285a32eddb5cccb8cc655a4e50009e06477f"
++
+ [[package]]
+ name = "ryu-js"
+ version = "1.0.3"
+@@ -4444,6 +5421,15 @@ dependencies = [
+  "winapi-util",
+ ]
+ 
++[[package]]
++name = "schannel"
++version = "0.1.29"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "91c1b7e4904c873ef0710c1f407dde2e6287de2bebc1bbbf7d430bb7cbffd939"
++dependencies = [
++ "windows-sys 0.61.2",
++]
++
+ [[package]]
+ name = "scoped-tls"
+ version = "1.0.1"
+@@ -4456,6 +5442,43 @@ version = "1.2.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
+ 
++[[package]]
++name = "sec1"
++version = "0.7.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "d3e97a565f76233a6003f9f5c54be1d9c5bdfa3eccfb189469f11ec4901c47dc"
++dependencies = [
++ "base16ct",
++ "der",
++ "generic-array",
++ "pkcs8",
++ "subtle",
++ "zeroize",
++]
++
++[[package]]
++name = "security-framework"
++version = "3.7.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "b7f4bc775c73d9a02cde8bf7b2ec4c9d12743edf609006c7facc23998404cd1d"
++dependencies = [
++ "bitflags 2.13.2",
++ "core-foundation 0.10.1",
++ "core-foundation-sys",
++ "libc",
++ "security-framework-sys",
++]
++
++[[package]]
++name = "security-framework-sys"
++version = "2.17.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "6ce2691df843ecc5d231c0b14ece2acc3efb62c0a398c7e1d875f3983ce020e3"
++dependencies = [
++ "core-foundation-sys",
++ "libc",
++]
++
+ [[package]]
+ name = "self_cell"
+ version = "1.3.0"
+@@ -4531,6 +5554,29 @@ dependencies = [
+  "serde_core",
+ ]
+ 
++[[package]]
++name = "serde_urlencoded"
++version = "0.7.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "d3491c14715ca2294c4d6a88f15e84739788c1d030eed8c110436aafdaa2f3fd"
++dependencies = [
++ "form_urlencoded",
++ "itoa",
++ "ryu",
++ "serde",
++]
++
++[[package]]
++name = "sha2"
++version = "0.10.9"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "a7507d819769d01a365ab707794a4084392c824f54a7a6a7862f8c3d0892b283"
++dependencies = [
++ "cfg-if",
++ "cpufeatures 0.2.17",
++ "digest",
++]
++
+ [[package]]
+ name = "shlex"
+ version = "2.0.1"
+@@ -4547,6 +5593,16 @@ dependencies = [
+  "libc",
+ ]
+ 
++[[package]]
++name = "signature"
++version = "2.2.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "77549399552de45a898a580c1b41d445bf730df867cc44e6c0233bbc4b8329de"
++dependencies = [
++ "digest",
++ "rand_core 0.6.4",
++]
++
+ [[package]]
+ name = "simd-adler32"
+ version = "0.3.10"
+@@ -4569,6 +5625,18 @@ version = "0.1.5"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "e3a9fe34e3e7a50316060351f37187a3f546bce95496156754b601a5fa71b76e"
+ 
++[[package]]
++name = "simple_asn1"
++version = "0.6.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "0d585997b0ac10be3c5ee635f1bab02d512760d14b7c468801ac8a01d9ae5f1d"
++dependencies = [
++ "num-bigint 0.4.8",
++ "num-traits",
++ "thiserror 2.0.21",
++ "time",
++]
++
+ [[package]]
+ name = "siphasher"
+ version = "1.0.4"
+@@ -4690,6 +5758,16 @@ dependencies = [
+  "serde",
+ ]
+ 
++[[package]]
++name = "socket2"
++version = "0.6.5"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c3d1e2c7f27f8d4cb10542a02c49005dbd6e93095799d6f3be745fae9f8fedd4"
++dependencies = [
++ "libc",
++ "windows-sys 0.61.2",
++]
++
+ [[package]]
+ name = "spin"
+ version = "0.9.9"
+@@ -4705,6 +5783,16 @@ dependencies = [
+  "bitflags 2.13.2",
+ ]
+ 
++[[package]]
++name = "spki"
++version = "0.7.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "d91ed6c858b01f942cd56b37a94b3e0a1798290327d1236e4d9cf4eaca44d29d"
++dependencies = [
++ "base64ct",
++ "der",
++]
++
+ [[package]]
+ name = "stable_deref_trait"
+ version = "1.2.1"
+@@ -4754,6 +5842,12 @@ dependencies = [
+  "syn 2.0.119",
+ ]
+ 
++[[package]]
++name = "subtle"
++version = "2.6.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
++
+ [[package]]
+ name = "symphonia"
+ version = "0.5.5"
+@@ -4934,6 +6028,15 @@ dependencies = [
+  "unicode-ident",
+ ]
+ 
++[[package]]
++name = "sync_wrapper"
++version = "1.0.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "0bf256ce5efdfa370213c1dabab5935a12e49f2c58d15e9eac2870d3b4f27263"
++dependencies = [
++ "futures-core",
++]
++
+ [[package]]
+ name = "synstructure"
+ version = "0.14.0"
+@@ -5113,7 +6216,22 @@ version = "1.53.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "202caea871b69668250d242070849eb495be178ed697a3e98aebce5bc81a0bed"
+ dependencies = [
++ "bytes",
++ "libc",
++ "mio",
+  "pin-project-lite",
++ "socket2",
++ "windows-sys 0.61.2",
++]
++
++[[package]]
++name = "tokio-native-tls"
++version = "0.3.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "bbae76ab933c85776efabc971569dd6119c580d8f5d448769dec1764bf796ef2"
++dependencies = [
++ "native-tls",
++ "tokio",
+ ]
+ 
+ [[package]]
+@@ -5167,6 +6285,51 @@ version = "1.1.2+spec-1.1.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "7d56353a2a665ad0f41a421187180aab746c8c325620617ad883a99a1cbe66d2"
+ 
++[[package]]
++name = "tower"
++version = "0.5.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ebe5ef63511595f1344e2d5cfa636d973292adc0eec1f0ad45fae9f0851ab1d4"
++dependencies = [
++ "futures-core",
++ "futures-util",
++ "pin-project-lite",
++ "sync_wrapper",
++ "tokio",
++ "tower-layer",
++ "tower-service",
++]
++
++[[package]]
++name = "tower-http"
++version = "0.6.11"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "4cfcf7e2740e6fc6d4d688b4ef00650406bb94adf4731e43c096c3a19fe40840"
++dependencies = [
++ "bitflags 2.13.2",
++ "bytes",
++ "futures-util",
++ "http",
++ "http-body",
++ "pin-project-lite",
++ "tower",
++ "tower-layer",
++ "tower-service",
++ "url",
++]
++
++[[package]]
++name = "tower-layer"
++version = "0.3.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "121c2a6cda46980bb0fcd1647ffaf6cd3fc79a013de288782836f6df9c48780e"
++
++[[package]]
++name = "tower-service"
++version = "0.3.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "8df9b6e13f2d32c91b9bd719c00d1958837bc7dec474d94952798cc8e69eeec3"
++
+ [[package]]
+ name = "tracing"
+ version = "0.1.44"
+@@ -5199,6 +6362,12 @@ dependencies = [
+  "once_cell",
+ ]
+ 
++[[package]]
++name = "try-lock"
++version = "0.2.5"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
++
+ [[package]]
+ name = "type-map"
+ version = "0.5.1"
+@@ -5208,6 +6377,12 @@ dependencies = [
+  "rustc-hash 2.1.3",
+ ]
+ 
++[[package]]
++name = "typenum"
++version = "1.20.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "b6f5e870be6c3b371b77fe0ee0bafb859fa4964b4404c27de1d380043c4dda20"
++
+ [[package]]
+ name = "uds_windows"
+ version = "1.2.1"
+@@ -5261,6 +6436,16 @@ version = "0.2.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "b4ac048d71ede7ee76d585517add45da530660ef4390e49b098733c6e897f254"
+ 
++[[package]]
++name = "universal-hash"
++version = "0.5.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "fc1de2c688dc15305988b563c3854064043356019f97a4b46276fe734c4f07ea"
++dependencies = [
++ "crypto-common",
++ "subtle",
++]
++
+ [[package]]
+ name = "url"
+ version = "2.5.8"
+@@ -5296,6 +6481,12 @@ dependencies = [
+  "wasm-bindgen",
+ ]
+ 
++[[package]]
++name = "vcpkg"
++version = "0.2.15"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
++
+ [[package]]
+ name = "vello_common"
+ version = "0.1.0"
+@@ -5348,6 +6539,21 @@ dependencies = [
+  "winapi-util",
+ ]
+ 
++[[package]]
++name = "want"
++version = "0.3.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ec4cdd0dd910afe868b7ef477227d8d538b46b3075031afee8a9f2acb0a2ed0b"
++dependencies = [
++ "try-lock",
++]
++
++[[package]]
++name = "wasi"
++version = "0.11.1+wasi-snapshot-preview1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "ccf3ec651a847eb01de73ccad15eb7d99f80485de043efb2f370cd654f4ea44b"
++
+ [[package]]
+ name = "wasip2"
+ version = "1.0.4+wasi-0.2.12"
+@@ -6282,7 +7488,7 @@ dependencies = [
+  "calloop 0.13.0",
+  "cfg_aliases",
+  "concurrent-queue",
+- "core-foundation",
++ "core-foundation 0.9.4",
+  "core-graphics",
+  "cursor-icon",
+  "dpi",
+@@ -6595,6 +7801,12 @@ dependencies = [
+  "synstructure",
+ ]
+ 
++[[package]]
++name = "zeroize"
++version = "1.9.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "e13084392c5e4bc371903e2935a5eaeed24905a7511356b883835e18a78f6879"
++
+ [[package]]
+ name = "zerotrie"
+ version = "0.2.5"
 diff --git a/apps/effectcraft/Cargo.toml b/apps/effectcraft/Cargo.toml
 index 5ca52d6..c4b9db6 100644
 --- a/apps/effectcraft/Cargo.toml
@@ -64,983 +1897,3 @@ index 5afb3c7..ba56097 100644
          }),
      )
  }
-diff --git a/apps/effectcraft/src/chatgpt.rs b/apps/effectcraft/src/chatgpt.rs
-new file mode 100644
---- /dev/null
-+++ b/apps/effectcraft/src/chatgpt.rs
-@@ -0,0 +1,900 @@
-+//! Native, optional ChatGPT connection. Credentials never enter document/UI state.
-+#![forbid(unsafe_code)]
-+use aes_gcm::{
-+    Aes256Gcm, Nonce,
-+    aead::{Aead, KeyInit},
-+};
-+use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
-+use jsonwebtoken::{Algorithm, DecodingKey, Validation, decode, decode_header, jwk::JwkSet};
-+use reqwest::blocking::Client;
-+use serde::{Deserialize, Serialize};
-+use sha2::{Digest, Sha256};
-+use std::{
-+    collections::HashMap,
-+    io::{Read, Write},
-+    net::{TcpListener, TcpStream},
-+    path::PathBuf,
-+    sync::{
-+        Arc, Mutex,
-+        atomic::{AtomicBool, Ordering},
-+        mpsc,
-+    },
-+    time::{Duration, Instant, SystemTime, UNIX_EPOCH},
-+};
-+use url::Url;
-+
-+const APP: &str = "EffectCraft";
-+const SERVICE: &str = "ai.storyteller.effectcraft.chatgpt";
-+const ISSUER: &str = "https://auth.openai.com";
-+const RESOURCE: &str = "https://api.openai.com/v1";
-+const SCOPES: &str = "openid profile email offline_access resource.invoke chatgpt.tokens.use.direct";
-+const LIMIT: u64 = 128 * 1024;
-+
-+#[derive(Clone, Default, Serialize)]
-+struct Status {
-+    last_action_ok: Option<bool>,
-+    busy: bool,
-+    connected: bool,
-+    plan_usage: bool,
-+    email: Option<String>,
-+    expires_at: Option<u64>,
-+    message: String,
-+}
-+#[derive(Clone, Serialize, Deserialize)]
-+struct Account {
-+    client_id: String,
-+    subject: String,
-+    email: Option<String>,
-+    id_token: String,
-+    access_token: String,
-+    refresh_token: Option<String>,
-+    scopes: Vec<String>,
-+    expires_at: u64,
-+}
-+#[derive(Deserialize)]
-+struct Tokens {
-+    id_token: Option<String>,
-+    access_token: String,
-+    refresh_token: Option<String>,
-+    scope: Option<String>,
-+    token_type: String,
-+    expires_in: u64,
-+}
-+#[derive(Clone, Deserialize)]
-+struct Claims {
-+    iat: u64,
-+    sub: String,
-+    email: Option<String>,
-+    nonce: Option<String>,
-+}
-+
-+fn now() -> Result<u64, String> {
-+    SystemTime::now().duration_since(UNIX_EPOCH).map(|n| n.as_secs()).map_err(|_| "System clock is invalid".into())
-+}
-+fn random<const N: usize>() -> Result<[u8; N], String> {
-+    let mut bytes = [0; N];
-+    getrandom::fill(&mut bytes).map_err(|_| "Secure randomness is unavailable")?;
-+    Ok(bytes)
-+}
-+fn http() -> Result<Client, String> {
-+    Client::builder()
-+        .timeout(Duration::from_secs(20))
-+        .redirect(reqwest::redirect::Policy::none())
-+        .user_agent(concat!("Craft-ChatGPT/", env!("CARGO_PKG_VERSION")))
-+        .build()
-+        .map_err(|_| "Could not initialize HTTPS".into())
-+}
-+fn json_response(response: reqwest::blocking::Response) -> Result<serde_json::Value, String> {
-+    if !response.status().is_success() {
-+        return Err(format!("OpenAI request failed (HTTP {}). Reconnect or try again.", response.status().as_u16()));
-+    }
-+    let mut bytes = Vec::new();
-+    response.take(LIMIT + 1).read_to_end(&mut bytes).map_err(|_| "Could not read OpenAI response")?;
-+    if bytes.len() as u64 > LIMIT {
-+        return Err("OpenAI response exceeded the local size limit".into());
-+    }
-+    serde_json::from_slice(&bytes).map_err(|_| "OpenAI returned invalid JSON".into())
-+}
-+
-+struct Store {
-+    dir: PathBuf,
-+}
-+impl Store {
-+    fn new() -> Result<Self, String> {
-+        let dirs = directories::ProjectDirs::from("ai", "storyteller", "effectcraft-chatgpt").ok_or("No user configuration directory")?;
-+        Ok(Self { dir: dirs.config_local_dir().to_path_buf() })
-+    }
-+    fn lock(&self) -> Result<std::fs::File, String> {
-+        std::fs::create_dir_all(&self.dir).map_err(|_| "Could not create ChatGPT configuration directory")?;
-+        let file = std::fs::OpenOptions::new()
-+            .read(true)
-+            .write(true)
-+            .create(true)
-+            .truncate(false)
-+            .open(self.dir.join("connection.lock"))
-+            .map_err(|_| "Could not open ChatGPT connection lock")?;
-+        fs2::FileExt::try_lock_exclusive(&file).map_err(|_| "ChatGPT credentials are in use by another instance of this app")?;
-+        Ok(file)
-+    }
-+    fn read_public(&self, name: &str) -> Result<String, String> {
-+        let file = std::fs::File::open(self.dir.join(name)).map_err(|_| "Could not read ChatGPT registration metadata")?;
-+        let mut bytes = Vec::new();
-+        file.take(LIMIT + 1).read_to_end(&mut bytes).map_err(|_| "Could not read ChatGPT registration metadata")?;
-+        if bytes.len() as u64 > LIMIT {
-+            return Err("ChatGPT registration metadata is too large".into());
-+        }
-+        String::from_utf8(bytes).map_err(|_| "ChatGPT registration metadata is not UTF-8".into())
-+    }
-+    fn host(&self) -> Result<String, String> {
-+        let path = self.dir.join("host.json");
-+        if path.exists() {
-+            let text = self.read_public("host.json")?;
-+            let id: String = serde_json::from_str(&text).map_err(|_| "ChatGPT host ID is corrupt; restore host.json before reconnecting")?;
-+            let parsed = id.strip_prefix("urn:uuid:").and_then(|x| uuid::Uuid::parse_str(x).ok()).ok_or("ChatGPT host ID is invalid")?;
-+            if parsed.is_nil() {
-+                return Err("ChatGPT host ID is invalid".into());
-+            }
-+            return Ok(id);
-+        }
-+        let id = format!("urn:uuid:{}", uuid::Builder::from_random_bytes(random::<16>()?).into_uuid());
-+        self.write("host.json", serde_json::to_vec(&id).map_err(|_| "Could not serialize host ID")?.as_slice())?;
-+        Ok(id)
-+    }
-+    fn cipher(&self, create: bool) -> Result<Aes256Gcm, String> {
-+        let entry = keyring::Entry::new(SERVICE, "encryption-key").map_err(|_| "Secure credential store is unavailable")?;
-+        let key = match entry.get_secret() {
-+            Ok(key) => key,
-+            Err(keyring::Error::NoEntry) if create => {
-+                let key = random::<32>()?.to_vec();
-+                entry.set_secret(&key).map_err(|_| "Could not protect the ChatGPT encryption key")?;
-+                key
-+            }
-+            _ => return Err("ChatGPT credential key is missing or the OS credential store is locked. No plaintext fallback is used.".into()),
-+        };
-+        Aes256Gcm::new_from_slice(&key).map_err(|_| "ChatGPT encryption key has an invalid length".into())
-+    }
-+    fn load(&self) -> Result<Option<Account>, String> {
-+        let path = self.dir.join("account.enc");
-+        if !path.exists() {
-+            return Ok(None);
-+        }
-+        let metadata = std::fs::metadata(&path).map_err(|_| "Could not inspect ChatGPT credentials")?;
-+        if metadata.len() > LIMIT {
-+            return Err("ChatGPT credential file exceeds the local size limit".into());
-+        }
-+        let bytes = std::fs::read(path).map_err(|_| "Could not read ChatGPT credentials")?;
-+        let nonce: [u8; 12] = bytes.get(..12).ok_or("Truncated ChatGPT credentials")?.try_into().map_err(|_| "Invalid nonce")?;
-+        let encrypted = bytes.get(12..).ok_or("Truncated ChatGPT credentials")?;
-+        let plain = self.cipher(false)?.decrypt(&Nonce::from(nonce), encrypted).map_err(|_| "ChatGPT credentials could not be authenticated")?;
-+        serde_json::from_slice(&plain).map(Some).map_err(|_| "ChatGPT credentials are corrupt".into())
-+    }
-+    fn save(&self, account: &Account) -> Result<(), String> {
-+        let plain = serde_json::to_vec(account).map_err(|_| "Could not serialize ChatGPT credentials")?;
-+        let nonce = random::<12>()?;
-+        let encrypted = self.cipher(true)?.encrypt(&Nonce::from(nonce), plain.as_slice()).map_err(|_| "Could not encrypt ChatGPT credentials")?;
-+        let mut bytes = nonce.to_vec();
-+        bytes.extend(encrypted);
-+        if bytes.len() as u64 > LIMIT {
-+            return Err("ChatGPT credentials exceed the local size limit".into());
-+        }
-+        self.write("account.enc", &bytes)
-+    }
-+    fn write(&self, name: &str, bytes: &[u8]) -> Result<(), String> {
-+        std::fs::create_dir_all(&self.dir).map_err(|_| "Could not create ChatGPT configuration directory")?;
-+        #[cfg(unix)]
-+        {
-+            use std::os::unix::fs::PermissionsExt;
-+            std::fs::set_permissions(&self.dir, std::fs::Permissions::from_mode(0o700)).map_err(|_| "Could not protect ChatGPT directory")?;
-+        }
-+        let path = self.dir.join(name);
-+        // Every credential byte passed here is already encrypted.
-+        let mut out = atomic_write_file::AtomicWriteFile::open(&path).map_err(|_| "Could not prepare ChatGPT credential replacement")?;
-+        out.write_all(bytes).map_err(|_| "Could not write ChatGPT connection")?;
-+        out.commit().map_err(|_| "Could not atomically replace ChatGPT connection")?;
-+        #[cfg(unix)]
-+        {
-+            use std::os::unix::fs::PermissionsExt;
-+            std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o600)).map_err(|_| "Could not protect ChatGPT file")?;
-+        }
-+        Ok(())
-+    }
-+    fn clear(&self) -> Result<(), String> {
-+        for name in ["account.enc", "registration.json"] {
-+            match std::fs::remove_file(self.dir.join(name)) {
-+                Ok(()) => {}
-+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
-+                _ => return Err("Could not remove saved ChatGPT credentials".into()),
-+            }
-+        }
-+        Ok(())
-+    }
-+}
-+
-+fn validate_claims(token: &str, client_id: &str, nonce: Option<&str>, previous: Option<&Account>, keys: &JwkSet) -> Result<Claims, String> {
-+    let header = decode_header(token).map_err(|_| "Invalid OpenAI ID token")?;
-+    if !matches!(header.alg, Algorithm::RS256 | Algorithm::ES256) {
-+        return Err("Unsupported OpenAI ID-token algorithm".into());
-+    }
-+    let key = keys.find(header.kid.as_deref().ok_or("ID token has no key ID")?).ok_or("OpenAI signing key was not found")?;
-+    let key = DecodingKey::from_jwk(key).map_err(|_| "Invalid OpenAI signing key")?;
-+    let mut validation = Validation::new(header.alg);
-+    validation.set_audience(&[client_id]);
-+    validation.set_issuer(&[ISSUER]);
-+    validation.set_required_spec_claims(&["sub", "exp", "iat", "iss", "aud"]);
-+    validation.leeway = 5;
-+    validation.validate_nbf = true;
-+    let claims = decode::<Claims>(token, &key, &validation).map_err(|_| "OpenAI ID-token signature, issuer, audience or expiry did not validate")?.claims;
-+    if claims.iat > now()?.saturating_add(5) || claims.sub.is_empty() || nonce.is_some_and(|n| claims.nonce.as_deref() != Some(n)) {
-+        return Err("OpenAI ID-token identity or nonce did not validate".into());
-+    }
-+    if previous.is_some_and(|p| p.subject != claims.sub || p.client_id != client_id) {
-+        return Err("Sign-in returned a different account; disconnect before switching accounts".into());
-+    }
-+    Ok(claims)
-+}
-+fn exchange(client: &Client, params: &[(&str, &str)], client_id: &str, nonce: Option<&str>, previous: Option<&Account>) -> Result<Account, String> {
-+    let data =
-+        json_response(client.post(format!("{ISSUER}/api/accounts/oauth/token")).form(params).send().map_err(|_| "Could not exchange ChatGPT authorization")?)?;
-+    let tokens: Tokens = serde_json::from_value(data).map_err(|_| "OpenAI returned an incomplete token response")?;
-+    if !tokens.token_type.eq_ignore_ascii_case("Bearer") || tokens.access_token.is_empty() || tokens.expires_in == 0 {
-+        return Err("OpenAI returned invalid access-token metadata".into());
-+    }
-+    let id_token = tokens.id_token.or_else(|| previous.map(|p| p.id_token.clone())).ok_or("OpenAI did not return an ID token")?;
-+    // Refresh may omit an ID token: retain the previously verified identity in that case.
-+    let identity = if nonce.is_some() || previous.is_none() || previous.is_some_and(|p| p.id_token != id_token) {
-+        let value = json_response(client.get(format!("{ISSUER}/.well-known/jwks.json")).send().map_err(|_| "Could not retrieve OpenAI signing keys")?)?;
-+        let keys = serde_json::from_value(value).map_err(|_| "OpenAI signing-key response is invalid")?;
-+        validate_claims(&id_token, client_id, nonce, previous, &keys)?
-+    } else {
-+        let p = previous.ok_or("No verified previous account")?;
-+        Claims { iat: 0, sub: p.subject.clone(), email: p.email.clone(), nonce: None }
-+    };
-+    let scopes = match tokens.scope {
-+        Some(s) => s.split_whitespace().map(str::to_owned).collect(),
-+        None if nonce.is_none() => previous.ok_or("No previous granted scopes")?.scopes.clone(),
-+        None => return Err("OpenAI did not return granted scopes".into()),
-+    };
-+    Ok(Account {
-+        client_id: client_id.into(),
-+        subject: identity.sub,
-+        email: identity.email,
-+        id_token,
-+        access_token: tokens.access_token,
-+        refresh_token: tokens.refresh_token.or_else(|| previous.and_then(|p| p.refresh_token.clone())),
-+        scopes,
-+        expires_at: now()?.checked_add(tokens.expires_in).ok_or("Invalid token expiry")?,
-+    })
-+}
-+
-+fn authorization(host: &str, redirect: &str, state: &str, nonce: &str, verifier: &str, previous: Option<&Account>) -> Result<Url, String> {
-+    let mut url = Url::parse(&format!("{ISSUER}/api/accounts/authorize")).map_err(|_| "Invalid authorization URL")?;
-+    let challenge = URL_SAFE_NO_PAD.encode(Sha256::digest(verifier.as_bytes()));
-+    let mut q = url.query_pairs_mut();
-+    q.extend_pairs([
-+        ("client_id", previous.map_or("dynamic_agent_client", |p| p.client_id.as_str())),
-+        ("ext_agent_host_id", host),
-+        ("response_type", "code"),
-+        ("redirect_uri", redirect),
-+        ("scope", SCOPES),
-+        ("resource", RESOURCE),
-+        ("state", state),
-+        ("nonce", nonce),
-+        ("code_challenge_method", "S256"),
-+        ("code_challenge", &challenge),
-+    ]);
-+    if let Some(p) = previous {
-+        q.append_pair("id_token_hint", &p.id_token);
-+    } else {
-+        q.append_pair("agent_name_hint", APP);
-+    }
-+    drop(q);
-+    Ok(url)
-+}
-+fn callback(target: &str, state: &str, previous: Option<&Account>) -> Result<(String, String), String> {
-+    if !target.starts_with("/auth/callback?") {
-+        return Err("Not an OAuth callback".into());
-+    }
-+    let url = Url::parse(&format!("http://127.0.0.1{target}")).map_err(|_| "Invalid OAuth callback")?;
-+    let mut values = HashMap::new();
-+    for (k, v) in url.query_pairs() {
-+        if values.insert(k.into_owned(), v.into_owned()).is_some() {
-+            return Err("Duplicate OAuth callback parameter".into());
-+        }
-+    }
-+    let returned = values.get("state").ok_or("OAuth callback has no state")?;
-+    if returned.len() != state.len() || returned.bytes().zip(state.bytes()).fold(0u8, |a, (x, y)| a | (x ^ y)) != 0 {
-+        return Err("OAuth callback state did not match".into());
-+    }
-+    if values.contains_key("error") {
-+        return Err("ChatGPT authorization was declined or failed".into());
-+    }
-+    let id = match (previous, values.get("client_id")) {
-+        (Some(p), Some(id)) if id == &p.client_id => id.clone(),
-+        (Some(p), None) => p.client_id.clone(),
-+        (None, Some(id)) if id.starts_with("oaiapp_") => id.clone(),
-+        _ => return Err("OAuth callback has a missing or unexpected client ID".into()),
-+    };
-+    let code = values.get("code").filter(|x| !x.is_empty()).ok_or("OAuth callback has no code")?.clone();
-+    Ok((id, code))
-+}
-+fn request_target(stream: &mut TcpStream, host: &str) -> Result<String, String> {
-+    stream.set_read_timeout(Some(Duration::from_secs(2))).map_err(|_| "Could not set callback timeout")?;
-+    stream.set_write_timeout(Some(Duration::from_secs(2))).map_err(|_| "Could not set callback timeout")?;
-+    let mut data = Vec::new();
-+    let mut chunk = [0; 512];
-+    while data.len() < 16 * 1024 {
-+        let n = stream.read(&mut chunk).map_err(|_| "Could not read callback")?;
-+        if n == 0 {
-+            break;
-+        }
-+        data.extend_from_slice(chunk.get(..n).ok_or("Invalid callback read")?);
-+        if data.windows(4).any(|x| x == b"\r\n\r\n") {
-+            break;
-+        }
-+    }
-+    if !data.windows(4).any(|x| x == b"\r\n\r\n") {
-+        return Err("Incomplete callback headers".into());
-+    }
-+    if data.len() >= 16 * 1024 {
-+        return Err("Callback headers are too large".into());
-+    }
-+    let text = std::str::from_utf8(&data).map_err(|_| "Callback is not UTF-8")?;
-+    let mut lines = text.split("\r\n");
-+    let mut parts = lines.next().ok_or("Callback has no request line")?.split_whitespace();
-+    if parts.next() != Some("GET") {
-+        return Err("Callback must use GET".into());
-+    }
-+    let target = parts.next().ok_or("Callback has no path")?;
-+    if !matches!(parts.next(), Some("HTTP/1.1" | "HTTP/1.0")) || parts.next().is_some() {
-+        return Err("Invalid callback request line".into());
-+    }
-+    let hosts: Vec<_> = lines.filter_map(|line| line.split_once(':')).filter(|(k, _)| k.eq_ignore_ascii_case("host")).collect();
-+    if hosts.len() != 1 || hosts.first().is_none_or(|(_, v)| v.trim() != host) {
-+        return Err("Invalid callback host".into());
-+    }
-+    Ok(target.to_owned())
-+}
-+fn reply(stream: &mut TcpStream, code: &str, message: &str) {
-+    let text = format!(
-+        "HTTP/1.1 {code}\r\nContent-Type: text/plain; charset=utf-8\r\nCache-Control: no-store\r\nReferrer-Policy: no-referrer\r\nConnection: close\r\nContent-Length: {}\r\n\r\n{message}",
-+        message.len()
-+    );
-+    // Browser disconnection must not invalidate an otherwise validated OAuth callback.
-+    let _ = stream.write_all(text.as_bytes());
-+}
-+fn sign_in(store: &Store, previous: Option<&Account>, cancelled: &AtomicBool) -> Result<Account, String> {
-+    let _cipher = store.cipher(true)?;
-+    let host = store.host()?;
-+    let listener = TcpListener::bind(("127.0.0.1", 0)).map_err(|_| "Could not bind the local ChatGPT callback")?;
-+    listener.set_nonblocking(true).map_err(|_| "Could not configure ChatGPT callback")?;
-+    let address = listener.local_addr().map_err(|_| "Could not read callback address")?;
-+    let redirect = format!("http://{address}/auth/callback");
-+    let state = URL_SAFE_NO_PAD.encode(random::<32>()?);
-+    let nonce = URL_SAFE_NO_PAD.encode(random::<32>()?);
-+    let verifier = URL_SAFE_NO_PAD.encode(random::<32>()?);
-+    let registration = store.dir.join("registration.json");
-+    let retained: Option<String> = if previous.is_none() && registration.exists() {
-+        let text = store.read_public("registration.json")?;
-+        let id: String = serde_json::from_str(&text).map_err(|_| "Saved ChatGPT registration is invalid")?;
-+        if !id.starts_with("oaiapp_") {
-+            return Err("Saved ChatGPT registration is invalid".into());
-+        }
-+        Some(id)
-+    } else {
-+        None
-+    };
-+    let mut url = authorization(&host, &redirect, &state, &nonce, &verifier, previous)?;
-+    if let Some(id) = retained.as_deref() {
-+        let pairs: Vec<(String, String)> =
-+            url.query_pairs().filter(|(k, _)| k != "client_id" && k != "agent_name_hint").map(|(k, v)| (k.into_owned(), v.into_owned())).collect();
-+        url.set_query(None);
-+        url.query_pairs_mut().extend_pairs(pairs).append_pair("client_id", id);
-+    }
-+    if cancelled.load(Ordering::SeqCst) {
-+        return Err("ChatGPT sign-in cancelled".into());
-+    }
-+    open::that(url.as_str()).map_err(|_| "Could not open the system browser")?;
-+    let deadline = Instant::now() + Duration::from_secs(180);
-+    while Instant::now() < deadline {
-+        if cancelled.load(Ordering::SeqCst) {
-+            return Err("ChatGPT sign-in cancelled".into());
-+        }
-+        match listener.accept() {
-+            Ok((mut stream, _)) => {
-+                let target = match request_target(&mut stream, &address.to_string()) {
-+                    Ok(t) => t,
-+                    Err(_) => {
-+                        reply(&mut stream, "400 Bad Request", "Invalid callback request.");
-+                        continue;
-+                    }
-+                };
-+                // Stray browser requests and forged states do not consume the active attempt.
-+                let checked = callback(&target, &state, previous);
-+                if checked.as_ref().is_err_and(|e| {
-+                    e == "OAuth callback state did not match"
-+                        || e == "Not an OAuth callback"
-+                        || e == "OAuth callback has no state"
-+                        || e == "Duplicate OAuth callback parameter"
-+                }) {
-+                    reply(&mut stream, "400 Bad Request", "This request does not belong to the pending sign-in.");
-+                    continue;
-+                }
-+                let checked = if retained.is_some() && previous.is_none() {
-+                    // Returning registration callbacks may omit client_id. Bind it to the pending request.
-+                    let pending = Account {
-+                        client_id: retained.clone().ok_or("Missing pending registration")?,
-+                        subject: String::new(),
-+                        email: None,
-+                        id_token: String::new(),
-+                        access_token: String::new(),
-+                        refresh_token: None,
-+                        scopes: vec![],
-+                        expires_at: 0,
-+                    };
-+                    callback(&target, &state, Some(&pending))
-+                } else {
-+                    checked
-+                };
-+                let (client_id, code) = match checked {
-+                    Ok(x) => x,
-+                    Err(e) => {
-+                        reply(&mut stream, "400 Bad Request", "ChatGPT authorization failed. Return to the app.");
-+                        return Err(e);
-+                    }
-+                };
-+                store.write("registration.json", &serde_json::to_vec(&client_id).map_err(|_| "Could not save issued ChatGPT client ID")?)?;
-+                reply(&mut stream, "200 OK", "Authorization received. Return to the app to check connection status.");
-+                let account = exchange(
-+                    &http()?,
-+                    &[
-+                        ("grant_type", "authorization_code"),
-+                        ("client_id", &client_id),
-+                        ("code", &code),
-+                        ("code_verifier", &verifier),
-+                        ("redirect_uri", &redirect),
-+                        ("resource", RESOURCE),
-+                    ],
-+                    &client_id,
-+                    Some(&nonce),
-+                    previous,
-+                )?;
-+                if cancelled.load(Ordering::SeqCst) {
-+                    return Err("ChatGPT sign-in cancelled".into());
-+                }
-+                return Ok(account);
-+            }
-+            Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => std::thread::sleep(Duration::from_millis(50)),
-+            Err(_) => return Err("ChatGPT callback listener failed".into()),
-+        }
-+    }
-+    Err("ChatGPT sign-in timed out; please try again".into())
-+}
-+fn revoke(account: &Account) -> bool {
-+    let result = (|| {
-+        let client = http()?;
-+        let discovery = json_response(client.get(format!("{ISSUER}/.well-known/openid-configuration")).send().map_err(|_| "Discovery failed")?)?;
-+        let endpoint = discovery.get("revocation_endpoint").and_then(serde_json::Value::as_str).ok_or("No revocation endpoint")?;
-+        let endpoint = Url::parse(endpoint).map_err(|_| "Invalid revocation endpoint")?;
-+        if endpoint.origin().ascii_serialization() != ISSUER {
-+            return Err("Revocation origin did not match".into());
-+        }
-+        let token = account.refresh_token.as_deref().unwrap_or(&account.access_token);
-+        let hint = if account.refresh_token.is_some() { "refresh_token" } else { "access_token" };
-+        let response = client
-+            .post(endpoint)
-+            .form(&[("client_id", account.client_id.as_str()), ("token", token), ("token_type_hint", hint)])
-+            .send()
-+            .map_err(|_| "Revocation failed")?;
-+        if response.status().is_success() { Ok(()) } else { Err("Revocation failed".into()) }
-+    })();
-+    let result: Result<(), String> = result;
-+    result.is_ok()
-+}
-+fn snapshot(account: Option<&Account>, message: String) -> Status {
-+    let connected = account.is_some_and(|a| now().is_ok_and(|n| a.expires_at > n));
-+    Status {
-+        last_action_ok: None,
-+        busy: false,
-+        connected,
-+        plan_usage: connected
-+            && account.is_some_and(|a| a.scopes.iter().any(|s| s == "chatgpt.tokens.use.direct") && a.scopes.iter().any(|s| s == "resource.invoke")),
-+        email: account.and_then(|a| a.email.clone()),
-+        expires_at: account.map(|a| a.expires_at),
-+        message,
-+    }
-+}
-+
-+struct Runtime {
-+    status: Arc<Mutex<Status>>,
-+    sender: mpsc::SyncSender<String>,
-+    cancel: Arc<AtomicBool>,
-+}
-+impl Runtime {
-+    fn new() -> Self {
-+        let status = Arc::new(Mutex::new(Status { busy: true, message: "Loading ChatGPT connection…".into(), ..Default::default() }));
-+        let cancel = Arc::new(AtomicBool::new(false));
-+        let (sender, rx) = mpsc::sync_channel::<String>(1);
-+        let shared = status.clone();
-+        let cancelled = cancel.clone();
-+        let result = std::thread::Builder::new().name("chatgpt-connection".into()).spawn(move || {
-+            let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-+                let store = Store::new()?;
-+                let _lock = store.lock()?;
-+                let (mut account, mut load_error) = match store.load() {
-+                    Ok(a) => (a, None),
-+                    Err(e) => (None, Some(e)),
-+                };
-+                *shared.lock().unwrap_or_else(std::sync::PoisonError::into_inner) = snapshot(
-+                    account.as_ref(),
-+                    load_error.clone().unwrap_or_else(|| "ChatGPT connection is optional. No AI requests run automatically.".into()),
-+                );
-+                while let Ok(action) = rx.recv() {
-+                    let result = match action.as_str() {
-+                        "sign_in" if load_error.is_some() => {
-+                            Err("Existing credentials could not be read. Disconnect explicitly before starting a new registration.".into())
-+                        }
-+                        "sign_in" => sign_in(&store, account.as_ref(), &cancelled).and_then(|new| {
-+                            if cancelled.load(Ordering::SeqCst) {
-+                                return Err("ChatGPT sign-in cancelled".into());
-+                            }
-+                            store.save(&new)?;
-+                            account = Some(new);
-+                            Ok("ChatGPT identity verified and connection saved.".to_owned())
-+                        }),
-+                        "refresh" => (|| {
-+                            let old = account.as_ref().ok_or("No saved ChatGPT account")?;
-+                            let token = old.refresh_token.as_deref().ok_or("No refresh token; reconnect with ChatGPT")?;
-+                            let new = exchange(
-+                                &http()?,
-+                                &[("grant_type", "refresh_token"), ("client_id", &old.client_id), ("refresh_token", token), ("resource", RESOURCE)],
-+                                &old.client_id,
-+                                None,
-+                                Some(old),
-+                            )?;
-+                            store.save(&new)?;
-+                            account = Some(new);
-+                            Ok("ChatGPT credentials renewed.".to_owned())
-+                        })(),
-+                        "disconnect" => store.clear().map(|()| {
-+                            let unreadable = load_error.take().is_some();
-+                            let revoked = account.take().as_ref().map_or(!unreadable, revoke);
-+                            if revoked {
-+                                "ChatGPT disconnected.".into()
-+                            } else {
-+                                "Disconnected locally. Remote revocation was not confirmed; remove this app in ChatGPT Settings → Usage.".into()
-+                            }
-+                        }),
-+                        _ => Err("Unknown ChatGPT connection command".into()),
-+                    };
-+                    let succeeded = result.is_ok();
-+                    let mut updated = snapshot(account.as_ref(), result.unwrap_or_else(|e| e));
-+                    updated.last_action_ok = Some(succeeded);
-+                    *shared.lock().unwrap_or_else(std::sync::PoisonError::into_inner) = updated;
-+                }
-+                Ok::<(), String>(())
-+            }));
-+            let issue = match outcome {
-+                Ok(Err(e)) => Some(e),
-+                Err(_) => Some("ChatGPT connection worker failed. Your document was not changed.".into()),
-+                _ => None,
-+            };
-+            if let Some(message) = issue {
-+                *shared.lock().unwrap_or_else(std::sync::PoisonError::into_inner) = Status { message, last_action_ok: Some(false), ..Default::default() };
-+            }
-+        });
-+        if result.is_err() {
-+            *status.lock().unwrap_or_else(std::sync::PoisonError::into_inner) =
-+                Status { message: "Could not start ChatGPT connection worker".into(), last_action_ok: Some(false), ..Default::default() };
-+        }
-+        Self { status, sender, cancel }
-+    }
-+    fn status(&self) -> Status {
-+        let mut s = self.status.lock().unwrap_or_else(std::sync::PoisonError::into_inner).clone();
-+        if s.expires_at.is_some_and(|expiry| now().map_or(true, |n| n >= expiry)) {
-+            s.connected = false;
-+            s.plan_usage = false;
-+        }
-+        s
-+    }
-+    fn dispatch(&self, action: &str) {
-+        let mut status = self.status.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
-+        if status.busy {
-+            return;
-+        }
-+        self.cancel.store(false, Ordering::SeqCst);
-+        status.busy = true;
-+        status.last_action_ok = None;
-+        status.message = match self.sender.try_send(action.into()) {
-+            Ok(()) => "Waiting for ChatGPT…".into(),
-+            Err(_) => {
-+                status.busy = false;
-+                status.last_action_ok = Some(false);
-+                "ChatGPT connection worker is unavailable".into()
-+            }
-+        };
-+    }
-+}
-+impl Drop for Runtime {
-+    fn drop(&mut self) {
-+        self.cancel.store(true, Ordering::SeqCst);
-+    }
-+}
-+
-+/// Desktop-only decoration: forward every App lifecycle hook to the original editor.
-+pub struct ConnectedApp<A> {
-+    inner: A,
-+    runtime: Runtime,
-+    panel: bool,
-+}
-+pub fn wrap<A: eframe::App>(inner: A) -> ConnectedApp<A> {
-+    ConnectedApp { inner, runtime: Runtime::new(), panel: false }
-+}
-+impl<A: eframe::App> eframe::App for ConnectedApp<A> {
-+    fn logic(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-+        self.inner.logic(ctx, frame);
-+    }
-+    fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
-+        let ctx = ui.ctx().clone();
-+        self.inner.ui(ui, frame);
-+        egui::Area::new(egui::Id::new("chatgpt.connection.button")).anchor(egui::Align2::RIGHT_BOTTOM, [-12.0, -12.0]).order(egui::Order::Foreground).show(
-+            &ctx,
-+            |ui| {
-+                if ui.button("ChatGPT connection…").clicked() {
-+                    self.panel = true;
-+                }
-+            },
-+        );
-+        if !self.panel {
-+            return;
-+        }
-+        let status = self.runtime.status();
-+        egui::Window::new(format!("{APP} · ChatGPT")).id(egui::Id::new("chatgpt.connection")).open(&mut self.panel).resizable(false).show(&ctx, |ui| {
-+            ui.label("Connect your ChatGPT account");
-+            ui.label("This connects your account and requests optional plan usage. It does not run AI or read your ChatGPT conversations.");
-+            if let Some(email) = &status.email {
-+                ui.label(email);
-+            }
-+            ui.label(if status.connected { "Connected" } else { "Disconnected or session expired" });
-+            if status.plan_usage {
-+                ui.label("ChatGPT plan permission granted. AI editing is not implemented in this change.");
-+            }
-+            ui.label(&status.message);
-+            ui.add_enabled_ui(!status.busy, |ui| {
-+                if ui.button("Continue with ChatGPT").clicked() {
-+                    self.runtime.dispatch("sign_in");
-+                }
-+                if status.expires_at.is_some() && ui.button("Renew connection").clicked() {
-+                    self.runtime.dispatch("refresh");
-+                }
-+                if ui.button("Disconnect").clicked() {
-+                    self.runtime.dispatch("disconnect");
-+                }
-+            });
-+            if status.busy {
-+                ui.spinner();
-+                if ui.button("Cancel sign-in").clicked() {
-+                    self.runtime.cancel.store(true, Ordering::SeqCst);
-+                }
-+                ctx.request_repaint_after(Duration::from_millis(100));
-+            }
-+            ui.hyperlink_to("Manage usage in ChatGPT", "https://chatgpt.com/settings/usage");
-+        });
-+    }
-+    fn save(&mut self, storage: &mut dyn eframe::Storage) {
-+        self.inner.save(storage);
-+    }
-+    fn on_exit(&mut self) {
-+        self.runtime.cancel.store(true, Ordering::SeqCst);
-+        self.inner.on_exit();
-+    }
-+    fn auto_save_interval(&self) -> Duration {
-+        self.inner.auto_save_interval()
-+    }
-+    fn clear_color(&self, visuals: &egui::Visuals) -> [f32; 4] {
-+        self.inner.clear_color(visuals)
-+    }
-+    fn persist_egui_memory(&self) -> bool {
-+        self.inner.persist_egui_memory()
-+    }
-+    fn raw_input_hook(&mut self, ctx: &egui::Context, raw: &mut egui::RawInput) {
-+        self.inner.raw_input_hook(ctx, raw);
-+    }
-+}
-+
-+/// Read-only status and explicit auth commands for headless automation. Never emit tokens.
-+pub fn cli() -> Option<Result<(), String>> {
-+    let argument = std::env::args().nth(1)?;
-+    let action = match argument.as_str() {
-+        "--chatgpt-status" => None,
-+        "--chatgpt-sign-in" => Some("sign_in"),
-+        "--chatgpt-disconnect" => Some("disconnect"),
-+        "--chatgpt-refresh" => Some("refresh"),
-+        _ => return None,
-+    };
-+    Some((|| {
-+        let runtime = Runtime::new();
-+        let deadline = Instant::now() + Duration::from_secs(240);
-+        while runtime.status().busy && Instant::now() < deadline {
-+            std::thread::sleep(Duration::from_millis(50));
-+        }
-+        if runtime.status().busy {
-+            return Err("ChatGPT connection initialization timed out".into());
-+        }
-+        if runtime.status().last_action_ok == Some(false) {
-+            return Err(runtime.status().message);
-+        }
-+        if let Some(action) = action {
-+            runtime.dispatch(action);
-+        }
-+        while runtime.status().busy && Instant::now() < deadline {
-+            std::thread::sleep(Duration::from_millis(50));
-+        }
-+        if runtime.status().busy {
-+            return Err("ChatGPT command timed out".into());
-+        }
-+        let status = runtime.status();
-+        let output = serde_json::to_string(&status).map_err(|_| "Could not serialize connection status")?;
-+        writeln!(std::io::stdout().lock(), "{output}").map_err(|_| "Could not write ChatGPT command status")?;
-+        if status.last_action_ok == Some(false) {
-+            return Err(status.message);
-+        }
-+        Ok(())
-+    })())
-+}
-+
-+#[cfg(test)]
-+mod tests {
-+    use super::*;
-+    #[test]
-+    fn pkce_rfc7636_vector_and_new_registration() {
-+        let url = authorization("urn:uuid:test", "http://127.0.0.1:1455/auth/callback", "state", "nonce", "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk", None)
-+            .unwrap();
-+        let q: HashMap<_, _> = url.query_pairs().collect();
-+        assert_eq!(q.get("code_challenge").unwrap(), "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM");
-+        assert_eq!(q.get("client_id").unwrap(), "dynamic_agent_client");
-+        assert_eq!(q.get("agent_name_hint").unwrap(), APP);
-+        assert_eq!(q.get("redirect_uri").unwrap(), "http://127.0.0.1:1455/auth/callback");
-+    }
-+    #[test]
-+    fn callback_requires_state_code_and_issued_client() {
-+        assert!(callback("/auth/callback?state=wrong&code=x&client_id=oaiapp_x", "right", None).is_err());
-+        assert!(callback("/auth/callback?state=s&code=x&client_id=dynamic_agent_client", "s", None).is_err());
-+        assert!(callback("/auth/callback?state=s&state=s&code=x&client_id=oaiapp_x", "s", None).is_err());
-+        assert!(callback("/auth/callback?state=s&error=access_denied", "s", None).is_err());
-+        assert_eq!(callback("/auth/callback?state=s&code=x&client_id=oaiapp_x", "s", None).unwrap(), ("oaiapp_x".into(), "x".into()));
-+    }
-+    fn account() -> Account {
-+        Account {
-+            client_id: "oaiapp_test".into(),
-+            subject: "sub".into(),
-+            email: Some("a@example.test".into()),
-+            id_token: "secret-id".into(),
-+            access_token: "secret-access".into(),
-+            refresh_token: Some("secret-refresh".into()),
-+            scopes: vec!["chatgpt.tokens.use.direct".into(), "resource.invoke".into()],
-+            expires_at: u64::MAX,
-+        }
-+    }
-+    #[test]
-+    fn returning_callback_cannot_replace_client() {
-+        let a = account();
-+        assert!(callback("/auth/callback?state=s&code=x&client_id=oaiapp_other", "s", Some(&a)).is_err());
-+        assert_eq!(callback("/auth/callback?state=s&code=x", "s", Some(&a)).unwrap().0, a.client_id);
-+        let url = authorization("host", "http://127.0.0.1:42/auth/callback", "s", "n", "v", Some(&a)).unwrap();
-+        assert!(!url.query_pairs().any(|(k, _)| k == "agent_name_hint"));
-+    }
-+    #[test]
-+    fn status_never_exposes_tokens_and_requires_both_scopes() {
-+        let mut a = account();
-+        let state = snapshot(Some(&a), "test".into());
-+        assert!(state.plan_usage);
-+        let json = serde_json::to_string(&state).unwrap();
-+        assert!(!json.contains("secret-"));
-+        assert!(!json.contains("token"));
-+        a.scopes.pop();
-+        assert!(!snapshot(Some(&a), String::new()).plan_usage);
-+        a.expires_at = 0;
-+        assert!(!snapshot(Some(&a), String::new()).connected);
-+    }
-+    #[test]
-+    fn forged_id_token_is_rejected() {
-+        let keys = JwkSet { keys: vec![] };
-+        assert!(validate_claims("not-a-jwt", "oaiapp_x", Some("n"), None, &keys).is_err());
-+    }
-+
-+    // Synthetic test-only EC key; never used by the production client.
-+    const TEST_KEY: &str = "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgPpCbf/ANRkOx/B8M\nRpG9NKg4xyby9/JLBNgBCvqtci+hRANCAAQep1O6lasKcsdh+V/iXszZXCGV8jqo\nYhCG9epaToBFnsAN2C4vd4IkFE7VvoJy6dW9sIQft8WNpagga09BQyox\n-----END PRIVATE KEY-----\n";
-+    fn signed_claims(value: &serde_json::Value) -> (String, JwkSet) {
-+        let mut header = jsonwebtoken::Header::new(Algorithm::ES256);
-+        header.kid = Some("test-only".into());
-+        let token = jsonwebtoken::encode(&header, value, &jsonwebtoken::EncodingKey::from_ec_pem(TEST_KEY.as_bytes()).unwrap()).unwrap();
-+        let keys = serde_json::from_str("{\"keys\": [{\"kty\": \"EC\", \"x\": \"HqdTupWrCnLHYflf4l7M2VwhlfI6qGIQhvXqWk6ARZ4\", \"y\": \"wA3YLi93giQUTtW-gnLp1b2whB-3xY2lqCBrT0FDKjE\", \"crv\": \"P-256\", \"kid\": \"test-only\", \"alg\": \"ES256\", \"use\": \"sig\"}]}").unwrap();
-+        (token, keys)
-+    }
-+    #[test]
-+    fn signed_identity_requires_issuer_audience_nonce_and_expiry() {
-+        let time = now().unwrap();
-+        let claims = serde_json::json!({"sub": "sub", "email": "test@example.test", "iat": time,
-+            "exp": time + 300, "iss": ISSUER, "aud": "oaiapp_test", "nonce": "nonce"});
-+        let (token, keys) = signed_claims(&claims);
-+        assert!(validate_claims(&token, "oaiapp_test", Some("nonce"), Some(&account()), &keys).is_ok());
-+        for (field, value) in [
-+            ("iss", serde_json::json!("https://invalid.test")),
-+            ("aud", serde_json::json!("oaiapp_other")),
-+            ("nonce", serde_json::json!("wrong")),
-+            ("sub", serde_json::json!("other-user")),
-+            ("exp", serde_json::json!(0)),
-+            ("iat", serde_json::json!(time + 600)),
-+        ] {
-+            let mut changed = claims.clone();
-+            changed[field] = value;
-+            let (token, keys) = signed_claims(&changed);
-+            assert!(validate_claims(&token, "oaiapp_test", Some("nonce"), Some(&account()), &keys).is_err(), "accepted invalid {field}");
-+        }
-+    }
-+    #[test]
-+    fn encryption_rejects_corruption() {
-+        let cipher = Aes256Gcm::new_from_slice(&[7u8; 32]).unwrap();
-+        let nonce = Nonce::from([1u8; 12]);
-+        let mut encrypted = cipher.encrypt(&nonce, b"credential".as_ref()).unwrap();
-+        assert_eq!(cipher.decrypt(&nonce, encrypted.as_slice()).unwrap(), b"credential");
-+        *encrypted.first_mut().unwrap() ^= 1;
-+        assert!(cipher.decrypt(&nonce, encrypted.as_slice()).is_err());
-+    }
-+
-+    struct TestEditor;
-+    impl eframe::App for TestEditor {
-+        fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
-+            ui.label("Editor surface · connection panel preview");
-+        }
-+    }
-+
-+    fn preview_app() -> (ConnectedApp<TestEditor>, mpsc::Receiver<String>) {
-+        let (sender, receiver) = mpsc::sync_channel(1);
-+        let app = ConnectedApp {
-+            inner: TestEditor,
-+            runtime: Runtime {
-+                status: Arc::new(Mutex::new(snapshot(None, "Connection is optional.".into()))),
-+                sender,
-+                cancel: Arc::new(AtomicBool::new(false)),
-+            },
-+            panel: true,
-+        };
-+        (app, receiver)
-+    }
-+
-+    #[test]
-+    fn chatgpt_panel_dispatches_sign_in_and_cancellation() {
-+        use egui_kittest::kittest::Queryable;
-+        let (app, receiver) = preview_app();
-+        let mut harness = egui_kittest::Harness::builder()
-+            .with_size(egui::vec2(960.0, 640.0))
-+            .with_max_steps(64)
-+            .build_eframe(move |_| app);
-+        harness.run_steps(8);
-+        harness.get_by_label("Continue with ChatGPT").click();
-+        harness.run_steps(4);
-+        assert_eq!(receiver.try_recv().unwrap(), "sign_in");
-+        assert!(harness.state().runtime.status().busy);
-+        harness.get_by_label("Cancel sign-in").click();
-+        harness.run_steps(4);
-+        assert!(harness.state().runtime.cancel.load(Ordering::SeqCst));
-+    }
-+
-+    #[test]
-+    #[ignore = "Requires an offscreen graphics adapter; requested explicitly in Windows CI"]
-+    fn chatgpt_panel_offscreen_preview() {
-+        let (app, _receiver) = preview_app();
-+        let mut harness = egui_kittest::Harness::builder()
-+            .with_size(egui::vec2(960.0, 640.0))
-+            .with_pixels_per_point(1.0)
-+            .with_max_steps(64)
-+            .wgpu()
-+            .build_eframe(move |_| app);
-+        harness.run_steps(12);
-+        let output = std::env::var_os("CRAFT_SNAPSHOT_PATH")
-+            .expect("CI must choose a scratch output path for the panel preview");
-+        harness.render().expect("Render the actual connection panel")
-+            .save(output).expect("Save the connection panel preview");
-+    }
-+}
-diff --git a/apps/effectcraft/src/chatgpt_unsupported.rs b/apps/effectcraft/src/chatgpt_unsupported.rs
-new file mode 100644
---- /dev/null
-+++ b/apps/effectcraft/src/chatgpt_unsupported.rs
-@@ -0,0 +1,11 @@
-+//! Windows-only ChatGPT connection: other platforms keep the original desktop app.
-+#![forbid(unsafe_code)]
-+pub fn wrap<A: eframe::App>(inner: A) -> A { inner }
-+pub fn cli() -> Option<Result<(), String>> {
-+    let argument = std::env::args().nth(1)?;
-+    match argument.as_str() {
-+        "--chatgpt-status" | "--chatgpt-sign-in" | "--chatgpt-disconnect" | "--chatgpt-refresh" =>
-+            Some(Err("This ChatGPT connection draft supports Windows only".into())),
-+        _ => None,
-+    }
-+}
-diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
-new file mode 100644
---- /dev/null
-+++ b/docs/chatgpt-connection.md
-@@ -0,0 +1,54 @@
-+# EffectCraft ChatGPT connection
-+
-+This local modification adds an optional native ChatGPT connection to the Windows desktop app.
-+Other platforms retain their original editor and explicitly report unsupported auth commands.
-+Open **ChatGPT connection…** at the bottom right, then **Continue with ChatGPT**.
-+The browser asks you to authorize this app independently of the other Craft apps.
-+Account connection is implemented; AI editing and inference are not part of this change.
-+
-+## Protocol and storage
-+
-+- Official dynamic registration, a stable app-specific UUID host, loopback callback,
-+  PKCE S256, state/nonce checks, and verified RS256/ES256 OpenAI ID tokens.
-+- Issued client IDs are retained before code exchange. Reauthorization is bound to
-+  the selected client and verified identity. Disconnect removes the registration.
-+- Granted scopes determine plan permission. Renewal atomically replaces rotating tokens.
-+- Tokens are encrypted with AES-256-GCM; the encryption key lives in the Windows
-+  Credential Manager. No plaintext storage fallback. Windows Schannel provides TLS, avoiding a new C/C++ crypto or D-Bus build dependency. Separate app directories.
-+- One process owns credential rotation at a time. Callback and HTTPS reads are bounded.
-+- Disconnect clears local credentials and attempts remote revocation. If that fails,
-+  the app directs you to https://chatgpt.com/settings/usage.
-+- The desktop wrapper forwards all editor lifecycle hooks, preferences, autosaves,
-+  and native-menu input. Engine/document files and web/WASM targets are untouched.
-+- Authentication commands are native platform operations, available headlessly:
-+  `effectcraft --chatgpt-status`, `--chatgpt-sign-in`, `--chatgpt-refresh`, and
-+  `--chatgpt-disconnect`. Status never returns credentials.
-+
-+## Validation status (2026-10-06)
-+
-+Windows Application Control blocks the installed Cargo toolchain (OS error 4551).
-+Rust syntax and TOML can be inspected here, but compilation, Rust tests, Clippy,
-+visual UI verification, and a real account sign-in remain UNVERIFIED.
-+Cargo.lock must be regenerated by an allowed Cargo toolchain before release.
-+This checkout remains a draft. Source patches and Windows validation jobs are published
-+at https://github.com/SkeltionCR/craft-chatgpt-validation. Check its Actions results
-+for the current compilation/test outcome. A real account sign-in remains unverified.
-+
-+On an authorized build machine, run:
-+
-+```sh
-+cargo fmt --all
-+cargo test -p effectcraft chatgpt
-+cargo clippy -p effectcraft --all-targets -- -D warnings
-+cargo xtask ci
-+cargo run -p effectcraft
-+```
-+
-+Tests cover the RFC 7636 PKCE vector, hostile callbacks, returning client binding,
-+scope/expiry checks, token-redacted status, signed identity claims, forged ID tokens, and encrypted-data corruption.
-+The control test exercises sign-in dispatch and cancellation without reading credentials.
-+An explicitly requested offscreen test renders the actual connection panel on a test editor surface.
-+Then test a real sign-in, restart, renewal, cancellation, disconnect, and editor save/quit.
-+
-+Source contract: https://developers.openai.com/siwc/token-sharing-open-source/sign-in
-+UI guidance: https://developers.openai.com/siwc/ui-ux-guidelines

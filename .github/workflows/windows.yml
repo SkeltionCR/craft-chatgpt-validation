@@ -1,4 +1,5 @@
 name: Windows validation
+run-name: "${{ inputs.app }} Windows CI (${{ inputs.compiler_jobs || '4' }} compiler jobs)"
 on:
   workflow_dispatch:
     inputs:
@@ -15,10 +16,19 @@ on:
           - printcraft
           - effectcraft
           - designcraft
+      compiler_jobs:
+        description: Concurrent compiler processes (same release profile and CI gates)
+        type: choice
+        required: true
+        default: '4'
+        options:
+          - '4'
+          - '2'
+          - '1'
 permissions:
   contents: read
 concurrency:
-  group: craft-${{ inputs.app }}
+  group: craft-${{ inputs.app }}-${{ inputs.compiler_jobs || '4' }}
   cancel-in-progress: false
 jobs:
   windows:
@@ -27,6 +37,7 @@ jobs:
     env:
       CARGO_TERM_COLOR: never
       RUST_BACKTRACE: 1
+      CARGO_BUILD_JOBS: ${{ inputs.compiler_jobs || '4' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - name: Build and test pinned editor

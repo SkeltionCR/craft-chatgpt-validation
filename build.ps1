@@ -72,9 +72,13 @@ if ($App -eq 'printcraft') {
 # dependencies required by the reviewed patch. Subsequent checks enforce that lock.
 # Use the same workspace feature union as upstream CI to reuse compilation outputs.
 $profileArguments = if ($App -in @('filmcraft','effectcraft')) { @('--release') } else { @() }
+Write-Output "CRAFT_BUILD_CONFIGURATION:$App`:compiler_jobs=$env:CARGO_BUILD_JOBS`:profile=$($profileArguments -join ',')"
 Invoke-Checked -Command cargo -Arguments (@('+stable','test','--workspace','chatgpt') + $profileArguments)
+Write-Output "CRAFT_AUTH_TESTS_PASSED:$App"
 $env:CRAFT_SNAPSHOT_PATH = Join-Path $recipeRoot 'panel-preview.png'
 Invoke-Checked -Command cargo -Arguments (@('+stable','test','--workspace','chatgpt_panel_offscreen_preview','--locked') + $profileArguments + @('--','--ignored'))
+Write-Output "CRAFT_PANEL_PREVIEW_PASSED:$App"
 Invoke-Checked -Command cargo -Arguments (@('+stable','clippy','--workspace','--all-targets','--locked') + $profileArguments + @('--','-D','warnings'))
+Write-Output "CRAFT_CLIPPY_PASSED:$App"
 Invoke-Checked -Command cargo -Arguments @('+stable','xtask','ci')
 Write-Output "CRAFT_FULL_CI_PASSED:$App"

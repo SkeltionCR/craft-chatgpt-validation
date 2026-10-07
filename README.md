@@ -21,6 +21,9 @@ checks Clippy, and runs the upstream `cargo xtask ci` gate.
 FilmCraft and EffectCraft checks use the release profile required by their upstream
 gate. The job permits up to 180 minutes for a cold build. PrintCraft also installs
 the pinned dependency checker and runs its unchanged license/advisory policy first.
+The `compiler_jobs` choice limits concurrent compiler processes to 4, 2, or 1.
+It preserves the release profile and all CI gates. Different choices have independent
+concurrency groups, allowing a resource trial to run alongside an existing build.
 
 The job log includes a SHA-256-verified, base64-encoded final source patch between
 `CRAFT_PATCH_START` and `CRAFT_PATCH_END`, allowing the local checkout to receive

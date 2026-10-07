@@ -33,7 +33,7 @@ concurrency:
 jobs:
   windows:
     runs-on: windows-latest
-    timeout-minutes: 180
+    timeout-minutes: 360
     env:
       CARGO_TERM_COLOR: never
       RUST_BACKTRACE: 1

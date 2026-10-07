@@ -19,7 +19,8 @@ runs the app's ChatGPT tests,
 exercises the connection controls, renders the actual connection panel offscreen,
 checks Clippy, and runs the upstream `cargo xtask ci` gate.
 FilmCraft and EffectCraft checks use the release profile required by their upstream
-gate. The job permits up to 180 minutes for a cold build. PrintCraft also installs
+gate. The job permits up to 360 minutes for a cold build. Both check their engine
+tests early, then still run every full workspace gate. PrintCraft also installs
 the pinned dependency checker and runs its unchanged license/advisory policy first.
 The `compiler_jobs` choice limits concurrent compiler processes to 4, 2, or 1.
 It preserves the release profile and all CI gates. Different choices have independent
@@ -56,3 +57,7 @@ assets from upstream remain in its ephemeral build checkout and are not redistri
 Other selected runs are pending. Panel previews use synthetic accounts and a test editor.
 
 FilmCraft run 37592431206 passed release auth/UI/preview and Clippy, then exposed nine Windows engine failures. The revised patch fixes native folder-prefix relinking and verbatim directory export paths, preserves media/render/audio assertions, and checks the engine early before all full workspace gates. Full CI remains pending.
+
+EffectCraft run 37592434729 exceeded the former three-hour limit while compiling
+its web target; no compiler error was reported. The replacement recipe allows
+six hours without changing optimization settings, source inputs, or CI gates.

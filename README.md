@@ -61,3 +61,12 @@ FilmCraft run 37592431206 passed release auth/UI/preview and Clippy, then expose
 EffectCraft run 37592434729 exceeded the former three-hour limit while compiling
 its web target; no compiler error was reported. The replacement recipe allows
 six hours without changing optimization settings, source inputs, or CI gates.
+
+FilmCraft run 37610981708 passed release authentication/UI tests, the panel
+preview, strict workspace Clippy and all 320 engine tests. The next crate's
+export suite reported two native-path fixture failures (29 passed, 2 failed).
+The revised patch compares full native paths while retaining exact parent
+directories, channel names and image numbering. The recipe checks export early
+and runs every workspace test suite with `--no-fail-fast` before repeating the
+unchanged upstream CI gates. Its replacement uses the existing six-hour limit.
+Full FilmCraft CI remains pending.

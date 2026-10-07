@@ -2282,7 +2282,7 @@ index ae02fa7..cb6630f 100644
          .execute(
              "export.queue.add",
 diff --git a/crates/engine/src/export_tools.rs b/crates/engine/src/export_tools.rs
-index 6d319ab..9953f19 100644
+index 6d319ab..4b2e127 100644
 --- a/crates/engine/src/export_tools.rs
 +++ b/crates/engine/src/export_tools.rs
 @@ -321,7 +321,11 @@ fn expand_home(p: &str) -> String {
@@ -2298,12 +2298,14 @@ index 6d319ab..9953f19 100644
          Some(x) if x.ends_with('/') || x.ends_with('\\') || Path::new(&x).is_dir() => Path::new(&x).join(file_safe(&name)).to_string_lossy().to_string(),
          Some(x) => x,
          None => default_export_dir(s).join(file_safe(&name)).to_string_lossy().to_string(),
-@@ -615,7 +619,7 @@ fn queue_add(s: &mut Session, p: &Value) -> Result<Value> {
+@@ -615,7 +619,9 @@ fn queue_add(s: &mut Session, p: &Value) -> Result<Value> {
              };
              st.range = range_param(s, &project, seq, *r, times, cmd)?;
              // several ranges of one sequence get numbered names; several sequences their own names
 -            let suffix = if many && (ranges.len() > 1 || str_p(p, "path").is_some_and(|x| !x.ends_with('/') && !Path::new(&expand_home(x)).is_dir())) {
-+            let suffix = if many && (ranges.len() > 1 || str_p(p, "path").is_some_and(|x| !x.ends_with('/') && !x.ends_with('\\') && !Path::new(&expand_home(x)).is_dir())) {
++            let suffix = if many
++                && (ranges.len() > 1 || str_p(p, "path").is_some_and(|x| !x.ends_with('/') && !x.ends_with('\\') && !Path::new(&expand_home(x)).is_dir()))
++            {
                  Some(n)
              } else {
                  None
@@ -2401,12 +2403,43 @@ index 0bf0b63..32d0415 100644
      s.execute("shortcuts.undo", json!({})).unwrap();
      s.execute("shortcuts.undo", json!({})).unwrap();
      assert_eq!(s.shortcuts.primary("edit.undo").as_deref(), Some("Cmd+Z"));
+diff --git a/crates/export/src/mxf_tests.rs b/crates/export/src/mxf_tests.rs
+index cb61bb7..90db1f4 100644
+--- a/crates/export/src/mxf_tests.rs
++++ b/crates/export/src/mxf_tests.rs
+@@ -176,7 +176,9 @@ fn mxf_formats_and_presets() {
+     assert!(s.summary(1920, 1080, FrameRate::FPS_24, 48_000, Tick(TICKS_PER_SECOND)).format.contains("MXF OP1a (Apple ProRes)"));
+     let names: Vec<String> = builtin_presets().into_iter().filter(|p| p.settings.format.is_mxf()).map(|p| p.name).collect();
+     assert_eq!(names.len(), 4, "{names:?}");
+-    assert_eq!(opatom_audio_paths("/a/b/clip.mxf", 2), vec!["/a/b/clip_A1.mxf".to_string(), "/a/b/clip_A2.mxf".to_string()]);
++    let audio_paths: Vec<_> = opatom_audio_paths("/a/b/clip.mxf", 2).into_iter().map(std::path::PathBuf::from).collect();
++    let dir = Path::new("/a/b");
++    assert_eq!(audio_paths, vec![dir.join("clip_A1.mxf"), dir.join("clip_A2.mxf")]);
+ }
+ 
+ /// ffprobe identifies our files (operational pattern, codec, frame count, duration, timecode);
+diff --git a/crates/export/src/pcm.rs b/crates/export/src/pcm.rs
+index 8898869..786af90 100644
+--- a/crates/export/src/pcm.rs
++++ b/crates/export/src/pcm.rs
+@@ -117,8 +117,9 @@ mod tests {
+ 
+     #[test]
+     fn sequence_names() {
+-        assert_eq!(image_sequence_path("/a/Sequence 01.png", 0, 24), "/a/Sequence 01000.png");
+-        assert_eq!(image_sequence_path("/a/x.tif", 1234, 2000), "/a/x1234.tif");
++        let dir = std::path::Path::new("/a");
++        assert_eq!(std::path::PathBuf::from(image_sequence_path("/a/Sequence 01.png", 0, 24)), dir.join("Sequence 01000.png"));
++        assert_eq!(std::path::PathBuf::from(image_sequence_path("/a/x.tif", 1234, 2000)), dir.join("x1234.tif"));
+         assert_eq!(image_sequence_path("shot.bmp", 7, 10), "shot007.bmp");
+     }
+ 
 diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
 new file mode 100644
-index 0000000..dd5cf7e
+index 0000000..54e6da6
 --- /dev/null
 +++ b/docs/chatgpt-connection.md
-@@ -0,0 +1,57 @@
+@@ -0,0 +1,60 @@
 +# FilmCraft ChatGPT connection
 +
 +This local modification adds an optional native ChatGPT connection to the Windows desktop app.
@@ -2428,23 +2461,26 @@ index 0000000..dd5cf7e
 +- Disconnect clears local credentials and attempts remote revocation. If that fails,
 +  the app directs you to https://chatgpt.com/settings/usage.
 +- The desktop wrapper forwards all editor lifecycle hooks, preferences, autosaves,
-+  and native-menu input. Engine/document files and web/WASM targets are untouched.
++  and native-menu input. Authentication remains native-only. The Windows
++  compatibility changes also correct engine export/relink paths and test fixtures.
 +- Authentication commands are native platform operations, available headlessly:
 +  `filmcraft --chatgpt-status`, `--chatgpt-sign-in`, `--chatgpt-refresh`, and
 +  `--chatgpt-disconnect`. Status never returns credentials.
 +
 +## Validation status (2026-10-07)
 +
-+Windows runner 37592431206 compiled this integration in the release profile:
-+all eight authentication/UI tests, the actual offscreen panel preview, and
-+workspace Clippy with warnings denied passed. Full upstream CI then found nine
-+Windows engine failures. This draft corrects native folder relinking and verbatim
-+directory export paths, and updates platform-specific test fixtures without
-+removing their media, audio, rendering, or undo assertions. Full CI is being rerun.
++Windows run 37610981708 passed eight release authentication/UI tests, the actual
++connection-panel preview, workspace Clippy with warnings denied, and all 320
++engine tests. Full workspace testing then exposed two export tests that compared
++native Windows paths with Unix separator strings. Their fixtures now compare
++complete native paths, preserving parent directories, channel filenames, and
++image frame numbering. Full upstream CI still needs a successful rerun.
++
 +The resolved Cargo.lock is included. Local Cargo remains blocked by Windows
-+Application Control (OS error 4551); that protection has not been changed.
-+A real ChatGPT account sign-in remains untested. Source patches and exact runner
-+results are published at https://github.com/SkeltionCR/craft-chatgpt-validation.
++Application Control (OS error 4551); no protection setting was changed.
++Actual ChatGPT account authorization remains untested. This is a source change,
++not an installed or signed application release.
++Evidence: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37610981708
 +
 +On an authorized build machine, run:
 +

@@ -17,7 +17,7 @@
     "repo": "filmcraft",
     "name": "FilmCraft",
     "upstream": "771b614ad4c3fbefda5d668ce4384504b8c13f6d",
-    "patch_sha256": "459a2f654aaadfec45c34cc056313c4c1cf64e36ed6e71b337280eefb8002a04"
+    "patch_sha256": "23af01f94d26570e6d190a618714a9476c0f928bde2c5c80bb953aac58f6fdd7"
   },
   {
     "repo": "lightcraft",

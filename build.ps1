@@ -78,12 +78,22 @@ if ($App -in @('filmcraft','effectcraft')) {
     # The full workspace checks and upstream CI still run below.
     Invoke-Checked -Command cargo -Arguments @('+stable','test','-p',"$App-engine",'--release')
     Write-Output "CRAFT_ENGINE_TESTS_PASSED:$App"
+    if ($App -eq 'filmcraft') {
+        Invoke-Checked -Command cargo -Arguments @('+stable','test','-p','filmcraft-export','--release')
+        Write-Output 'CRAFT_EXPORT_TESTS_PASSED:filmcraft'
+    }
 }
 Invoke-Checked -Command cargo -Arguments (@('+stable','test','--workspace','chatgpt') + $profileArguments)
 Write-Output "CRAFT_AUTH_TESTS_PASSED:$App"
 $env:CRAFT_SNAPSHOT_PATH = Join-Path $recipeRoot 'panel-preview.png'
 Invoke-Checked -Command cargo -Arguments (@('+stable','test','--workspace','chatgpt_panel_offscreen_preview','--locked') + $profileArguments + @('--','--ignored'))
 Write-Output "CRAFT_PANEL_PREVIEW_PASSED:$App"
+if ($App -eq 'filmcraft') {
+    # Exercise every crate even if one has a Windows fixture regression. Keep the
+    # unchanged upstream CI below; this extra pass exposes all failures together.
+    Invoke-Checked -Command cargo -Arguments @('+stable','test','--workspace','--release','--locked','--no-fail-fast')
+    Write-Output 'CRAFT_WORKSPACE_TESTS_PASSED:filmcraft'
+}
 Invoke-Checked -Command cargo -Arguments (@('+stable','clippy','--workspace','--all-targets','--locked') + $profileArguments + @('--','-D','warnings'))
 Write-Output "CRAFT_CLIPPY_PASSED:$App"
 Invoke-Checked -Command cargo -Arguments @('+stable','xtask','ci')

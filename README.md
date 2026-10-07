@@ -44,29 +44,29 @@ The underlying upstream source is licensed MIT OR Apache-2.0. Original notices r
 each checked-out upstream project. These patches contain no Adobe assets. Trademark
 assets from upstream remain in its ephemeral build checkout and are not redistributed.
 
-## Completed validation
+## Validation results
 
 | Project | Full Windows CI | Live account |
 |---|---|---|
-| designcraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526643074) | Not exercised |
-| vectorcraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526641875) | Not exercised |
-| photocraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526632188) | Not exercised |
-| printcraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37536527821) | Not exercised |
-| lightcraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475) | Not exercised |
+| PhotoCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526632188) | Not exercised |
+| VectorCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526641875) | Not exercised |
+| FilmCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37631511777) | Not exercised |
+| LightCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475) | Not exercised |
+| PrintCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37536527821) | Not exercised |
+| EffectCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37612917628) | Not exercised |
+| DesignCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526643074) | Not exercised |
 
-Other selected runs are pending. Panel previews use synthetic accounts and a test editor.
+Panel previews use synthetic disconnected accounts and a test editor surface.
+A CI result proves only the checks performed by that run; actual browser authorization
+and account renewal with a person's ChatGPT account remain untested.
 
-FilmCraft run 37592431206 passed release auth/UI/preview and Clippy, then exposed nine Windows engine failures. The revised patch fixes native folder-prefix relinking and verbatim directory export paths, preserves media/render/audio assertions, and checks the engine early before all full workspace gates. Full CI remains pending.
+Full validation is still pending for filmcraft, effectcraft.
 
-EffectCraft run 37592434729 exceeded the former three-hour limit while compiling
-its web target; no compiler error was reported. The replacement recipe allows
-six hours without changing optimization settings, source inputs, or CI gates.
+FilmCraft's revised Windows engine paths passed 320 engine tests. Its corrected
+export fixtures passed 31 export tests. The full rerun checks every workspace
+test suite with `--no-fail-fast`, then repeats the unchanged upstream CI gates.
 
-FilmCraft run 37610981708 passed release authentication/UI tests, the panel
-preview, strict workspace Clippy and all 320 engine tests. The next crate's
-export suite reported two native-path fixture failures (29 passed, 2 failed).
-The revised patch compares full native paths while retaining exact parent
-directories, channel names and image numbering. The recipe checks export early
-and runs every workspace test suite with `--no-fail-fast` before repeating the
-unchanged upstream CI gates. Its replacement uses the existing six-hour limit.
-Full FilmCraft CI remains pending.
+EffectCraft's current run passed 390 engine tests, release authentication tests,
+the offscreen panel preview check and strict workspace Clippy. The full upstream
+CI run is still pending. Earlier three-hour runs timed out; the current run
+allows six hours with the same source, release optimization and required gates.

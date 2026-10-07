@@ -23,7 +23,8 @@
     "repo": "lightcraft",
     "name": "LightCraft",
     "upstream": "265248c86fa3267709aea45633d0d135331e180c",
-    "patch_sha256": "95f9defa4a67ac04fe8d9f92308c0a5d428aabe73c4a398f4a2e46a58c9f28ce"
+    "patch_sha256": "0933bae67503d8468b70fd2bbdd1e2874887225dde54fcc3ae0f0be25373f63c",
+    "validated_run": "https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475"
   },
   {
     "repo": "printcraft",

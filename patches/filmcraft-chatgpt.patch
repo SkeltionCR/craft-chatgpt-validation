@@ -2244,6 +2244,58 @@ index 2e46590..02cfdbf 100644
          }),
      );
      // The window could not be created (no usable GPU / graphics driver, no display): say so
+diff --git a/crates/codecs/src/gop.rs b/crates/codecs/src/gop.rs
+index b1ddd9a..5a95b1a 100644
+--- a/crates/codecs/src/gop.rs
++++ b/crates/codecs/src/gop.rs
+@@ -237,6 +237,9 @@ struct Pool {
+ struct Shared {
+     state: Mutex<State>,
+     pool: Arc<Pool>,
++    /// Fixed-size lock stripes coalesce concurrent requests for the same intra frame.
++    /// The state lock is never held while acquiring one of these locks.
++    intra_locks: [Mutex<()>; MIN_FRAMES],
+ }
+ 
+ impl Drop for Shared {
+@@ -380,6 +383,7 @@ impl GopCache {
+                 last_used: Instant::now(),
+             }),
+             pool: pool.clone(),
++            intra_locks: std::array::from_fn(|_| Mutex::new(())),
+         });
+         pool.register(&shared);
+         Self { shared, explicit_color, rotation: 0, budget: 384 << 20 }
+@@ -636,7 +640,17 @@ impl GopCache {
+     /// Intra-only streams: decode the one sample outside the lock, so several frame workers
+     /// decode different frames of the same source at once.
+     fn intra_frame(&self, st: std::sync::MutexGuard<'_, State>, s: &dyn VideoSamples, i: usize, want_pts: i64) -> crate::Result<Arc<VideoFrame>> {
+-        let mut st = st;
++        drop(st);
++        let stripe = self.shared.intra_locks.get(i % MIN_FRAMES).ok_or_else(|| CodecError::Decode("invalid intra lock stripe".into()))?;
++        let _flight = stripe.lock().unwrap_or_else(PoisonError::into_inner);
++        let mut st = self.shared.state.lock().unwrap_or_else(PoisonError::into_inner);
++        // Another worker may have produced this frame while this request waited.
++        if let Some(f) = st.cached(want_pts, true) {
++            return Ok(f.clone());
++        }
++        if filmcraft_media::cancel::cancelled() {
++            return Err(CodecError::Cancelled);
++        }
+         let spare = st.spare.pop();
+         drop(st);
+         let mut dec = match spare {
+@@ -810,8 +824,8 @@ mod tests {
+                 });
+             }
+         });
+-        // a frame two threads miss at the same moment may decode twice; nothing more
+-        assert!(s.decodes.load(Ordering::Relaxed) <= 64 + 4 * 4);
++        // Concurrent misses coalesce: every requested frame is decoded exactly once.
++        assert_eq!(s.decodes.load(Ordering::Relaxed), 64);
+         assert_eq!(s.resets.load(Ordering::Relaxed), 0);
+     }
+ 
 diff --git a/crates/engine/src/aaf_omf_tests.rs b/crates/engine/src/aaf_omf_tests.rs
 index d0a6d82..60c9a18 100644
 --- a/crates/engine/src/aaf_omf_tests.rs
@@ -2434,12 +2486,71 @@ index 8898869..786af90 100644
          assert_eq!(image_sequence_path("shot.bmp", 7, 10), "shot007.bmp");
      }
  
+diff --git a/crates/gpu/Cargo.toml b/crates/gpu/Cargo.toml
+index a402c61..8eed540 100644
+--- a/crates/gpu/Cargo.toml
++++ b/crates/gpu/Cargo.toml
+@@ -18,6 +18,12 @@ wgpu = { version = "30", default-features = false, features = ["wgsl"] }
+ log = { workspace = true }
+ rayon = { workspace = true }
+ 
++# wgpu's Auto compiler selects DXC when it is linked. The legacy FXC compiler
++# aborts on the effect stage's compute shader on Windows software adapters.
++# Keep this in the product dependency so editor builds use the same compiler.
++[target.'cfg(all(windows, target_arch = "x86_64"))'.dependencies]
++wgpu = { version = "30", default-features = false, features = ["static-dxc"] }
++
+ [dev-dependencies]
+ pollster = "0.4"
+ wgpu = { version = "30", features = ["wgsl", "metal", "vulkan", "dx12", "gles"] }
+diff --git a/crates/render/Cargo.toml b/crates/render/Cargo.toml
+index e9d35f4..7554d2e 100644
+--- a/crates/render/Cargo.toml
++++ b/crates/render/Cargo.toml
+@@ -29,3 +29,6 @@ image = { version = "0.25", default-features = false, features = ["png"] }
+ # Thread CPU clock for load-robust performance tests.
+ [target.'cfg(unix)'.dev-dependencies]
+ rustix = { version = "1", default-features = false, features = ["std", "time"] }
++
++[target.'cfg(windows)'.dev-dependencies]
++cpu-time = "1"
+diff --git a/crates/render/src/mixer_tests.rs b/crates/render/src/mixer_tests.rs
+index 54f0647..a8739f3 100644
+--- a/crates/render/src/mixer_tests.rs
++++ b/crates/render/src/mixer_tests.rs
+@@ -452,7 +452,11 @@ fn thread_cpu_secs() -> Option<f64> {
+         let t = rustix::time::clock_gettime(rustix::time::ClockId::ThreadCPUTime);
+         Some(t.tv_sec as f64 + t.tv_nsec as f64 * 1e-9)
+     }
+-    #[cfg(not(unix))]
++    #[cfg(windows)]
++    {
++        cpu_time::ThreadTime::try_now().ok().map(|t| t.as_duration().as_secs_f64())
++    }
++    #[cfg(not(any(unix, windows)))]
+     {
+         None
+     }
+diff --git a/crates/ui-egui/tests/media_ui.rs b/crates/ui-egui/tests/media_ui.rs
+index 34bdf20..4dde6b9 100644
+--- a/crates/ui-egui/tests/media_ui.rs
++++ b/crates/ui-egui/tests/media_ui.rs
+@@ -89,6 +89,9 @@ fn moved_project(root: &Path) -> String {
+     s.project = Arc::new(p);
+     let path = root.join("p.fcproj").to_string_lossy().into_owned();
+     s.execute("file.save", json!({"path": path})).unwrap();
++    // The imported media keeps file handles open. Close the fixture session before
++    // moving its files, as a user would when relocating a closed project on Windows.
++    drop(s);
+     std::fs::create_dir_all(root.join("Moved")).unwrap();
+     std::fs::rename(&media, root.join("Moved").join("Media")).unwrap();
+     path
 diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
 new file mode 100644
-index 0000000..54e6da6
+index 0000000..a50960a
 --- /dev/null
 +++ b/docs/chatgpt-connection.md
-@@ -0,0 +1,60 @@
+@@ -0,0 +1,67 @@
 +# FilmCraft ChatGPT connection
 +
 +This local modification adds an optional native ChatGPT connection to the Windows desktop app.
@@ -2469,18 +2580,25 @@ index 0000000..54e6da6
 +
 +## Validation status (2026-10-07)
 +
-+Windows run 37610981708 passed eight release authentication/UI tests, the actual
-+connection-panel preview, workspace Clippy with warnings denied, and all 320
-+engine tests. Full workspace testing then exposed two export tests that compared
-+native Windows paths with Unix separator strings. Their fixtures now compare
-+complete native paths, preserving parent directories, channel filenames, and
-+image frame numbering. Full upstream CI still needs a successful rerun.
++Windows run 37631511777 passed eight release authentication tests, the actual
++connection-panel preview, 320 engine tests and 31 export tests. Its complete
++workspace pass exposed five failed targets: duplicate intra-frame decoding under
++concurrent requests, FXC aborting on the GPU effect shader, a Windows performance
++test falling back to wall time, and media fixtures moving files while open.
 +
-+The resolved Cargo.lock is included. Local Cargo remains blocked by Windows
++The revised source coalesces intra-frame requests with bounded lock stripes,
++links wgpu's supported DXC compiler on Windows x86-64, measures Windows thread
++CPU time in the unchanged performance assertion, and closes fixture sessions
++before moving their media. GPU comparisons and the performance threshold remain
++enabled. Full upstream CI still needs a successful rerun.
++
++The resolved Cargo.lock from the previous run is included; the runner will resolve
++the new build/test dependencies. Local Cargo remains blocked by Windows
 +Application Control (OS error 4551); no protection setting was changed.
 +Actual ChatGPT account authorization remains untested. This is a source change,
 +not an installed or signed application release.
-+Evidence: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37610981708
++Evidence: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37631511777
++Compiler: https://docs.rs/wgpu/30.0.1/wgpu/enum.Dx12Compiler.html
 +
 +On an authorized build machine, run:
 +

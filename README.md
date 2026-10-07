@@ -54,3 +54,5 @@ assets from upstream remain in its ephemeral build checkout and are not redistri
 | lightcraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475) | Not exercised |
 
 Other selected runs are pending. Panel previews use synthetic accounts and a test editor.
+
+FilmCraft run 37592431206 passed release auth/UI/preview and Clippy, then exposed nine Windows engine failures. The revised patch fixes native folder-prefix relinking and verbatim directory export paths, preserves media/render/audio assertions, and checks the engine early before all full workspace gates. Full CI remains pending.

@@ -73,6 +73,12 @@ if ($App -eq 'printcraft') {
 # Use the same workspace feature union as upstream CI to reuse compilation outputs.
 $profileArguments = if ($App -in @('filmcraft','effectcraft')) { @('--release') } else { @() }
 Write-Output "CRAFT_BUILD_CONFIGURATION:$App`:compiler_jobs=$env:CARGO_BUILD_JOBS`:profile=$($profileArguments -join ',')"
+if ($App -eq 'filmcraft') {
+    # Report Windows engine regressions before the much larger editor/CLI link.
+    # The full workspace checks and upstream CI still run below.
+    Invoke-Checked -Command cargo -Arguments @('+stable','test','-p','filmcraft-engine','--release')
+    Write-Output "CRAFT_ENGINE_TESTS_PASSED:$App"
+}
 Invoke-Checked -Command cargo -Arguments (@('+stable','test','--workspace','chatgpt') + $profileArguments)
 Write-Output "CRAFT_AUTH_TESTS_PASSED:$App"
 $env:CRAFT_SNAPSHOT_PATH = Join-Path $recipeRoot 'panel-preview.png'

@@ -50,7 +50,7 @@ assets from upstream remain in its ephemeral build checkout and are not redistri
 |---|---|---|
 | PhotoCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526632188) | Not exercised |
 | VectorCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526641875) | Not exercised |
-| FilmCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37631511777) | Not exercised |
+| FilmCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37653811843) | Not exercised |
 | LightCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475) | Not exercised |
 | PrintCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37536527821) | Not exercised |
 | EffectCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37612917628) | Not exercised |

@@ -50,7 +50,7 @@ assets from upstream remain in its ephemeral build checkout and are not redistri
 |---|---|---|
 | PhotoCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526632188) | Not exercised |
 | VectorCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526641875) | Not exercised |
-| FilmCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37653811843) | Not exercised |
+| FilmCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37824008072) | Not exercised |
 | LightCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475) | Not exercised |
 | PrintCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37536527821) | Not exercised |
 | EffectCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37775900204) | Not exercised |
@@ -75,8 +75,7 @@ The new audio patch replaces delay-ring division with bounded wrapping and
 caches reverb feedback gains for stationary controls. New tests compare exact
 audio output with the prior calculation. These changes await validation.
 
-EffectCraft passed 390 engine tests, release authentication tests, the offscreen
-panel preview and strict workspace Clippy in its previous run. That run reached
-the six-hour limit while rebuilding release tests. The recipe now runs upstream
-CI before the filtered sign-in checks to reuse test binaries. The source, release
-optimization settings and required upstream gates are unchanged.
+The revised build order completed EffectCraft release compilation within about
+two hours. Its engine tests passed, then FXC aborted on its GPU compute shader.
+The new product patch links DXC on Windows x86-64, as already verified for
+FilmCraft. Full CI still needs a successful rerun; pixel tests remain enabled.

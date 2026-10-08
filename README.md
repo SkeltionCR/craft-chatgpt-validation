@@ -72,12 +72,12 @@ failed the unchanged >4x mixer speed requirement at 2.79x realtime.
 The separate five-second diagnostic reached 4.211x; it does not satisfy
 the full ten-second gate. Cache eviction did not resolve this failure.
 
-The replacement run uses a serial Rust test harness to investigate
-interference from simultaneous CPU-heavy tests on the shared runner.
-The same ten-second mixer benchmark, one-core Rayon pool, >4x assertion,
-release profile and every upstream test and gate remain enabled.
-Tests that explicitly spawn threads retain their own concurrency.
-Full validation still requires the replacement run to pass.
+Replacement run 37858950216 passed the full ten-second mixer gate
+at 4.4x realtime with a serial Rust test harness. All 140 render tests
+passed, with zero failures and three existing ignored tests.
+The product code matches the preceding runner; the release profile,
+one-core mixer pool, >4x assertion and every upstream gate remain.
+Full upstream CI is still running and has not yet passed.
 
 Run 37824265776 compiled with DXC and passed 167 GPU comparisons; three
 failed at RGB threshold boundaries, environment coordinates and a slight

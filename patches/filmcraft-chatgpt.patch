@@ -2696,10 +2696,10 @@ index e9d35f4..7554d2e 100644
 +[target.'cfg(windows)'.dev-dependencies]
 +cpu-time = "1"
 diff --git a/crates/render/src/mixer.rs b/crates/render/src/mixer.rs
-index a142768..673fa1c 100644
+index a142768..669b6bd 100644
 --- a/crates/render/src/mixer.rs
 +++ b/crates/render/src/mixer.rs
-@@ -248,19 +248,95 @@ impl<'a> Lane<'a> {
+@@ -248,19 +248,93 @@ impl<'a> Lane<'a> {
              Some(o) => o.at(t, self.auto(t)),
          }
      }
@@ -2719,11 +2719,7 @@ index a142768..673fa1c 100644
 +        // shortcut. Preserve the ordinary evaluation for unusual timestamps.
 +        let time = |s: i64| i64::try_from(s as i128 * filmcraft_time::TICKS_PER_SECOND as i128 / sr as i128).ok().map(Tick);
 +        let (start, end) = (time(c0)?, time(end_sample)?);
-+        if end <= first.time || (start >= last.time && start > first.time) {
-+            Some(self.auto(start))
-+        } else {
-+            None
-+        }
++        if end <= first.time || (start >= last.time && start > first.time) { Some(self.auto(start)) } else { None }
 +    }
      /// Per-sample values for content samples `c0 ..`, mapped through `f`, into `out`.
      /// Returns the constant instead when the lane does not change.
@@ -2752,11 +2748,13 @@ index a142768..673fa1c 100644
 +            let time = |i| Tick::from_units(i, sr as i64);
 +            for interp in Interpolation::ALL {
 +                let mut p = Param::new(ParamValue::Float(0.0));
-+                p.keyframes = [(100, -6.0), (200, -12.0), (400, 3.0)].map(|(t, v)| {
-+                    let mut k = Keyframe::new(time(t), ParamValue::Float(v));
-+                    k.interp = interp;
-+                    k
-+                }).to_vec();
++                p.keyframes = [(100, -6.0), (200, -12.0), (400, 3.0)]
++                    .map(|(t, v)| {
++                        let mut k = Keyframe::new(time(t), ParamValue::Float(v));
++                        k.interp = interp;
++                        k
++                    })
++                    .to_vec();
 +                for ov in [None, Some(Override { value: -3.0, release: None }), Some(Override { value: -3.0, release: Some((time(200), time(100))) })] {
 +                    for hold in [false, true] {
 +                        let lane = Lane { param: Some(&p), stat: 0.0, ov, hold };
@@ -2798,10 +2796,43 @@ index a142768..673fa1c 100644
  
  #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 diff --git a/crates/render/src/mixer_tests.rs b/crates/render/src/mixer_tests.rs
-index 54f0647..a8739f3 100644
+index 54f0647..9881794 100644
 --- a/crates/render/src/mixer_tests.rs
 +++ b/crates/render/src/mixer_tests.rs
-@@ -452,7 +452,11 @@ fn thread_cpu_secs() -> Option<f64> {
+@@ -444,6 +444,32 @@ fn perf_24_tracks_3_effects_realtime_factor() {
+     assert!(rt > min, "realtime factor {rt:.2}");
+ }
+ 
++/// Diagnostic insert timings; never substitutes for the complete mixer gate.
++#[test]
++#[ignore = "diagnostic timing; the complete mixer performance gate remains enabled"]
++fn profile_mixer_insert_costs() {
++    let pool = rayon::ThreadPoolBuilder::new().num_threads(1).build().unwrap();
++    for omit in ["none", "parametric_eq", "dynamics", "studio_reverb", "all"] {
++        let mut r = busy_rig(24);
++        let seq = r.p.sequence_mut(r.seq).unwrap();
++        for track in seq.audio_tracks.iter_mut().chain(seq.submix_tracks.iter_mut()) {
++            track.effects.retain(|e| omit != "all" && e.effect != omit);
++        }
++        pool.install(|| r.mix_cut(0, 4_800, &[1024], None));
++        let (elapsed, output) = pool.install(|| {
++            let cpu = thread_cpu_secs();
++            let wall = std::time::Instant::now();
++            let output = r.mix_cut(4_800, 240_000, &[1024], None);
++            let elapsed = cpu.map(|c| thread_cpu_secs().unwrap_or(c) - c).unwrap_or_else(|| wall.elapsed().as_secs_f64());
++            (elapsed, output)
++        });
++        assert_eq!(output[0].len(), 240_000);
++        assert!(output.iter().flatten().all(|x| x.is_finite()));
++        std::hint::black_box(output);
++        eprintln!("CRAFT_MIXER_PROFILE:omit={omit}:seconds={elapsed:.6}:realtime={:.3}", 5.0 / elapsed);
++    }
++}
++
+ /// CPU seconds used by the calling thread (None where there is no thread clock; callers fall back
+ /// to wall time).
+ fn thread_cpu_secs() -> Option<f64> {
+@@ -452,7 +478,11 @@ fn thread_cpu_secs() -> Option<f64> {
          let t = rustix::time::clock_gettime(rustix::time::ClockId::ThreadCPUTime);
          Some(t.tv_sec as f64 + t.tv_nsec as f64 * 1e-9)
      }
@@ -2830,10 +2861,10 @@ index 34bdf20..4dde6b9 100644
      path
 diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
 new file mode 100644
-index 0000000..668a421
+index 0000000..46b75c9
 --- /dev/null
 +++ b/docs/chatgpt-connection.md
-@@ -0,0 +1,76 @@
+@@ -0,0 +1,70 @@
 +# FilmCraft ChatGPT connection
 +
 +This local modification adds an optional native ChatGPT connection to the Windows desktop app.
@@ -2865,32 +2896,26 @@ index 0000000..668a421
 +
 +Windows run 37653811843 passed eight release authentication tests, the actual
 +connection-panel preview and the concurrency, GPU and media fixture corrections.
-+Run 37824008072 passed 320 engine tests, 31 export tests and 117 audio DSP tests,
-+including exact comparisons of the optimized circular reads and cached reverb
-+gains with their previous calculations. Its one render failure remained the audio
-+performance test: 2.58x realtime, below the unchanged requirement of more than 4x.
++Run 37831049694 passed 320 engine tests, 31 export tests, 117 audio DSP tests
++and 136 render tests. These include exact-output checks for circular-buffer
++reads, cached reverb coefficients and constant endpoint automation, including
++control changes, interpolation modes, overrides and duplicate timestamps.
++Its remaining render failure is mixer performance: 2.82x realtime, below the
++unchanged requirement of more than 4x. Full CI remains incomplete.
 +
-+The revised audio code wraps circular-buffer indices with bounded subtraction
-+and caches reverb feedback gains while their smoothed controls are stationary.
-+Regression tests compare circular reads with the previous modulo formula and
-+audio samples with the previous unconditional coefficient updates, including
-+changes to the controls. These two optimizations passed their regression tests.
-+The new mixer patch evaluates scalar automation once for blocks wholly before
-+the first or after the last keyframe, where the value is constant. It preserves
-+per-sample evaluation across keyframes and live override transitions. Additional
-+tests compare every output sample across interpolation modes, unusual rates,
-+negative times, overrides and duplicate endpoint timestamps. This new change
-+still needs compilation and full CI.
-+GPU comparisons and the performance threshold remain enabled.
++An explicitly ignored diagnostic test measures the complete 24-track rig and
++the cost of omitting each insert type, to locate the remaining CPU work. The
++normal complete mixer performance test and its threshold remain enabled; no
++effect is removed from that gate or from the product's audio path.
 +
-+The resolved Cargo.lock from that run is included. The build recipe checks the
-+audio crates early, then runs full upstream CI before filtered sign-in tests so
-+those tests can reuse the editor binaries. The additional complete workspace
-+pass with --no-fail-fast remains enabled. Release settings are unchanged.
-+Local Cargo remains blocked by Windows Application Control (OS error 4551);
-+no protection setting was changed. Actual ChatGPT account authorization remains
-+untested. This is a source change, not an installed or signed application release.
-+Evidence: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37824008072
++The runner-formatted source and resolved Cargo.lock are included. The build
++recipe checks audio early, then runs complete upstream CI, an additional full
++workspace pass with --no-fail-fast, authentication tests and the panel preview.
++Release settings remain unchanged. Local Cargo remains blocked by Windows
++Application Control (OS error 4551); no protection setting was changed.
++Actual ChatGPT account authorization remains untested. This is a source change,
++not an installed or signed application release.
++Evidence: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37831049694
 +
 +On an authorized build machine, run:
 +

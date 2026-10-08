@@ -71,10 +71,10 @@ and media-file fixture corrections. The remaining failure is the audio
 performance test: 2.51x realtime versus its unchanged requirement of >4x.
 Full CI remains unverified while that failure is investigated.
 
-The delay-ring and reverb optimizations passed exact-output regression tests,
-but the mixer performance test still achieved only 2.58x realtime. The new
-patch evaluates constant automation outside its keyframe range once per block.
-Its sample comparisons and full CI await validation.
+All four added exact-output audio regressions passed. The mixer improved
+to 2.82x realtime but remains below its unchanged >4x requirement.
+An explicit diagnostic measures insert costs before further optimization;
+the complete mixer performance gate and all upstream checks remain enabled.
 
 The revised build order completed EffectCraft release compilation within about
 two hours. Its engine tests passed, then FXC aborted on its GPU compute shader.

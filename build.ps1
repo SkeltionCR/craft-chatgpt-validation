@@ -90,6 +90,7 @@ if ($App -in @('filmcraft','effectcraft')) {
     # Preserve every upstream gate and the workspace's release profile.
     if ($App -eq 'filmcraft') {
         Invoke-Checked -Command cargo -Arguments @('+stable','test','-p','filmcraft-audio-dsp','--release','--locked')
+        Invoke-Checked -Command cargo -Arguments @('+stable','test','-p','filmcraft-render','profile_mixer_insert_costs','--release','--locked','--','--ignored','--nocapture')
         Invoke-Checked -Command cargo -Arguments @('+stable','test','-p','filmcraft-render','--release','--locked','--','--nocapture')
         Write-Output 'CRAFT_RENDER_TESTS_PASSED:filmcraft'
     }

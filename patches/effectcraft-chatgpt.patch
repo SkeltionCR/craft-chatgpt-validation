@@ -3026,7 +3026,7 @@ index 9d7ccef..88e7e42 100644
      let w_arc = -dd / (rho + sqrt(max(rho * rho + dd, 0.0)));
      var cand: array<vec3<f32>, 3>;
 diff --git a/crates/gpu/src/tests_fx_stylize.rs b/crates/gpu/src/tests_fx_stylize.rs
-index 44e156a..52d35d8 100644
+index 44e156a..6690bd6 100644
 --- a/crates/gpu/src/tests_fx_stylize.rs
 +++ b/crates/gpu/src/tests_fx_stylize.rs
 @@ -20,6 +20,38 @@ fn pt(x: f64, y: f64) -> Value {
@@ -3038,7 +3038,7 @@ index 44e156a..52d35d8 100644
 +    let Some(g) = crate::tests::gpu() else { return };
 +    let thresholds = [70.0_f32 / 255.0, 150.0 / 255.0, 110.0 / 255.0];
 +    let mut image = effectcraft_raster::Image::new(255 * 3, 1);
-+    for (alpha, pixels) in image.data.chunks_exact_mut(3).enumerate() {
++    for (alpha, pixels) in image.data.as_chunks_mut::<3>().0.iter_mut().enumerate() {
 +        let a = (alpha + 1) as f32 / 255.0;
 +        let center = thresholds.map(|t| t * a);
 +        pixels[0] = [center[0].next_down(), center[1].next_down(), center[2].next_down(), a];
@@ -3055,7 +3055,7 @@ index 44e156a..52d35d8 100644
 +        encoder.pixels("fxs_point", &p, &input, None, &out, None);
 +        let bytes = encoder.read_texture(&out.texture, out.width, out.height, 16).unwrap();
 +        let actual: Vec<f32> = bytes.as_chunks::<4>().0.iter().map(|b| f32::from_le_bytes(*b)).collect();
-+        for (i, (pixel, got)) in image.data.iter().zip(actual.chunks_exact(4)).enumerate() {
++        for (i, (pixel, got)) in image.data.iter().zip(actual.as_chunks::<4>().0.iter()).enumerate() {
 +            for channel in 0..3 {
 +                let on = (pixel[channel] / pixel[3] >= thresholds[channel]) != invert;
 +                assert_eq!(got[channel], if on { pixel[3] } else { 0.0 }, "pixel {i}, channel {channel}, invert {invert}");
@@ -3098,10 +3098,10 @@ index 39bcba1..8e9e511 100644
      effect_case(
 diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
 new file mode 100644
-index 0000000..310c39c
+index 0000000..ce9bace
 --- /dev/null
 +++ b/docs/chatgpt-connection.md
-@@ -0,0 +1,71 @@
+@@ -0,0 +1,75 @@
 +# EffectCraft ChatGPT connection
 +
 +This local modification adds an optional native ChatGPT connection to the Windows desktop app.
@@ -3146,6 +3146,10 @@ index 0000000..310c39c
 +100,001 angle comparisons and 16 signed-zero/axis cases (maximum angle error
 +2.65e-7 radians). These probes
 +do not substitute for the real GPU comparisons or full CI, which remain pending.
++Run 37856555037 passed the 390 engine tests and upstream formatting, then stopped
++at two strict Clippy errors in the new regression's chunk iteration. Both now
++use fixed-size as_chunks iterators. The returned patch exactly matched that
++run's input, so no older source was imported over these newer corrections.
 +
 +Eight release authentication tests, the actual connection-panel preview and
 +strict workspace Clippy passed earlier in run 37612917628. Local Cargo remains

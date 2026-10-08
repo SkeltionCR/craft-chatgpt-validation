@@ -17,7 +17,7 @@
     "repo": "filmcraft",
     "name": "FilmCraft",
     "upstream": "771b614ad4c3fbefda5d668ce4384504b8c13f6d",
-    "patch_sha256": "f2823962d075d4a49a2a387eec4444f61857b4546148b03b3a3ddc4f5157dba2"
+    "patch_sha256": "b36ffa8e502e1d4c64137a02b8eec439ddec8ad679245bbd7a8b9475f92cd655"
   },
   {
     "repo": "lightcraft",
@@ -37,7 +37,7 @@
     "repo": "effectcraft",
     "name": "EffectCraft",
     "upstream": "2fadd14f09bb064cab8f1f8fe85af601a08b6e53",
-    "patch_sha256": "b1d75c10aaa3d10f61c1961540ddedcbfde8b2359bcee78ac5fd50a5f0fda29e"
+    "patch_sha256": "7aff0d09f0bea265d0a57b5e47bce9b96722e8c0f8dcc76bf1444af6b1920399"
   },
   {
     "repo": "designcraft",

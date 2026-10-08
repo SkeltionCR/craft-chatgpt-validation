@@ -2696,7 +2696,7 @@ index e9d35f4..7554d2e 100644
 +[target.'cfg(windows)'.dev-dependencies]
 +cpu-time = "1"
 diff --git a/crates/render/src/audio_fx.rs b/crates/render/src/audio_fx.rs
-index b88a591..570294d 100644
+index b88a591..d724fce 100644
 --- a/crates/render/src/audio_fx.rs
 +++ b/crates/render/src/audio_fx.rs
 @@ -36,10 +36,10 @@ pub(crate) fn mapping(id: &str) -> Option<Mapping> {
@@ -2751,7 +2751,7 @@ index b88a591..570294d 100644
              },
          },
          "invert_a" => Mapping { dsp: "invert", preroll: |_, _| 0.0, apply: |_, _, _| {} },
-@@ -418,6 +418,70 @@ mod tests {
+@@ -418,6 +418,82 @@ mod tests {
      use filmcraft_audio_dsp::Unit;
      use filmcraft_project::{EffectKind, ParamKind, effect_defs};
  
@@ -2764,7 +2764,15 @@ index b88a591..570294d 100644
 +                }
 +            }
 +            "parametric_eq" => {
-+                for (dsp, project) in [("low_freq", "low_freq"), ("low", "low_gain"), ("mid_freq", "mid_freq"), ("mid", "mid_gain"), ("mid_q", "mid_q"), ("high_freq", "high_freq"), ("high", "high_gain")] {
++                for (dsp, project) in [
++                    ("low_freq", "low_freq"),
++                    ("low", "low_gain"),
++                    ("mid_freq", "mid_freq"),
++                    ("mid", "mid_gain"),
++                    ("mid_q", "mid_q"),
++                    ("high_freq", "high_freq"),
++                    ("high", "high_gain"),
++                ] {
 +                    d.set_param(dsp, f(e, project, t));
 +                }
 +            }
@@ -2783,7 +2791,11 @@ index b88a591..570294d 100644
 +    fn unchanged_insert_updates_preserve_exact_samples_and_control_changes() {
 +        use filmcraft_project::ParamValue;
 +        for sr in [44_100, 48_000, 47_999] {
-+            for (id, control, values) in [("dynamics", "threshold", [-20.0, -12.0, -30.0]), ("parametric_eq", "low_gain", [0.0, 6.0, -3.0]), ("studio_reverb", "room", [50.0, 80.0, 20.0])] {
++            for (id, control, values) in [
++                ("dynamics", "threshold", [-20.0, -12.0, -30.0]),
++                ("parametric_eq", "low_gain", [0.0, 6.0, -3.0]),
++                ("studio_reverb", "room", [50.0, 80.0, 20.0]),
++            ] {
 +                let mut e = filmcraft_project::find_effect(id).unwrap().instance();
 +                let m = mapping(id).unwrap();
 +                let mut cached = filmcraft_audio_dsp::create_effect(m.dsp, sr as f32, 2).unwrap();
@@ -2808,8 +2820,8 @@ index b88a591..570294d 100644
 +                    // Include split calls within the absolute parameter grid.
 +                    let mut offset = 0;
 +                    for n in [1, 17, 46] {
-+                        cached.process(&mut [&mut left[offset..offset+n], &mut right[offset..offset+n]]);
-+                        reference.process(&mut [&mut old_left[offset..offset+n], &mut old_right[offset..offset+n]]);
++                        cached.process(&mut [&mut left[offset..offset + n], &mut right[offset..offset + n]]);
++                        reference.process(&mut [&mut old_left[offset..offset + n], &mut old_right[offset..offset + n]]);
 +                        offset += n;
 +                    }
 +                    assert_eq!(left, old_left, "{id}, sr={sr}, block={block}, left");
@@ -2823,9 +2835,18 @@ index b88a591..570294d 100644
      fn every_audio_effect_has_dsp() {
          for d in effect_defs().iter().filter(|d| d.kind == EffectKind::Audio && !d.intrinsic) {
 diff --git a/crates/render/src/mixer.rs b/crates/render/src/mixer.rs
-index a142768..669b6bd 100644
+index a142768..e697133 100644
 --- a/crates/render/src/mixer.rs
 +++ b/crates/render/src/mixer.rs
+@@ -40,7 +40,7 @@
+ //! (with Touch's ramp back to the automation), per-strip meters, and the newest project snapshot.
+ 
+ use std::borrow::Cow;
+-use std::collections::{HashMap, HashSet};
++use std::collections::{HashMap, HashSet, VecDeque};
+ use std::sync::atomic::{AtomicBool, Ordering};
+ use std::sync::{Arc, Mutex, OnceLock};
+ 
 @@ -248,19 +248,93 @@ impl<'a> Lane<'a> {
              Some(o) => o.at(t, self.auto(t)),
          }
@@ -2922,6 +2943,123 @@ index a142768..669b6bd 100644
  // ------------------------------------------------------------------------------------- plan
  
  #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+@@ -573,11 +647,89 @@ fn build_state(plan: &Plan, sr: u32) -> GraphState {
+     GraphState { next_out: 0, strips, latency }
+ }
+ 
+-fn cache() -> &'static Mutex<HashMap<u64, Vec<GraphState>>> {
+-    static C: OnceLock<Mutex<HashMap<u64, Vec<GraphState>>>> = OnceLock::new();
++/// Keep a frequently used playback graph when unrelated graphs fill the cache.
++/// Clearing the entire cache forces that graph to repeat its effect pre-roll.
++#[derive(Default)]
++struct GraphCache {
++    graphs: HashMap<u64, Vec<GraphState>>,
++    recent: VecDeque<u64>,
++}
++
++impl GraphCache {
++    fn touch(&mut self, key: u64) {
++        self.recent.retain(|k| *k != key);
++        self.recent.push_back(key);
++    }
++
++    fn take(&mut self, key: u64, start: i64) -> Option<GraphState> {
++        let taken = self.graphs.get_mut(&key).and_then(|v| v.iter().position(|g| g.next_out == start).map(|i| v.swap_remove(i)));
++        if self.graphs.contains_key(&key) {
++            self.touch(key);
++        }
++        taken
++    }
++
++    fn put(&mut self, key: u64, state: GraphState) {
++        let v = self.graphs.entry(key).or_default();
++        v.push(state);
++        if v.len() > 4 {
++            v.remove(0);
++        }
++        self.touch(key);
++        while self.graphs.len() > 64 {
++            let Some(oldest) = self.recent.pop_front() else { break };
++            self.graphs.remove(&oldest);
++        }
++    }
++}
++
++fn cache() -> &'static Mutex<GraphCache> {
++    static C: OnceLock<Mutex<GraphCache>> = OnceLock::new();
+     C.get_or_init(Default::default)
+ }
+ 
++#[cfg(test)]
++mod cache_tests {
++    use super::{GraphCache, GraphState};
++
++    fn state(next_out: i64) -> GraphState {
++        GraphState { next_out, strips: Vec::new(), latency: 17 }
++    }
++
++    #[test]
++    fn cache_pressure_preserves_a_continuing_playback_graph() {
++        let mut cache = GraphCache::default();
++        cache.put(0, state(1024));
++        for key in 1..200 {
++            // Other projects/graph configurations render while this consumer plays.
++            cache.put(key, state(0));
++            let mut playing = cache.take(0, 1024).expect("hot playback graph survives cache pressure");
++            assert_eq!(playing.latency, 17);
++            playing.next_out = 1024;
++            cache.put(0, playing);
++            assert!(cache.graphs.len() <= 64);
++            assert_eq!(cache.graphs.len(), cache.recent.len());
++        }
++        assert!(!cache.graphs.contains_key(&1), "cold graphs are evicted individually");
++        assert!(cache.take(0, 1024).is_some());
++    }
++
++    #[test]
++    fn cache_keeps_four_positions_per_graph_and_requires_the_exact_next_sample() {
++        let mut cache = GraphCache::default();
++        for sample in 0..8 {
++            cache.put(4, state(sample));
++        }
++        assert!(cache.take(4, 3).is_none());
++        for sample in 4..8 {
++            assert_eq!(cache.take(4, sample).unwrap().next_out, sample);
++        }
++        assert!(cache.take(4, 7).is_none());
++        assert_eq!(cache.graphs.len(), 1);
++        assert_eq!(cache.recent.len(), 1);
++    }
++}
++
+ /// Total latency (samples) of the sequence's mixer graph: how far ahead of the timeline the graph
+ /// is read so its output lines up.
+ pub fn graph_latency(seq: &Sequence) -> usize {
+@@ -836,7 +988,7 @@ pub fn mix_graph(project: &Project, seq: &Sequence, start: i64, frames: usize, s
+     let key = plan.structure_hash(sr);
+     let taken = {
+         let mut c = lock(cache());
+-        c.get_mut(&key).and_then(|v| v.iter().position(|g| g.next_out == start).map(|i| v.swap_remove(i)))
++        c.take(key, start)
+     };
+     let (mut st, skip) = match taken {
+         Some(st) => (st, 0usize),
+@@ -915,14 +1067,7 @@ pub fn mix_graph(project: &Project, seq: &Sequence, start: i64, frames: usize, s
+     st.next_out = start + frames as i64;
+     {
+         let mut c = lock(cache());
+-        let v = c.entry(key).or_default();
+-        v.push(st);
+-        if v.len() > 4 {
+-            v.remove(0);
+-        }
+-        if c.len() > 64 {
+-            c.clear();
+-        }
++        c.put(key, st);
+     }
+     if let Some(l) = live {
+         l.post_meters(&meters);
 diff --git a/crates/render/src/mixer_tests.rs b/crates/render/src/mixer_tests.rs
 index 54f0647..9881794 100644
 --- a/crates/render/src/mixer_tests.rs
@@ -2988,10 +3126,10 @@ index 34bdf20..4dde6b9 100644
      path
 diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
 new file mode 100644
-index 0000000..ed3fbe1
+index 0000000..82145a7
 --- /dev/null
 +++ b/docs/chatgpt-connection.md
-@@ -0,0 +1,75 @@
+@@ -0,0 +1,68 @@
 +# FilmCraft ChatGPT connection
 +
 +This local modification adds an optional native ChatGPT connection to the Windows desktop app.
@@ -3021,33 +3159,26 @@ index 0000000..ed3fbe1
 +
 +## Validation status (2026-10-08)
 +
-+Windows run 37653811843 passed eight release authentication tests, the actual
-+connection-panel preview and the concurrency, GPU and media fixture corrections.
-+Run 37833431110 passed 320 engine tests, 31 export tests, 117 audio DSP tests
-+and 136 render tests. These include exact-output checks for circular-buffer
-+reads, cached reverb coefficients and constant endpoint automation, including
-+control changes, interpolation modes, overrides and duplicate timestamps.
-+Its remaining render failure is mixer performance: 2.77x realtime, below the
-+unchanged requirement of more than 4x. Full CI remains incomplete.
++Run 37835978909 passed 320 engine tests, 31 export tests, 117 audio DSP
++tests and 137 render tests. All added exact-output audio regressions passed,
++including unchanged insert updates and parameter changes. The complete mixer
++performance test failed at 2.87x realtime against its unchanged >4x requirement.
++The separate five-second diagnostic reached 4.267x, which does not satisfy
++the complete gate. Full CI remains incomplete.
 +
-+The diagnostic measured five seconds of the complete rig in 1.344 CPU seconds,
-+0.953 without EQ, 1.000 without dynamics, 0.750 without reverb and 0.219 without
-+inserts. These are diagnostic comparisons; the normal complete performance
-+test and its threshold remain enabled, with every effect included.
-+The new patch uses the existing set-if-changed helper for the EQ, dynamics and
-+reverb mappings, avoiding redundant parameter reconfiguration every 64 samples.
-+A new regression compares every sample and parameter target against the previous
-+unconditional updates, including control changes and split processing calls.
-+This new optimization and its regression still need runner validation.
++The revised graph cache evicts individual least-recently-used graphs instead
++of clearing every graph when its capacity is exceeded. This preserves recently
++used playback state and avoids an unnecessary repeat of effect pre-roll.
++Two new cache regressions cover pressure from unrelated graphs, bounded storage,
++the four-position limit and the exact next-sample requirement. This correction
++still requires hosted compilation, the complete mixer gate and full upstream CI.
 +
-+The runner-formatted source and resolved Cargo.lock are included. The build
-+recipe checks audio early, then runs complete upstream CI, an additional full
-+workspace pass with --no-fail-fast, authentication tests and the panel preview.
-+Release settings remain unchanged. Local Cargo remains blocked by Windows
-+Application Control (OS error 4551); no protection setting was changed.
-+Actual ChatGPT account authorization remains untested. This is a source change,
-+not an installed or signed application release.
-+Evidence: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37833431110
++Eight release authentication tests and the actual connection-panel preview
++passed earlier in run 37653811843. Local Cargo is blocked by Windows Application
++Control (OS error 4551); no protection setting was changed. Actual ChatGPT
++account authorization remains untested. This is modified source, not an
++installed or signed application release.
++Evidence: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37835978909
 +
 +On an authorized build machine, run:
 +

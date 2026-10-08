@@ -50,7 +50,7 @@ assets from upstream remain in its ephemeral build checkout and are not redistri
 |---|---|---|
 | PhotoCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526632188) | Not exercised |
 | VectorCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526641875) | Not exercised |
-| FilmCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37833431110) | Not exercised |
+| FilmCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37835978909) | Not exercised |
 | LightCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475) | Not exercised |
 | PrintCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37536527821) | Not exercised |
 | EffectCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37824265776) | Not exercised |
@@ -63,20 +63,21 @@ and account renewal with a person's ChatGPT account remain untested.
 Full validation is still pending for filmcraft, effectcraft.
 
 FilmCraft's revised Windows engine paths passed 320 engine tests. Its corrected
-export fixtures passed 31 export tests. The full rerun checks every workspace
-test suite with `--no-fail-fast`, then repeats the unchanged upstream CI gates.
+export fixtures passed 31 export tests. Runner validation preserves every
+upstream gate and adds a workspace pass with `--no-fail-fast` after CI succeeds.
 
-The latest full workspace pass confirmed the concurrency, GPU comparisons
-and media-file fixture corrections. The remaining failure is the audio
-performance test: 2.51x realtime versus its unchanged requirement of >4x.
-Full CI remains unverified while that failure is investigated.
+Run 37835978909 passed 117 audio DSP tests and 137 render tests, including
+the exact-output insert-update regression. The complete mixer gate failed
+at 2.87x realtime against the unchanged >4x requirement. Its isolated
+five-second diagnostic reached 4.267x; that does not satisfy the full gate.
+The revised cache evicts old graphs individually, preserving recently used
+playback graphs instead of forcing every graph to repeat effect pre-roll.
+Two cache regressions and the full upstream gates await runner validation.
 
-The diagnostic confirmed most mixer CPU time is spent on inserts. The complete
-performance gate remained below its unchanged >4x requirement at 2.77x.
-The new three insert mappings avoid redundant unchanged parameter updates.
-An added exact-output regression and full CI await runner validation.
-
-The revised build order completed EffectCraft release compilation within about
-two hours. Its engine tests passed, then FXC aborted on its GPU compute shader.
-The new product patch links DXC on Windows x86-64, as already verified for
-FilmCraft. Full CI still needs a successful rerun; pixel tests remain enabled.
+Run 37824265776 compiled with DXC and passed 167 GPU comparisons; three
+failed at RGB threshold boundaries, environment coordinates and a slight
+Bend It deformation. The revised shaders improve angle calculations and
+use exact nearest-even mantissa division only near RGB thresholds.
+New GPU threshold regressions and additional geometry cases retain the
+existing pixel tolerances. Numerical probes passed; actual GPU comparisons
+and every full upstream gate still require a successful runner validation.

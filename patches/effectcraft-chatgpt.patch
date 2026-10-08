@@ -1,5 +1,5 @@
 diff --git a/Cargo.lock b/Cargo.lock
-index 564eaac..9467bdb 100644
+index 564eaac..4d099cd 100644
 --- a/Cargo.lock
 +++ b/Cargo.lock
 @@ -121,6 +121,41 @@ version = "2.0.1"
@@ -958,7 +958,36 @@ index 564eaac..9467bdb 100644
  
  [[package]]
  name = "leb128fmt"
-@@ -3147,6 +3775,17 @@ dependencies = [
+@@ -2986,6 +3614,12 @@ version = "0.5.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "7a79a3332a6609480d7d0c9eab957bca6b455b91bb84e66d19f5ff66294b85b8"
+ 
++[[package]]
++name = "lhash"
++version = "1.1.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "744a4c881f502e98c2241d2e5f50040ac73b30194d64452bb6260393b53f0dc9"
++
+ [[package]]
+ name = "libc"
+ version = "0.2.189"
+@@ -3084,6 +3718,15 @@ version = "0.11.6"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "373f5eceeeab7925e0c1098212f2fbc4d416adec9d35051a6ab251e824c1854a"
+ 
++[[package]]
++name = "mach-dxcompiler-rs"
++version = "0.1.6+2026.09.16-48d5a66.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "699d5b85d279d172f6ea742c6c47342fdd7c388872cea2e137e2c6721ef2e6d6"
++dependencies = [
++ "lhash",
++]
++
+ [[package]]
+ name = "mach2"
+ version = "0.4.3"
+@@ -3147,6 +3790,17 @@ dependencies = [
   "simd-adler32",
  ]
  
@@ -976,7 +1005,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "moxcms"
  version = "0.8.1"
-@@ -3220,6 +3859,23 @@ dependencies = [
+@@ -3220,6 +3874,23 @@ dependencies = [
   "thiserror 2.0.21",
  ]
  
@@ -1000,7 +1029,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "ndarray"
  version = "0.17.2"
-@@ -3265,12 +3921,34 @@ dependencies = [
+@@ -3265,12 +3936,34 @@ dependencies = [
   "jni-sys 0.3.1",
  ]
  
@@ -1035,7 +1064,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "num-bigint"
  version = "0.5.1"
-@@ -3282,6 +3960,22 @@ dependencies = [
+@@ -3282,6 +3975,22 @@ dependencies = [
   "serde",
  ]
  
@@ -1058,7 +1087,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "num-complex"
  version = "0.4.6"
-@@ -3318,6 +4012,16 @@ dependencies = [
+@@ -3318,6 +4027,16 @@ dependencies = [
   "num-traits",
  ]
  
@@ -1075,7 +1104,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "num-traits"
  version = "0.2.19"
-@@ -3719,6 +4423,71 @@ version = "0.2.1"
+@@ -3719,6 +4438,71 @@ version = "0.2.1"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "cfe21416a02c693fb9f980befcb230ecc70b0b3d1cc4abf88b9675c4c1457f0c"
  
@@ -1147,7 +1176,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "orbclient"
  version = "0.3.55"
-@@ -3744,8 +4513,32 @@ version = "0.2.0"
+@@ -3744,8 +4528,32 @@ version = "0.2.0"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "9aa2b01e1d916879f73a53d01d1d6cee68adbb31d6d9177a8cfce093cced1d50"
  dependencies = [
@@ -1182,7 +1211,7 @@ index 564eaac..9467bdb 100644
  ]
  
  [[package]]
-@@ -3789,6 +4582,25 @@ version = "0.2.3"
+@@ -3789,6 +4597,25 @@ version = "0.2.3"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "2ee67f1008b1ba2321834326597b8e186293b049a023cdef258527550b9935b4"
  
@@ -1208,7 +1237,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "peniko"
  version = "0.6.1"
-@@ -3930,6 +4742,27 @@ dependencies = [
+@@ -3930,6 +4757,27 @@ dependencies = [
   "futures-io",
  ]
  
@@ -1236,7 +1265,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "pkg-config"
  version = "0.3.34"
-@@ -3990,6 +4823,18 @@ dependencies = [
+@@ -3990,6 +4838,18 @@ dependencies = [
   "arrayvec",
  ]
  
@@ -1255,7 +1284,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "portable-atomic"
  version = "1.15.0"
-@@ -4035,6 +4880,15 @@ version = "0.3.1"
+@@ -4035,6 +4895,15 @@ version = "0.3.1"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "e8cf8e6a8aa66ce33f63993ffc4ea4271eb5b0530a9002db8455ea6050c77bfa"
  
@@ -1271,7 +1300,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "proc-macro-crate"
  version = "3.5.0"
-@@ -4070,7 +4924,7 @@ dependencies = [
+@@ -4070,7 +4939,7 @@ dependencies = [
   "bitflags 2.13.2",
   "num-traits",
   "rand 0.9.5",
@@ -1280,7 +1309,7 @@ index 564eaac..9467bdb 100644
   "rand_xorshift",
   "regex-syntax",
   "rusty-fork",
-@@ -4149,13 +5003,24 @@ version = "6.0.0"
+@@ -4149,13 +5018,24 @@ version = "6.0.0"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
  
@@ -1306,7 +1335,7 @@ index 564eaac..9467bdb 100644
   "rand_core 0.9.5",
  ]
  
-@@ -4170,6 +5035,16 @@ dependencies = [
+@@ -4170,6 +5050,16 @@ dependencies = [
   "rand_core 0.10.1",
  ]
  
@@ -1323,7 +1352,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "rand_chacha"
  version = "0.9.0"
-@@ -4180,6 +5055,15 @@ dependencies = [
+@@ -4180,6 +5070,15 @@ dependencies = [
   "rand_core 0.9.5",
  ]
  
@@ -1339,7 +1368,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "rand_core"
  version = "0.9.5"
-@@ -4307,6 +5191,16 @@ dependencies = [
+@@ -4307,6 +5206,16 @@ dependencies = [
   "bitflags 2.13.2",
  ]
  
@@ -1356,7 +1385,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "regex-syntax"
  version = "0.8.11"
-@@ -4328,6 +5222,54 @@ version = "1.1.0"
+@@ -4328,6 +5237,54 @@ version = "1.1.0"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "19b30a45b0cd0bcca8037f3d0dc3421eaf95327a17cad11964fb8179b4fc4832"
  
@@ -1411,7 +1440,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "rfd"
  version = "0.17.2"
-@@ -4364,6 +5306,26 @@ dependencies = [
+@@ -4364,6 +5321,26 @@ dependencies = [
   "memchr",
  ]
  
@@ -1438,7 +1467,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "rustc-hash"
  version = "1.1.0"
-@@ -4411,6 +5373,15 @@ dependencies = [
+@@ -4411,6 +5388,15 @@ dependencies = [
   "windows-sys 0.61.2",
  ]
  
@@ -1454,7 +1483,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "rustversion"
  version = "1.0.23"
-@@ -4429,6 +5400,12 @@ dependencies = [
+@@ -4429,6 +5415,12 @@ dependencies = [
   "wait-timeout",
  ]
  
@@ -1467,7 +1496,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "ryu-js"
  version = "1.0.3"
-@@ -4444,6 +5421,15 @@ dependencies = [
+@@ -4444,6 +5436,15 @@ dependencies = [
   "winapi-util",
  ]
  
@@ -1483,7 +1512,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "scoped-tls"
  version = "1.0.1"
-@@ -4456,6 +5442,43 @@ version = "1.2.0"
+@@ -4456,6 +5457,43 @@ version = "1.2.0"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
  
@@ -1527,7 +1556,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "self_cell"
  version = "1.3.0"
-@@ -4531,6 +5554,29 @@ dependencies = [
+@@ -4531,6 +5569,29 @@ dependencies = [
   "serde_core",
  ]
  
@@ -1557,7 +1586,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "shlex"
  version = "2.0.1"
-@@ -4547,6 +5593,16 @@ dependencies = [
+@@ -4547,6 +5608,16 @@ dependencies = [
   "libc",
  ]
  
@@ -1574,7 +1603,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "simd-adler32"
  version = "0.3.10"
-@@ -4569,6 +5625,18 @@ version = "0.1.5"
+@@ -4569,6 +5640,18 @@ version = "0.1.5"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "e3a9fe34e3e7a50316060351f37187a3f546bce95496156754b601a5fa71b76e"
  
@@ -1593,7 +1622,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "siphasher"
  version = "1.0.4"
-@@ -4690,6 +5758,16 @@ dependencies = [
+@@ -4690,6 +5773,16 @@ dependencies = [
   "serde",
  ]
  
@@ -1610,7 +1639,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "spin"
  version = "0.9.9"
-@@ -4705,6 +5783,16 @@ dependencies = [
+@@ -4705,6 +5798,16 @@ dependencies = [
   "bitflags 2.13.2",
  ]
  
@@ -1627,7 +1656,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "stable_deref_trait"
  version = "1.2.1"
-@@ -4754,6 +5842,12 @@ dependencies = [
+@@ -4754,6 +5857,12 @@ dependencies = [
   "syn 2.0.119",
  ]
  
@@ -1640,7 +1669,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "symphonia"
  version = "0.5.5"
-@@ -4934,6 +6028,15 @@ dependencies = [
+@@ -4934,6 +6043,15 @@ dependencies = [
   "unicode-ident",
  ]
  
@@ -1656,7 +1685,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "synstructure"
  version = "0.14.0"
-@@ -5113,7 +6216,22 @@ version = "1.53.1"
+@@ -5113,7 +6231,22 @@ version = "1.53.1"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "202caea871b69668250d242070849eb495be178ed697a3e98aebce5bc81a0bed"
  dependencies = [
@@ -1679,7 +1708,7 @@ index 564eaac..9467bdb 100644
  ]
  
  [[package]]
-@@ -5167,6 +6285,51 @@ version = "1.1.2+spec-1.1.0"
+@@ -5167,6 +6300,51 @@ version = "1.1.2+spec-1.1.0"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "7d56353a2a665ad0f41a421187180aab746c8c325620617ad883a99a1cbe66d2"
  
@@ -1731,7 +1760,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "tracing"
  version = "0.1.44"
-@@ -5199,6 +6362,12 @@ dependencies = [
+@@ -5199,6 +6377,12 @@ dependencies = [
   "once_cell",
  ]
  
@@ -1744,7 +1773,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "type-map"
  version = "0.5.1"
-@@ -5208,6 +6377,12 @@ dependencies = [
+@@ -5208,6 +6392,12 @@ dependencies = [
   "rustc-hash 2.1.3",
  ]
  
@@ -1757,7 +1786,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "uds_windows"
  version = "1.2.1"
-@@ -5261,6 +6436,16 @@ version = "0.2.2"
+@@ -5261,6 +6451,16 @@ version = "0.2.2"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "b4ac048d71ede7ee76d585517add45da530660ef4390e49b098733c6e897f254"
  
@@ -1774,7 +1803,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "url"
  version = "2.5.8"
-@@ -5296,6 +6481,12 @@ dependencies = [
+@@ -5296,6 +6496,12 @@ dependencies = [
   "wasm-bindgen",
  ]
  
@@ -1787,7 +1816,7 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "vello_common"
  version = "0.1.0"
-@@ -5348,6 +6539,21 @@ dependencies = [
+@@ -5348,6 +6554,21 @@ dependencies = [
   "winapi-util",
  ]
  
@@ -1809,7 +1838,15 @@ index 564eaac..9467bdb 100644
  [[package]]
  name = "wasip2"
  version = "1.0.4+wasi-0.2.12"
-@@ -6282,7 +7488,7 @@ dependencies = [
+@@ -5808,6 +7029,7 @@ dependencies = [
+  "libc",
+  "libloading",
+  "log",
++ "mach-dxcompiler-rs",
+  "naga",
+  "naga-types",
+  "ndk-sys",
+@@ -6282,7 +7504,7 @@ dependencies = [
   "calloop 0.13.0",
   "cfg_aliases",
   "concurrent-queue",
@@ -1818,7 +1855,7 @@ index 564eaac..9467bdb 100644
   "core-graphics",
   "cursor-icon",
   "dpi",
-@@ -6595,6 +7801,12 @@ dependencies = [
+@@ -6595,6 +7817,12 @@ dependencies = [
   "synstructure",
  ]
  
@@ -2833,12 +2870,230 @@ index 36c751d..639a2c6 100644
 +
  [dev-dependencies]
  effectcraft-text = { workspace = true }
+diff --git a/crates/gpu/src/shaders/common.wgsl b/crates/gpu/src/shaders/common.wgsl
+index 00ac946..33d5b57 100644
+--- a/crates/gpu/src/shaders/common.wgsl
++++ b/crates/gpu/src/shaders/common.wgsl
+@@ -50,6 +50,36 @@ fn acos_p(x: f32) -> f32 {
+     return 1.5707963267948966 - asin_p(x);
+ }
+ 
++// atan2 with a bounded argument and an alternating-series remainder below 1e-9.
++// Native backend approximations can move inverse-mapped pixels, especially when
++// a very small angle is multiplied by a large bend radius.
++fn atan2_p(y: f32, x: f32) -> f32 {
++    let ax = abs(x);
++    let ay = abs(y);
++    let hi = max(ax, ay);
++    if (hi == 0.0) { return 0.0; }
++    var z = min(ax, ay) / hi;
++    var base = 0.0;
++    if (z > 0.414213562373095) {
++        z = (z - 1.0) / (z + 1.0);
++        base = 0.7853981633974483;
++    }
++    let zz = z * z;
++    var poly = -1.0 / 19.0;
++    poly = 1.0 / 17.0 + zz * poly;
++    poly = -1.0 / 15.0 + zz * poly;
++    poly = 1.0 / 13.0 + zz * poly;
++    poly = -1.0 / 11.0 + zz * poly;
++    poly = 1.0 / 9.0 + zz * poly;
++    poly = -1.0 / 7.0 + zz * poly;
++    poly = 1.0 / 5.0 + zz * poly;
++    poly = -1.0 / 3.0 + zz * poly;
++    var angle = base + z + z * zz * poly;
++    if (ay > ax) { angle = 1.5707963267948966 - angle; }
++    if (x < 0.0) { angle = 3.141592653589793 - angle; }
++    return select(angle, -angle, y < 0.0);
++}
++
+ // ---------------------------------------------------------------- sampling (raster::Image)
+ 
+ fn tex_get(t: texture_2d<f32>, x: i32, y: i32) -> vec4<f32> {
+diff --git a/crates/gpu/src/shaders/fx_stylize.wgsl b/crates/gpu/src/shaders/fx_stylize.wgsl
+index 82ccbb5..3256337 100644
+--- a/crates/gpu/src/shaders/fx_stylize.wgsl
++++ b/crates/gpu/src/shaders/fx_stylize.wgsl
+@@ -61,6 +61,64 @@ fn fxs_bin(v: f32, t: f32, inv: bool) -> f32 {
+     return select(0.0, 1.0, (v >= t) != inv);
+ }
+ 
++// IEEE binary32 division with nearest-even rounding for finite x and positive a.
++// Integer mantissa division avoids backend division/fma rounding at a threshold.
++// Only the narrow threshold neighborhood takes this path; ordinary pixels keep
++// the existing inexpensive color arithmetic.
++fn fxs_div_nearest(x: f32, a: f32) -> f32 {
++    let bx = bitcast<u32>(x);
++    let sign = bx & 0x80000000u;
++    let ux = bx & 0x7fffffffu;
++    let ua = bitcast<u32>(a);
++    if (ux == 0u) { return x; }
++    if (ux >= 0x7f800000u || ua == 0u || ua >= 0x7f800000u) { return x / a; }
++    var ex = i32(ux >> 23u) - 127;
++    var ea = i32(ua >> 23u) - 127;
++    var mx = (ux & 0x7fffffu) | 0x800000u;
++    var ma = (ua & 0x7fffffu) | 0x800000u;
++    if (ex == -127) {
++        mx = ux & 0x7fffffu;
++        let shift = countLeadingZeros(mx) - 8u;
++        mx = mx << shift;
++        ex = -126 - i32(shift);
++    }
++    if (ea == -127) {
++        ma = ua & 0x7fffffu;
++        let shift = countLeadingZeros(ma) - 8u;
++        ma = ma << shift;
++        ea = -126 - i32(shift);
++    }
++    var exponent = ex - ea;
++    if (mx < ma) { mx = mx << 1u; exponent -= 1; }
++    var remainder = mx - ma;
++    var quotient = 1u;
++    for (var i = 0u; i < 23u; i++) {
++        remainder = remainder << 1u;
++        quotient = quotient << 1u;
++        if (remainder >= ma) { remainder -= ma; quotient |= 1u; }
++    }
++    if (exponent < -126) {
++        let shift = u32(-126 - exponent);
++        if (shift > 24u) { return bitcast<f32>(sign); }
++        let lost = quotient & ((1u << shift) - 1u);
++        let half = 1u << (shift - 1u);
++        quotient = quotient >> shift;
++        if (lost > half || (lost == half && (remainder != 0u || (quotient & 1u) != 0u))) { quotient += 1u; }
++        return bitcast<f32>(sign | quotient);
++    }
++    let twice = remainder << 1u;
++    if (twice > ma || (twice == ma && (quotient & 1u) != 0u)) { quotient += 1u; }
++    if (quotient == 0x1000000u) { quotient = quotient >> 1u; exponent += 1; }
++    if (exponent > 127) { return bitcast<f32>(sign | 0x7f800000u); }
++    return bitcast<f32>(sign | (u32(exponent + 127) << 23u) | (quotient & 0x7fffffu));
++}
++
++fn fxs_threshold_channel(x: f32, a: f32, c: f32, t: f32, inv: bool) -> f32 {
++    var value = c;
++    if (abs(c - t) <= max(abs(t) * 1e-6, 1e-8)) { value = fxs_div_nearest(x, a); }
++    return fxs_bin(value, t, inv);
++}
++
+ fn fxs_strobe_op(op: u32, v: f32, k: f32) -> f32 {
+     switch op {
+         case 1u: { return v + k; }
+@@ -131,7 +189,7 @@ fn fxs_point(@builtin(global_invocation_id) gid: vec3<u32>) {
+         case 4u: {
+             let c = fxs_qdiv(px.xyz, a);
+             let t = P.f[0].xyz;
+-            let o = vec3<f32>(fxs_bin(c.x, t.x, P.u[0].y != 0u), fxs_bin(c.y, t.y, P.u[0].z != 0u), fxs_bin(c.z, t.z, P.u[0].w != 0u));
++            let o = vec3<f32>(fxs_threshold_channel(px.x, a, c.x, t.x, P.u[0].y != 0u), fxs_threshold_channel(px.y, a, c.y, t.y, P.u[0].z != 0u), fxs_threshold_channel(px.z, a, c.z, t.z, P.u[0].w != 0u));
+             let r = o + (c - o) * P.f[0].w;
+             textureStore(out, p, vec4<f32>(r * a, a));
+         }
+diff --git a/crates/gpu/src/shaders/fx_transition.wgsl b/crates/gpu/src/shaders/fx_transition.wgsl
+index 66278a6..dda6260 100644
+--- a/crates/gpu/src/shaders/fx_transition.wgsl
++++ b/crates/gpu/src/shaders/fx_transition.wgsl
+@@ -776,7 +776,9 @@ fn ftr_env_uv(mapping: u32, r: vec3<f32>) -> vec2<f32> {
+         return vec2<f32>((cr.x + (cr.z + 1.0) * 0.5) / 3.0, (cr.y + (cr.w + 1.0) * 0.5) / 4.0);
+     }
+     let lat = asin_p(clamp(r.y, -1.0, 1.0));
+-    return vec2<f32>(ftr_lon_u(r.x, r.z), 0.5 + lat / 3.141592653589793);
++    let longitude = 0.5 + atan2_p(r.x, r.z) / 6.283185307179586;
++    let u = select(clamp(longitude, 0.5, 0.99999994), clamp(longitude, 0.0, 0.5), r.x <= 0.0);
++    return vec2<f32>(u, 0.5 + lat / 3.141592653589793);
+ }
+ 
+ @compute @workgroup_size(16, 16)
+diff --git a/crates/gpu/src/shaders/fx_warp.wgsl b/crates/gpu/src/shaders/fx_warp.wgsl
+index 9d7ccef..88e7e42 100644
+--- a/crates/gpu/src/shaders/fx_warp.wgsl
++++ b/crates/gpu/src/shaders/fx_warp.wgsl
+@@ -183,7 +183,7 @@ fn fxw_bendit(@builtin(global_invocation_id) gid: vec3<u32>) {
+     let ly = dot(v, n);
+     // Arc: rho - |(lx, ly - rho)| without cancellation for large radii.
+     let dy = ly - rho;
+-    let th = atan2(lx, -dy);
++    let th = atan2_p(lx, -dy);
+     let dd = lx * lx + ly * ly - 2.0 * ly * rho;
+     let w_arc = -dd / (rho + sqrt(max(rho * rho + dd, 0.0)));
+     var cand: array<vec3<f32>, 3>;
+diff --git a/crates/gpu/src/tests_fx_stylize.rs b/crates/gpu/src/tests_fx_stylize.rs
+index 44e156a..52d35d8 100644
+--- a/crates/gpu/src/tests_fx_stylize.rs
++++ b/crates/gpu/src/tests_fx_stylize.rs
+@@ -20,6 +20,38 @@ fn pt(x: f64, y: f64) -> Value {
+     Value::Vec2([x, y])
+ }
+ 
++#[test]
++fn rgb_threshold_neighbors_match_cpu_division_exactly() {
++    let Some(g) = crate::tests::gpu() else { return };
++    let thresholds = [70.0_f32 / 255.0, 150.0 / 255.0, 110.0 / 255.0];
++    let mut image = effectcraft_raster::Image::new(255 * 3, 1);
++    for (alpha, pixels) in image.data.chunks_exact_mut(3).enumerate() {
++        let a = (alpha + 1) as f32 / 255.0;
++        let center = thresholds.map(|t| t * a);
++        pixels[0] = [center[0].next_down(), center[1].next_down(), center[2].next_down(), a];
++        pixels[1] = [center[0], center[1], center[2], a];
++        pixels[2] = [center[0].next_up(), center[1].next_up(), center[2].next_up(), a];
++    }
++    let input = g.ctx.upload_image(&image).unwrap();
++    for invert in [false, true] {
++        let mut p = crate::context::Params::default();
++        p.u[0] = [4, u32::from(invert), u32::from(invert), u32::from(invert)];
++        p.f[0] = [thresholds[0], thresholds[1], thresholds[2], 0.0];
++        let mut encoder = crate::context::Enc::new(&g.ctx);
++        let out = encoder.scratch(image.width, image.height);
++        encoder.pixels("fxs_point", &p, &input, None, &out, None);
++        let bytes = encoder.read_texture(&out.texture, out.width, out.height, 16).unwrap();
++        let actual: Vec<f32> = bytes.as_chunks::<4>().0.iter().map(|b| f32::from_le_bytes(*b)).collect();
++        for (i, (pixel, got)) in image.data.iter().zip(actual.chunks_exact(4)).enumerate() {
++            for channel in 0..3 {
++                let on = (pixel[channel] / pixel[3] >= thresholds[channel]) != invert;
++                assert_eq!(got[channel], if on { pixel[3] } else { 0.0 }, "pixel {i}, channel {channel}, invert {invert}");
++            }
++            assert_eq!(got[3], pixel[3]);
++        }
++    }
++}
++
+ #[test]
+ fn posterize_thresholds_strobe_vignette() {
+     effect_case("ec.stylize.posterize", &[("level", n(4.0))]);
+diff --git a/crates/gpu/src/tests_fx_transition.rs b/crates/gpu/src/tests_fx_transition.rs
+index ad6ebdf..d48a51d 100644
+--- a/crates/gpu/src/tests_fx_transition.rs
++++ b/crates/gpu/src/tests_fx_transition.rs
+@@ -101,6 +101,9 @@ fn perspective() {
+         effect_case("ec.perspective.ccenvironment", &[("mapping", e(mapping)), ("height", n(40.0))]);
+     }
+     effect_case("ec.perspective.ccenvironment", &[("filterEnvironment", Value::Bool(false))]);
++    for height in [0.0, 1.0, 80.0] {
++        effect_case("ec.perspective.ccenvironment", &[("filterEnvironment", Value::Bool(false)), ("height", n(height))]);
++    }
+     for view in 0..9 {
+         effect_case("ec.perspective.3dglasses", &[("view3d", e(view)), ("sceneConvergence", n(4.0)), ("verticalAlignment", n(1.5))]);
+     }
+diff --git a/crates/gpu/src/tests_fx_warp.rs b/crates/gpu/src/tests_fx_warp.rs
+index 39bcba1..8e9e511 100644
+--- a/crates/gpu/src/tests_fx_warp.rs
++++ b/crates/gpu/src/tests_fx_warp.rs
+@@ -53,6 +53,9 @@ fn bend_it_and_page_turn() {
+     effect_case("ec.distort.ccbendit", &[("bend", n(-120.0)), ("start", pt(10.0, 30.0)), ("end", pt(55.0, 8.0)), ("renderPrestart", e(1))]);
+     // A slight bend: a large arc radius.
+     effect_case("ec.distort.ccbendit", &[("bend", n(0.05)), ("start", pt(5.0, 22.0)), ("end", pt(60.0, 22.0))]);
++    for bend in [0.01, -0.05] {
++        effect_case("ec.distort.ccbendit", &[("bend", n(bend)), ("start", pt(10.0, 30.0)), ("end", pt(55.0, 8.0)), ("renderPrestart", e(1))]);
++    }
+     effect_case("ec.distort.ccpageturn", &[]);
+     effect_case("ec.distort.ccpageturn", &[("foldRadius", n(4.0)), ("foldDirection", n(30.0)), ("foldPosition", pt(40.0, 20.0))]);
+     effect_case(
 diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
 new file mode 100644
-index 0000000..878cf22
+index 0000000..c8bf709
 --- /dev/null
 +++ b/docs/chatgpt-connection.md
-@@ -0,0 +1,67 @@
+@@ -0,0 +1,69 @@
 +# EffectCraft ChatGPT connection
 +
 +This local modification adds an optional native ChatGPT connection to the Windows desktop app.
@@ -2867,26 +3122,28 @@ index 0000000..878cf22
 +
 +## Validation status (2026-10-08)
 +
-+Windows release authentication tests (eight), the actual connection-panel preview
-+and strict workspace Clippy passed in run 37612917628. Its six-hour limit expired
-+during a second compilation of test binaries. The revised recipe runs upstream
-+CI before the filtered authentication checks, preserving every required gate
-+and the original release profile.
++Run 37824265776 compiled release tests with the Windows x86-64 DXC dependency.
++The GPU suite passed 167 tests and failed three, with zero tests ignored.
++Remaining failures were RGB threshold boundaries, spherical environment
++coordinates and a slight Bend It deformation. Existing pixel tolerances and
++all upstream gates remain unchanged. The engine's 390 tests also passed.
 +
-+Run 37775900204 completed release compilation in about two hours and passed the
-+engine's 390 tests. Full CI then stopped at the GPU tests: the Windows FXC shader
-+compiler aborted on the compositor compute shader (164 failures). The revised
-+product dependency links wgpu's supported DXC compiler on Windows x86-64, the
-+same configuration already verified by FilmCraft's GPU comparisons. Tests and
-+their pixel comparisons remain enabled. This correction requires a full rerun.
-+The prior runner patch exactly matched the reviewed source and lockfile; the
-+next run will resolve the additional compiler dependency.
++The revised shaders calculate angles with a range-reduced atan series and use
++integer nearest-even mantissa division only near RGB thresholds. A new GPU
++regression compares threshold decisions at neighboring premultiplied values
++over 255 alpha levels, with and without inversion. Additional environment and
++small-bend cases exercise the unchanged CPU/GPU comparison criteria.
++Independent numerical probes passed 20,049 float32 division comparisons and
++100,001 angle comparisons (maximum angle error 2.65e-7 radians). These probes
++do not substitute for the real GPU comparisons or full CI, which remain pending.
 +
-+Local Cargo remains blocked by Windows Application Control (OS error 4551).
-+No protection settings changed. Actual ChatGPT account authorization remains
-+untested. This is modified source, not an installed or signed application release.
-+Evidence: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37775900204
-+Compiler: https://docs.rs/wgpu/30.0.1/wgpu/enum.Dx12Compiler.html
++Eight release authentication tests, the actual connection-panel preview and
++strict workspace Clippy passed earlier in run 37612917628. Local Cargo remains
++blocked by Windows Application Control (OS error 4551); no protection setting
++changed. Actual ChatGPT account authorization remains untested. This is modified
++source, not an installed or signed application release.
++Evidence: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37824265776
++Shader arithmetic: https://www.w3.org/TR/WGSL/#floating-point-accuracy
 +
 +On an authorized build machine, run:
 +

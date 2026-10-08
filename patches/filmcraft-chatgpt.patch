@@ -1,5 +1,5 @@
 diff --git a/Cargo.lock b/Cargo.lock
-index c10c047..b5e41a8 100644
+index c10c047..5e313ba 100644
 --- a/Cargo.lock
 +++ b/Cargo.lock
 @@ -139,7 +139,7 @@ checksum = "b169f7a6d4742236a0a00c541b845991d0ac43e546831af1249753ab4c3aa3a0"
@@ -96,7 +96,24 @@ index c10c047..b5e41a8 100644
   "libc",
  ]
  
-@@ -1001,6 +1038,15 @@ dependencies = [
+@@ -992,6 +1029,16 @@ dependencies = [
+  "windows 0.54.0",
+ ]
+ 
++[[package]]
++name = "cpu-time"
++version = "1.0.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "e9e393a7668fe1fad3075085b86c781883000b4ede868f43627b34a87c8b7ded"
++dependencies = [
++ "libc",
++ "winapi",
++]
++
+ [[package]]
+ name = "cpufeatures"
+ version = "0.2.17"
+@@ -1001,6 +1048,15 @@ dependencies = [
   "libc",
  ]
  
@@ -112,7 +129,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "crc32fast"
  version = "1.5.2"
-@@ -1069,6 +1115,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -1069,6 +1125,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "78c8292055d1c1df0cce5d180393dc8cce0abec0a7102adb6c7b1eef6016d60a"
  dependencies = [
   "generic-array",
@@ -120,7 +137,7 @@ index c10c047..b5e41a8 100644
   "typenum",
  ]
  
-@@ -1094,7 +1141,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -1094,7 +1151,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "97fb8b7c4503de7d6ae7b42ab72a5a59857b4c937ec27a3d4539dba95b5ab2be"
  dependencies = [
   "cfg-if",
@@ -129,7 +146,7 @@ index c10c047..b5e41a8 100644
   "curve25519-dalek-derive",
   "digest",
   "fiat-crypto",
-@@ -1165,6 +1212,25 @@ dependencies = [
+@@ -1165,6 +1222,25 @@ dependencies = [
   "zeroize",
  ]
  
@@ -155,7 +172,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "digest"
  version = "0.10.7"
-@@ -1177,6 +1243,27 @@ dependencies = [
+@@ -1177,6 +1253,27 @@ dependencies = [
   "subtle",
  ]
  
@@ -183,7 +200,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "dispatch"
  version = "0.2.0"
-@@ -1195,6 +1282,17 @@ dependencies = [
+@@ -1195,6 +1292,17 @@ dependencies = [
   "objc2 0.6.4",
  ]
  
@@ -201,7 +218,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "dlib"
  version = "0.5.3"
-@@ -1411,14 +1509,17 @@ version = "0.36.2"
+@@ -1411,14 +1519,17 @@ version = "0.36.2"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "5eb3f3effb2726fee23449293e67acbf6cc6ce35525b1722bd5743bb348114d5"
  dependencies = [
@@ -219,7 +236,7 @@ index c10c047..b5e41a8 100644
   "toml 1.1.6+spec-1.1.0",
   "wgpu",
  ]
-@@ -1657,20 +1758,35 @@ dependencies = [
+@@ -1657,20 +1768,35 @@ dependencies = [
  name = "filmcraft"
  version = "0.2.1"
  dependencies = [
@@ -255,7 +272,15 @@ index c10c047..b5e41a8 100644
   "winit",
   "winresource",
  ]
-@@ -2302,6 +2418,15 @@ dependencies = [
+@@ -2117,6 +2243,7 @@ dependencies = [
+ name = "filmcraft-render"
+ version = "0.2.1"
+ dependencies = [
++ "cpu-time",
+  "filmcraft-audio-dsp",
+  "filmcraft-captions",
+  "filmcraft-color",
+@@ -2302,6 +2429,15 @@ dependencies = [
   "bytemuck",
  ]
  
@@ -271,7 +296,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "foreign-types"
  version = "0.5.0"
-@@ -2309,7 +2434,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -2309,7 +2445,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "d737d9aa519fb7b749cbc3b962edcf310a8dd1f4b67c91c4f83975dbdd17d965"
  dependencies = [
   "foreign-types-macros",
@@ -280,7 +305,7 @@ index c10c047..b5e41a8 100644
  ]
  
  [[package]]
-@@ -2323,12 +2448,37 @@ dependencies = [
+@@ -2323,12 +2459,37 @@ dependencies = [
   "syn 3.0.6",
  ]
  
@@ -318,7 +343,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "futures"
  version = "0.3.34"
-@@ -2628,6 +2778,15 @@ dependencies = [
+@@ -2628,6 +2789,15 @@ dependencies = [
   "windows-link",
  ]
  
@@ -334,7 +359,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "getrandom"
  version = "0.2.17"
-@@ -2660,6 +2819,7 @@ dependencies = [
+@@ -2660,6 +2830,7 @@ dependencies = [
   "cfg-if",
   "libc",
   "r-efi 6.0.0",
@@ -342,7 +367,7 @@ index c10c047..b5e41a8 100644
  ]
  
  [[package]]
-@@ -3064,12 +3224,94 @@ dependencies = [
+@@ -3064,12 +3235,94 @@ dependencies = [
   "itoa",
  ]
  
@@ -437,7 +462,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "iana-time-zone"
  version = "0.1.65"
-@@ -3094,12 +3336,116 @@ dependencies = [
+@@ -3094,12 +3347,116 @@ dependencies = [
   "cc",
  ]
  
@@ -554,7 +579,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "image"
  version = "0.25.10"
-@@ -3150,6 +3496,31 @@ dependencies = [
+@@ -3150,6 +3507,31 @@ dependencies = [
   "generic-array",
  ]
  
@@ -586,7 +611,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "itertools"
  version = "0.15.0"
-@@ -3260,6 +3631,29 @@ dependencies = [
+@@ -3260,6 +3642,29 @@ dependencies = [
   "wasm-bindgen",
  ]
  
@@ -616,7 +641,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "keyboard-types"
  version = "0.8.3"
-@@ -3270,6 +3664,18 @@ dependencies = [
+@@ -3270,6 +3675,18 @@ dependencies = [
   "serde",
  ]
  
@@ -635,7 +660,20 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "khronos-egl"
  version = "6.0.0"
-@@ -3370,6 +3776,12 @@ version = "0.12.1"
+@@ -3318,6 +3735,12 @@ dependencies = [
+  "spin",
+ ]
+ 
++[[package]]
++name = "lhash"
++version = "1.1.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "744a4c881f502e98c2241d2e5f50040ac73b30194d64452bb6260393b53f0dc9"
++
+ [[package]]
+ name = "libc"
+ version = "0.2.189"
+@@ -3370,6 +3793,12 @@ version = "0.12.1"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "32a66949e030da00e8c7d4434b251670a91556f4144941d37452769c25d58a53"
  
@@ -648,7 +686,23 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "litrs"
  version = "1.0.0"
-@@ -3531,6 +3943,23 @@ dependencies = [
+@@ -3391,6 +3820,15 @@ version = "0.4.34"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "f9f8bd3e56ce4dfc153cf470fffbfa98c7620958b312ca5c3a4b8d5181fd13c6"
+ 
++[[package]]
++name = "mach-dxcompiler-rs"
++version = "0.1.6+2026.09.16-48d5a66.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "699d5b85d279d172f6ea742c6c47342fdd7c388872cea2e137e2c6721ef2e6d6"
++dependencies = [
++ "lhash",
++]
++
+ [[package]]
+ name = "mach2"
+ version = "0.4.3"
+@@ -3531,6 +3969,23 @@ dependencies = [
   "thiserror 2.0.21",
  ]
  
@@ -672,7 +726,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "ndk"
  version = "0.9.0"
-@@ -3561,12 +3990,34 @@ dependencies = [
+@@ -3561,12 +4016,34 @@ dependencies = [
   "jni-sys 0.3.1",
  ]
  
@@ -707,7 +761,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "num-bigint-dig"
  version = "0.8.6"
-@@ -3593,6 +4044,12 @@ dependencies = [
+@@ -3593,6 +4070,12 @@ dependencies = [
   "num-traits",
  ]
  
@@ -720,7 +774,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "num-derive"
  version = "0.4.2"
-@@ -4075,12 +4532,65 @@ version = "0.3.1"
+@@ -4075,12 +4558,65 @@ version = "0.3.1"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "c08d65885ee38876c4f86fa503fb49d7b507c2b62552df7c70b2fce627e06381"
  
@@ -786,7 +840,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "orbclient"
  version = "0.3.55"
-@@ -4200,6 +4710,16 @@ version = "0.2.3"
+@@ -4200,6 +4736,16 @@ version = "0.2.3"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "2ee67f1008b1ba2321834326597b8e186293b049a023cdef258527550b9935b4"
  
@@ -803,7 +857,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "pem-rfc7468"
  version = "0.7.0"
-@@ -4397,7 +4917,7 @@ version = "0.8.0"
+@@ -4397,7 +4943,7 @@ version = "0.8.0"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "8159bd90725d2df49889a078b54f4f79e87f1f8a8444194cdca81d38f5393abf"
  dependencies = [
@@ -812,7 +866,7 @@ index c10c047..b5e41a8 100644
   "opaque-debug",
   "universal-hash",
  ]
-@@ -4418,7 +4938,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -4418,7 +4964,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "9d1fe60d06143b2430aa532c94cfe9e29783047f06c0d7fd359a9a51b729fa25"
  dependencies = [
   "cfg-if",
@@ -821,7 +875,7 @@ index c10c047..b5e41a8 100644
   "opaque-debug",
   "universal-hash",
  ]
-@@ -4438,6 +4958,21 @@ dependencies = [
+@@ -4438,6 +4984,21 @@ dependencies = [
   "portable-atomic",
  ]
  
@@ -843,7 +897,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "ppv-lite86"
  version = "0.2.21"
-@@ -4626,6 +5161,7 @@ version = "0.8.8"
+@@ -4626,6 +5187,7 @@ version = "0.8.8"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "e058c7de0b26af77780c769414d6257830bb240f3c38477dbc2c16e5f54d6d4c"
  dependencies = [
@@ -851,7 +905,7 @@ index c10c047..b5e41a8 100644
   "rand_chacha 0.3.1",
   "rand_core 0.6.4",
  ]
-@@ -4640,6 +5176,17 @@ dependencies = [
+@@ -4640,6 +5202,17 @@ dependencies = [
   "rand_core 0.9.5",
  ]
  
@@ -869,7 +923,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "rand_chacha"
  version = "0.3.1"
-@@ -4678,6 +5225,12 @@ dependencies = [
+@@ -4678,6 +5251,12 @@ dependencies = [
   "getrandom 0.3.4",
  ]
  
@@ -882,7 +936,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "rand_distr"
  version = "0.5.1"
-@@ -4794,6 +5347,16 @@ dependencies = [
+@@ -4794,6 +5373,16 @@ dependencies = [
   "bitflags 2.13.2",
  ]
  
@@ -899,7 +953,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "ref-cast"
  version = "1.0.27"
-@@ -4826,6 +5389,44 @@ version = "1.1.0"
+@@ -4826,6 +5415,44 @@ version = "1.1.0"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "19b30a45b0cd0bcca8037f3d0dc3421eaf95327a17cad11964fb8179b4fc4832"
  
@@ -944,7 +998,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "rfc6979"
  version = "0.4.0"
-@@ -5121,6 +5722,12 @@ dependencies = [
+@@ -5121,6 +5748,12 @@ dependencies = [
   "wait-timeout",
  ]
  
@@ -957,7 +1011,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "safetensors"
  version = "0.7.0"
-@@ -5326,6 +5933,18 @@ dependencies = [
+@@ -5326,6 +5959,18 @@ dependencies = [
   "serde_core",
  ]
  
@@ -976,7 +1030,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "sha2"
  version = "0.10.9"
-@@ -5333,7 +5952,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -5333,7 +5978,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "a7507d819769d01a365ab707794a4084392c824f54a7a6a7862f8c3d0892b283"
  dependencies = [
   "cfg-if",
@@ -985,7 +1039,7 @@ index c10c047..b5e41a8 100644
   "digest",
  ]
  
-@@ -5385,6 +6004,18 @@ version = "0.1.5"
+@@ -5385,6 +6030,18 @@ version = "0.1.5"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "e3a9fe34e3e7a50316060351f37187a3f546bce95496156754b601a5fa71b76e"
  
@@ -1004,7 +1058,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "siphasher"
  version = "1.0.4"
-@@ -5743,6 +6374,15 @@ dependencies = [
+@@ -5743,6 +6400,15 @@ dependencies = [
   "unicode-ident",
  ]
  
@@ -1020,7 +1074,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "synstructure"
  version = "0.14.0"
-@@ -5863,6 +6503,46 @@ dependencies = [
+@@ -5863,6 +6529,46 @@ dependencies = [
   "zune-jpeg",
  ]
  
@@ -1067,7 +1121,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "tokio"
  version = "1.53.1"
-@@ -5889,6 +6569,16 @@ dependencies = [
+@@ -5889,6 +6595,16 @@ dependencies = [
   "syn 3.0.6",
  ]
  
@@ -1084,7 +1138,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "tokio-util"
  version = "0.7.19"
-@@ -5999,6 +6689,51 @@ version = "1.1.2+spec-1.1.0"
+@@ -5999,6 +6715,51 @@ version = "1.1.2+spec-1.1.0"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "7d56353a2a665ad0f41a421187180aab746c8c325620617ad883a99a1cbe66d2"
  
@@ -1136,7 +1190,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "tracing"
  version = "0.1.44"
-@@ -6031,6 +6766,12 @@ dependencies = [
+@@ -6031,6 +6792,12 @@ dependencies = [
   "once_cell",
  ]
  
@@ -1149,7 +1203,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "type-map"
  version = "0.5.1"
-@@ -6149,12 +6890,30 @@ dependencies = [
+@@ -6149,12 +6916,30 @@ dependencies = [
   "log",
  ]
  
@@ -1180,7 +1234,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "uuid"
  version = "1.26.1"
-@@ -6167,6 +6926,12 @@ dependencies = [
+@@ -6167,6 +6952,12 @@ dependencies = [
   "wasm-bindgen",
  ]
  
@@ -1193,7 +1247,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "vello_common"
  version = "0.1.0"
-@@ -6225,6 +6990,15 @@ dependencies = [
+@@ -6225,6 +7016,15 @@ dependencies = [
   "winapi-util",
  ]
  
@@ -1209,7 +1263,15 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "wasi"
  version = "0.11.1+wasi-snapshot-preview1"
-@@ -7135,6 +7909,12 @@ version = "0.57.1"
+@@ -6591,6 +7391,7 @@ dependencies = [
+  "libc",
+  "libloading",
+  "log",
++ "mach-dxcompiler-rs",
+  "naga",
+  "naga-types",
+  "ndk-sys",
+@@ -7135,6 +7936,12 @@ version = "0.57.1"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "1ebf944e87a7c253233ad6766e082e3cd714b5d03812acc24c318f549614536e"
  
@@ -1222,7 +1284,7 @@ index c10c047..b5e41a8 100644
  [[package]]
  name = "x11-dl"
  version = "2.21.0"
-@@ -7407,6 +8187,39 @@ dependencies = [
+@@ -7407,6 +8214,39 @@ dependencies = [
   "syn 2.0.119",
  ]
  
@@ -2244,6 +2306,125 @@ index 2e46590..02cfdbf 100644
          }),
      );
      // The window could not be created (no usable GPU / graphics driver, no display): say so
+diff --git a/crates/audio-dsp/src/effects/time.rs b/crates/audio-dsp/src/effects/time.rs
+index d10db23..4da4c9b 100644
+--- a/crates/audio-dsp/src/effects/time.rs
++++ b/crates/audio-dsp/src/effects/time.rs
+@@ -6,11 +6,17 @@ use crate::{AudioEffect, ParamSpec, ParamValues, Smoothed, Unit, block_len, flus
+ #[inline]
+ fn read_frac(buf: &[f32], w: usize, delay: f32) -> f32 {
+     let len = buf.len();
++    if len < 3 || w >= len {
++        return 0.0;
++    }
+     let d = delay.clamp(1.0, (len - 2) as f32);
+     let di = d.floor();
+     let frac = d - di;
+-    let i0 = (w + len - di as usize) % len;
+-    let i1 = (i0 + len - 1) % len;
++    let di = (di as usize).min(len - 1);
++    // Both positions are already within one turn of the ring. Subtract and
++    // wrap once instead of dividing twice for every delay tap and sample.
++    let i0 = if w >= di { w - di } else { len - (di - w) };
++    let i1 = if i0 == 0 { len - 1 } else { i0 - 1 };
+     buf[i0] + (buf[i1] - buf[i0]) * frac
+ }
+ 
+@@ -132,6 +138,7 @@ pub struct Reverb {
+     len: [Smoothed; FDN],
+     lp: [f32; FDN],
+     gains: [f32; FDN],
++    gains_dirty: bool,
+     damp: Smoothed,
+     rt60: Smoothed,
+     mix: Smoothed,
+@@ -162,6 +169,7 @@ impl Reverb {
+             len: [sm(1.0); FDN],
+             lp: [0.0; FDN],
+             gains: [0.0; FDN],
++            gains_dirty: true,
+             damp: sm(0.0),
+             rt60: sm(1.0),
+             mix: sm(0.0),
+@@ -199,6 +207,7 @@ impl Reverb {
+             // Attenuation per pass so the loop decays 60 dB in rt seconds.
+             self.gains[k] = 10f32.powf(-3.0 * self.len[k].value() / (rt * self.sr));
+         }
++        self.gains_dirty = false;
+     }
+ }
+ 
+@@ -223,10 +232,13 @@ impl AudioEffect for Reverb {
+         let pre_len = self.pre.len();
+         let hh = 2.0 / FDN as f32;
+         for i in 0..n {
+-            if self.counter == 0 {
++            if self.counter == 0 && self.gains_dirty {
+                 self.update_gains();
+             }
+             self.counter = (self.counter + 1) % 32;
++            // Keep the same coefficient grid while controls glide, including
++            // the first grid point after the final smoothing sample.
++            self.gains_dirty |= self.rt60.is_smoothing() || self.len.iter().any(Smoothed::is_smoothing);
+             for l in &mut self.len {
+                 l.tick();
+             }
+@@ -283,6 +295,55 @@ mod tests {
+ 
+     const SR: f32 = 48000.0;
+ 
++    #[test]
++    fn fractional_ring_reads_match_modulo_reference() {
++        for len in 3..68 {
++            let buf: Vec<f32> = (0..len).map(|i| (i * 17 % 23) as f32 - 11.0).collect();
++            for w in 0..len {
++                for delay in [-1.0, 0.0, 1.0, 1.125, 2.75, len as f32 - 2.25, len as f32, f32::INFINITY] {
++                    let d = delay.clamp(1.0, (len - 2) as f32);
++                    let di = d.floor();
++                    let frac = d - di;
++                    let i0 = (w + len - di as usize) % len;
++                    let i1 = (i0 + len - 1) % len;
++                    assert_eq!(read_frac(&buf, w, delay), buf[i0] + (buf[i1] - buf[i0]) * frac);
++                }
++            }
++        }
++        assert_eq!(read_frac(&[], 0, 1.0), 0.0);
++        assert_eq!(read_frac(&[1.0, 2.0], 0, 1.0), 0.0);
++        assert_eq!(read_frac(&[1.0, 2.0, 3.0], 3, 1.0), 0.0);
++    }
++
++    #[test]
++    fn reverb_cached_gains_match_unconditional_grid_updates() {
++        let mut cached = Reverb::new(SR, 2);
++        let mut reference = Reverb::new(SR, 2);
++        for i in 0..16_384 {
++            if i == 2048 || i == 4096 {
++                for fx in [&mut cached, &mut reference] {
++                    fx.set_param("size", if i == 2048 { 75.0 } else { 25.0 });
++                    fx.set_param("decay", if i == 2048 { 4.0 } else { 0.75 });
++                    fx.set_param("damping", 65.0);
++                    fx.set_param("mix", 80.0);
++                }
++            }
++            // The original algorithm recalculated every 32 samples even when
++            // all controls were stationary. Preserve that as the exact oracle.
++            if reference.counter == 0 {
++                reference.update_gains();
++            }
++            let input = ((i * 7919 % 1000) as f32 / 1000.0 - 0.5) * 0.5;
++            let (mut a, mut b) = ([input], [-input * 0.75]);
++            let (mut c, mut d) = (a, b);
++            cached.process(&mut [&mut a, &mut b]);
++            reference.process(&mut [&mut c, &mut d]);
++            assert_eq!(a, c, "left sample {i}");
++            assert_eq!(b, d, "right sample {i}");
++        }
++        assert!(!cached.gains_dirty, "all ramps and their final coefficient update have settled");
++    }
++
+     #[test]
+     fn delay_impulse_and_feedback() {
+         let mut d = Delay::new(SR, 1);
 diff --git a/crates/codecs/src/gop.rs b/crates/codecs/src/gop.rs
 index b1ddd9a..5a95b1a 100644
 --- a/crates/codecs/src/gop.rs
@@ -2547,10 +2728,10 @@ index 34bdf20..4dde6b9 100644
      path
 diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
 new file mode 100644
-index 0000000..a50960a
+index 0000000..03bd172
 --- /dev/null
 +++ b/docs/chatgpt-connection.md
-@@ -0,0 +1,67 @@
+@@ -0,0 +1,69 @@
 +# FilmCraft ChatGPT connection
 +
 +This local modification adds an optional native ChatGPT connection to the Windows desktop app.
@@ -2578,27 +2759,29 @@ index 0000000..a50960a
 +  `filmcraft --chatgpt-status`, `--chatgpt-sign-in`, `--chatgpt-refresh`, and
 +  `--chatgpt-disconnect`. Status never returns credentials.
 +
-+## Validation status (2026-10-07)
++## Validation status (2026-10-08)
 +
-+Windows run 37631511777 passed eight release authentication tests, the actual
-+connection-panel preview, 320 engine tests and 31 export tests. Its complete
-+workspace pass exposed five failed targets: duplicate intra-frame decoding under
-+concurrent requests, FXC aborting on the GPU effect shader, a Windows performance
-+test falling back to wall time, and media fixtures moving files while open.
++Windows run 37653811843 passed eight release authentication tests, the actual
++connection-panel preview, 320 engine tests and 31 export tests. The concurrency,
++GPU shader comparisons and media-file fixture corrections all passed. Its one
++remaining failure was the audio performance test: 2.51x realtime on one core,
++below the unchanged requirement of more than 4x.
 +
-+The revised source coalesces intra-frame requests with bounded lock stripes,
-+links wgpu's supported DXC compiler on Windows x86-64, measures Windows thread
-+CPU time in the unchanged performance assertion, and closes fixture sessions
-+before moving their media. GPU comparisons and the performance threshold remain
-+enabled. Full upstream CI still needs a successful rerun.
++The revised audio code wraps circular-buffer indices with bounded subtraction
++and caches reverb feedback gains while their smoothed controls are stationary.
++Regression tests compare circular reads with the previous modulo formula and
++audio samples with the previous unconditional coefficient updates, including
++changes to the controls. These optimizations still need compilation and full CI.
++GPU comparisons and the performance threshold remain enabled.
 +
-+The resolved Cargo.lock from the previous run is included; the runner will resolve
-+the new build/test dependencies. Local Cargo remains blocked by Windows
-+Application Control (OS error 4551); no protection setting was changed.
-+Actual ChatGPT account authorization remains untested. This is a source change,
-+not an installed or signed application release.
-+Evidence: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37631511777
-+Compiler: https://docs.rs/wgpu/30.0.1/wgpu/enum.Dx12Compiler.html
++The resolved Cargo.lock from that run is included. The build recipe checks the
++audio crates early, then runs full upstream CI before filtered sign-in tests so
++those tests can reuse the editor binaries. The additional complete workspace
++pass with --no-fail-fast remains enabled. Release settings are unchanged.
++Local Cargo remains blocked by Windows Application Control (OS error 4551);
++no protection setting was changed. Actual ChatGPT account authorization remains
++untested. This is a source change, not an installed or signed application release.
++Evidence: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37653811843
 +
 +On an authorized build machine, run:
 +

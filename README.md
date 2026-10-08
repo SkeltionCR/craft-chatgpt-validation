@@ -53,7 +53,7 @@ assets from upstream remain in its ephemeral build checkout and are not redistri
 | FilmCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37653811843) | Not exercised |
 | LightCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475) | Not exercised |
 | PrintCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37536527821) | Not exercised |
-| EffectCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37612917628) | Not exercised |
+| EffectCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37775900204) | Not exercised |
 | DesignCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526643074) | Not exercised |
 
 Panel previews use synthetic disconnected accounts and a test editor surface.
@@ -70,6 +70,10 @@ The latest full workspace pass confirmed the concurrency, GPU comparisons
 and media-file fixture corrections. The remaining failure is the audio
 performance test: 2.51x realtime versus its unchanged requirement of >4x.
 Full CI remains unverified while that failure is investigated.
+
+The new audio patch replaces delay-ring division with bounded wrapping and
+caches reverb feedback gains for stationary controls. New tests compare exact
+audio output with the prior calculation. These changes await validation.
 
 EffectCraft passed 390 engine tests, release authentication tests, the offscreen
 panel preview and strict workspace Clippy in its previous run. That run reached

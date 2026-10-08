@@ -50,7 +50,7 @@ assets from upstream remain in its ephemeral build checkout and are not redistri
 |---|---|---|
 | PhotoCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526632188) | Not exercised |
 | VectorCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526641875) | Not exercised |
-| FilmCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37831049694) | Not exercised |
+| FilmCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37833431110) | Not exercised |
 | LightCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475) | Not exercised |
 | PrintCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37536527821) | Not exercised |
 | EffectCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37824265776) | Not exercised |
@@ -71,10 +71,10 @@ and media-file fixture corrections. The remaining failure is the audio
 performance test: 2.51x realtime versus its unchanged requirement of >4x.
 Full CI remains unverified while that failure is investigated.
 
-All four added exact-output audio regressions passed. The mixer improved
-to 2.82x realtime but remains below its unchanged >4x requirement.
-An explicit diagnostic measures insert costs before further optimization;
-the complete mixer performance gate and all upstream checks remain enabled.
+The diagnostic confirmed most mixer CPU time is spent on inserts. The complete
+performance gate remained below its unchanged >4x requirement at 2.77x.
+The new three insert mappings avoid redundant unchanged parameter updates.
+An added exact-output regression and full CI await runner validation.
 
 The revised build order completed EffectCraft release compilation within about
 two hours. Its engine tests passed, then FXC aborted on its GPU compute shader.

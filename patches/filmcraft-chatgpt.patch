@@ -2695,6 +2695,133 @@ index e9d35f4..7554d2e 100644
 +
 +[target.'cfg(windows)'.dev-dependencies]
 +cpu-time = "1"
+diff --git a/crates/render/src/audio_fx.rs b/crates/render/src/audio_fx.rs
+index b88a591..570294d 100644
+--- a/crates/render/src/audio_fx.rs
++++ b/crates/render/src/audio_fx.rs
+@@ -36,10 +36,10 @@ pub(crate) fn mapping(id: &str) -> Option<Mapping> {
+             dsp: "compressor",
+             preroll: |e, t| (f(e, "release", t) as f64 / 1000.0 * 5.0).clamp(0.05, 3.0),
+             apply: |d, e, t| {
+-                d.set_param("threshold", f(e, "threshold", t));
+-                d.set_param("ratio", f(e, "ratio", t));
+-                d.set_param("attack", f(e, "attack", t));
+-                d.set_param("release", f(e, "release", t));
++                set_if_changed(d, "threshold", f(e, "threshold", t));
++                set_if_changed(d, "ratio", f(e, "ratio", t));
++                set_if_changed(d, "attack", f(e, "attack", t));
++                set_if_changed(d, "release", f(e, "release", t));
+             },
+         },
+         "hard_limiter" => Mapping {
+@@ -70,13 +70,13 @@ pub(crate) fn mapping(id: &str) -> Option<Mapping> {
+             dsp: "simple_eq",
+             preroll: |_, _| 0.05,
+             apply: |d, e, t| {
+-                d.set_param("low_freq", f(e, "low_freq", t));
+-                d.set_param("low", f(e, "low_gain", t));
+-                d.set_param("mid_freq", f(e, "mid_freq", t));
+-                d.set_param("mid", f(e, "mid_gain", t));
+-                d.set_param("mid_q", f(e, "mid_q", t));
+-                d.set_param("high_freq", f(e, "high_freq", t));
+-                d.set_param("high", f(e, "high_gain", t));
++                set_if_changed(d, "low_freq", f(e, "low_freq", t));
++                set_if_changed(d, "low", f(e, "low_gain", t));
++                set_if_changed(d, "mid_freq", f(e, "mid_freq", t));
++                set_if_changed(d, "mid", f(e, "mid_gain", t));
++                set_if_changed(d, "mid_q", f(e, "mid_q", t));
++                set_if_changed(d, "high_freq", f(e, "high_freq", t));
++                set_if_changed(d, "high", f(e, "high_gain", t));
+             },
+         },
+         // Single-band filters via band 1 of the parametric EQ (types: see FILTER_TYPE_NAMES).
+@@ -126,11 +126,11 @@ pub(crate) fn mapping(id: &str) -> Option<Mapping> {
+             dsp: "reverb",
+             preroll: |e, t| 0.3 * 30f64.powf(f(e, "decay", t) as f64 / 100.0).min(8.0),
+             apply: |d, e, t| {
+-                d.set_param("size", f(e, "room", t));
+-                d.set_param("decay", (0.3 * 30f32.powf(f(e, "decay", t) / 100.0)).clamp(0.1, 20.0));
+-                d.set_param("damping", f(e, "damping", t));
++                set_if_changed(d, "size", f(e, "room", t));
++                set_if_changed(d, "decay", (0.3 * 30f32.powf(f(e, "decay", t) / 100.0)).clamp(0.1, 20.0));
++                set_if_changed(d, "damping", f(e, "damping", t));
+                 let (dry, wet) = (f(e, "dry", t).max(0.0), f(e, "wet", t).max(0.0));
+-                d.set_param("mix", if dry + wet > 0.0 { wet / (dry + wet) * 100.0 } else { 0.0 });
++                set_if_changed(d, "mix", if dry + wet > 0.0 { wet / (dry + wet) * 100.0 } else { 0.0 });
+             },
+         },
+         "invert_a" => Mapping { dsp: "invert", preroll: |_, _| 0.0, apply: |_, _, _| {} },
+@@ -418,6 +418,70 @@ mod tests {
+     use filmcraft_audio_dsp::Unit;
+     use filmcraft_project::{EffectKind, ParamKind, effect_defs};
+ 
++    /// Reference for the previous unconditional mixer parameter updates.
++    fn legacy_mixer_apply(d: &mut dyn AudioEffect, e: &EffectInstance, t: Tick) {
++        match e.effect.as_str() {
++            "dynamics" => {
++                for id in ["threshold", "ratio", "attack", "release"] {
++                    d.set_param(id, f(e, id, t));
++                }
++            }
++            "parametric_eq" => {
++                for (dsp, project) in [("low_freq", "low_freq"), ("low", "low_gain"), ("mid_freq", "mid_freq"), ("mid", "mid_gain"), ("mid_q", "mid_q"), ("high_freq", "high_freq"), ("high", "high_gain")] {
++                    d.set_param(dsp, f(e, project, t));
++                }
++            }
++            "studio_reverb" => {
++                d.set_param("size", f(e, "room", t));
++                d.set_param("decay", (0.3 * 30f32.powf(f(e, "decay", t) / 100.0)).clamp(0.1, 20.0));
++                d.set_param("damping", f(e, "damping", t));
++                let (dry, wet) = (f(e, "dry", t).max(0.0), f(e, "wet", t).max(0.0));
++                d.set_param("mix", if dry + wet > 0.0 { wet / (dry + wet) * 100.0 } else { 0.0 });
++            }
++            _ => panic!("unexpected reference effect"),
++        }
++    }
++
++    #[test]
++    fn unchanged_insert_updates_preserve_exact_samples_and_control_changes() {
++        use filmcraft_project::ParamValue;
++        for sr in [44_100, 48_000, 47_999] {
++            for (id, control, values) in [("dynamics", "threshold", [-20.0, -12.0, -30.0]), ("parametric_eq", "low_gain", [0.0, 6.0, -3.0]), ("studio_reverb", "room", [50.0, 80.0, 20.0])] {
++                let mut e = filmcraft_project::find_effect(id).unwrap().instance();
++                let m = mapping(id).unwrap();
++                let mut cached = filmcraft_audio_dsp::create_effect(m.dsp, sr as f32, 2).unwrap();
++                let mut reference = filmcraft_audio_dsp::create_effect(m.dsp, sr as f32, 2).unwrap();
++                (m.apply)(cached.as_mut(), &e, Tick::ZERO);
++                legacy_mixer_apply(reference.as_mut(), &e, Tick::ZERO);
++                cached.reset();
++                reference.reset();
++                for block in 0..192 {
++                    if block == 32 || block == 64 {
++                        e.param_mut(control).unwrap().value = ParamValue::Float(values[if block == 32 { 1 } else { 2 }]);
++                    }
++                    let t = Tick::from_units(block * 64, sr);
++                    (m.apply)(cached.as_mut(), &e, t);
++                    legacy_mixer_apply(reference.as_mut(), &e, t);
++                    for p in cached.params() {
++                        assert_eq!(cached.param(p.id), reference.param(p.id), "{id}.{}", p.id);
++                    }
++                    let mut left: Vec<f32> = (0..64).map(|i| (((block * 64 + i) * 7919 % 1000) as f32 / 1000.0 - 0.5) * 0.4).collect();
++                    let mut right: Vec<f32> = left.iter().rev().copied().collect();
++                    let (mut old_left, mut old_right) = (left.clone(), right.clone());
++                    // Include split calls within the absolute parameter grid.
++                    let mut offset = 0;
++                    for n in [1, 17, 46] {
++                        cached.process(&mut [&mut left[offset..offset+n], &mut right[offset..offset+n]]);
++                        reference.process(&mut [&mut old_left[offset..offset+n], &mut old_right[offset..offset+n]]);
++                        offset += n;
++                    }
++                    assert_eq!(left, old_left, "{id}, sr={sr}, block={block}, left");
++                    assert_eq!(right, old_right, "{id}, sr={sr}, block={block}, right");
++                }
++            }
++        }
++    }
++
+     #[test]
+     fn every_audio_effect_has_dsp() {
+         for d in effect_defs().iter().filter(|d| d.kind == EffectKind::Audio && !d.intrinsic) {
 diff --git a/crates/render/src/mixer.rs b/crates/render/src/mixer.rs
 index a142768..669b6bd 100644
 --- a/crates/render/src/mixer.rs
@@ -2861,10 +2988,10 @@ index 34bdf20..4dde6b9 100644
      path
 diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
 new file mode 100644
-index 0000000..46b75c9
+index 0000000..ed3fbe1
 --- /dev/null
 +++ b/docs/chatgpt-connection.md
-@@ -0,0 +1,70 @@
+@@ -0,0 +1,75 @@
 +# FilmCraft ChatGPT connection
 +
 +This local modification adds an optional native ChatGPT connection to the Windows desktop app.
@@ -2896,17 +3023,22 @@ index 0000000..46b75c9
 +
 +Windows run 37653811843 passed eight release authentication tests, the actual
 +connection-panel preview and the concurrency, GPU and media fixture corrections.
-+Run 37831049694 passed 320 engine tests, 31 export tests, 117 audio DSP tests
++Run 37833431110 passed 320 engine tests, 31 export tests, 117 audio DSP tests
 +and 136 render tests. These include exact-output checks for circular-buffer
 +reads, cached reverb coefficients and constant endpoint automation, including
 +control changes, interpolation modes, overrides and duplicate timestamps.
-+Its remaining render failure is mixer performance: 2.82x realtime, below the
++Its remaining render failure is mixer performance: 2.77x realtime, below the
 +unchanged requirement of more than 4x. Full CI remains incomplete.
 +
-+An explicitly ignored diagnostic test measures the complete 24-track rig and
-+the cost of omitting each insert type, to locate the remaining CPU work. The
-+normal complete mixer performance test and its threshold remain enabled; no
-+effect is removed from that gate or from the product's audio path.
++The diagnostic measured five seconds of the complete rig in 1.344 CPU seconds,
++0.953 without EQ, 1.000 without dynamics, 0.750 without reverb and 0.219 without
++inserts. These are diagnostic comparisons; the normal complete performance
++test and its threshold remain enabled, with every effect included.
++The new patch uses the existing set-if-changed helper for the EQ, dynamics and
++reverb mappings, avoiding redundant parameter reconfiguration every 64 samples.
++A new regression compares every sample and parameter target against the previous
++unconditional updates, including control changes and split processing calls.
++This new optimization and its regression still need runner validation.
 +
 +The runner-formatted source and resolved Cargo.lock are included. The build
 +recipe checks audio early, then runs complete upstream CI, an additional full
@@ -2915,7 +3047,7 @@ index 0000000..46b75c9
 +Application Control (OS error 4551); no protection setting was changed.
 +Actual ChatGPT account authorization remains untested. This is a source change,
 +not an installed or signed application release.
-+Evidence: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37831049694
++Evidence: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37833431110
 +
 +On an authorized build machine, run:
 +

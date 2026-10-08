@@ -2871,10 +2871,10 @@ index 36c751d..639a2c6 100644
  [dev-dependencies]
  effectcraft-text = { workspace = true }
 diff --git a/crates/gpu/src/shaders/common.wgsl b/crates/gpu/src/shaders/common.wgsl
-index 00ac946..33d5b57 100644
+index 00ac946..b26ff8f 100644
 --- a/crates/gpu/src/shaders/common.wgsl
 +++ b/crates/gpu/src/shaders/common.wgsl
-@@ -50,6 +50,36 @@ fn acos_p(x: f32) -> f32 {
+@@ -50,6 +50,41 @@ fn acos_p(x: f32) -> f32 {
      return 1.5707963267948966 - asin_p(x);
  }
  
@@ -2882,10 +2882,15 @@ index 00ac946..33d5b57 100644
 +// Native backend approximations can move inverse-mapped pixels, especially when
 +// a very small angle is multiplied by a large bend radius.
 +fn atan2_p(y: f32, x: f32) -> f32 {
++    let negative_x = (bitcast<u32>(x) & 0x80000000u) != 0u;
++    let negative_y = (bitcast<u32>(y) & 0x80000000u) != 0u;
 +    let ax = abs(x);
 +    let ay = abs(y);
 +    let hi = max(ax, ay);
-+    if (hi == 0.0) { return 0.0; }
++    if (hi == 0.0) {
++        let angle = select(0.0, 3.141592653589793, negative_x);
++        return select(angle, -angle, negative_y);
++    }
 +    var z = min(ax, ay) / hi;
 +    var base = 0.0;
 +    if (z > 0.414213562373095) {
@@ -2904,8 +2909,8 @@ index 00ac946..33d5b57 100644
 +    poly = -1.0 / 3.0 + zz * poly;
 +    var angle = base + z + z * zz * poly;
 +    if (ay > ax) { angle = 1.5707963267948966 - angle; }
-+    if (x < 0.0) { angle = 3.141592653589793 - angle; }
-+    return select(angle, -angle, y < 0.0);
++    if (negative_x) { angle = 3.141592653589793 - angle; }
++    return select(angle, -angle, negative_y);
 +}
 +
  // ---------------------------------------------------------------- sampling (raster::Image)
@@ -2990,16 +2995,19 @@ index 82ccbb5..3256337 100644
              textureStore(out, p, vec4<f32>(r * a, a));
          }
 diff --git a/crates/gpu/src/shaders/fx_transition.wgsl b/crates/gpu/src/shaders/fx_transition.wgsl
-index 66278a6..dda6260 100644
+index 66278a6..f122959 100644
 --- a/crates/gpu/src/shaders/fx_transition.wgsl
 +++ b/crates/gpu/src/shaders/fx_transition.wgsl
-@@ -776,7 +776,9 @@ fn ftr_env_uv(mapping: u32, r: vec3<f32>) -> vec2<f32> {
+@@ -776,7 +776,12 @@ fn ftr_env_uv(mapping: u32, r: vec3<f32>) -> vec2<f32> {
          return vec2<f32>((cr.x + (cr.z + 1.0) * 0.5) / 3.0, (cr.y + (cr.w + 1.0) * 0.5) / 4.0);
      }
      let lat = asin_p(clamp(r.y, -1.0, 1.0));
 -    return vec2<f32>(ftr_lon_u(r.x, r.z), 0.5 + lat / 3.141592653589793);
 +    let longitude = 0.5 + atan2_p(r.x, r.z) / 6.283185307179586;
-+    let u = select(clamp(longitude, 0.5, 0.99999994), clamp(longitude, 0.0, 0.5), r.x <= 0.0);
++    var u = select(clamp(longitude, 0.5, 0.99999994), clamp(longitude, 0.0, 0.5), r.x <= 0.0);
++    // atan2(+/-0, negative z) maps to either edge; both wrap to column zero.
++    // Do not rely on the backend preserving signed zero through normal arithmetic.
++    if (r.x == 0.0 && r.z < 0.0) { u = 0.0; }
 +    return vec2<f32>(u, 0.5 + lat / 3.141592653589793);
  }
  
@@ -3090,10 +3098,10 @@ index 39bcba1..8e9e511 100644
      effect_case(
 diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
 new file mode 100644
-index 0000000..c8bf709
+index 0000000..310c39c
 --- /dev/null
 +++ b/docs/chatgpt-connection.md
-@@ -0,0 +1,69 @@
+@@ -0,0 +1,71 @@
 +# EffectCraft ChatGPT connection
 +
 +This local modification adds an optional native ChatGPT connection to the Windows desktop app.
@@ -3129,12 +3137,14 @@ index 0000000..c8bf709
 +all upstream gates remain unchanged. The engine's 390 tests also passed.
 +
 +The revised shaders calculate angles with a range-reduced atan series and use
-+integer nearest-even mantissa division only near RGB thresholds. A new GPU
++integer nearest-even mantissa division only near RGB thresholds. Signed-zero
++axis directions and the wrapped environment seam are handled explicitly. A new GPU
 +regression compares threshold decisions at neighboring premultiplied values
 +over 255 alpha levels, with and without inversion. Additional environment and
 +small-bend cases exercise the unchanged CPU/GPU comparison criteria.
 +Independent numerical probes passed 20,049 float32 division comparisons and
-+100,001 angle comparisons (maximum angle error 2.65e-7 radians). These probes
++100,001 angle comparisons and 16 signed-zero/axis cases (maximum angle error
++2.65e-7 radians). These probes
 +do not substitute for the real GPU comparisons or full CI, which remain pending.
 +
 +Eight release authentication tests, the actual connection-panel preview and

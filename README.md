@@ -78,6 +78,7 @@ Run 37824265776 compiled with DXC and passed 167 GPU comparisons; three
 failed at RGB threshold boundaries, environment coordinates and a slight
 Bend It deformation. The revised shaders improve angle calculations and
 use exact nearest-even mantissa division only near RGB thresholds.
+Signed-zero axes and the wrapped environment seam are handled explicitly.
 New GPU threshold regressions and additional geometry cases retain the
 existing pixel tolerances. Numerical probes passed; actual GPU comparisons
 and every full upstream gate still require a successful runner validation.

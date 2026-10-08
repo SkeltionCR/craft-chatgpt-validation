@@ -50,7 +50,7 @@ assets from upstream remain in its ephemeral build checkout and are not redistri
 |---|---|---|
 | PhotoCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526632188) | Not exercised |
 | VectorCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526641875) | Not exercised |
-| FilmCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37856550606) | Not exercised |
+| FilmCraft | [Failed; fixes remain](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37856550606) | Not exercised |
 | LightCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475) | Not exercised |
 | PrintCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37536527821) | Not exercised |
 | EffectCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37857808769) | Not exercised |
@@ -66,13 +66,13 @@ FilmCraft's revised Windows engine paths passed 320 engine tests. Its corrected
 export fixtures passed 31 export tests. Runner validation preserves every
 upstream gate and adds a workspace pass with `--no-fail-fast` after CI succeeds.
 
-Run 37835978909 passed 117 audio DSP tests and 137 render tests, including
-the exact-output insert-update regression. The complete mixer gate failed
-at 2.87x realtime against the unchanged >4x requirement. Its isolated
-five-second diagnostic reached 4.267x; that does not satisfy the full gate.
-The revised cache evicts old graphs individually, preserving recently used
-playback graphs instead of forcing every graph to repeat effect pre-roll.
-Two cache regressions and the full upstream gates await runner validation.
+Run 37856550606 passed 320 engine, 31 export and 117 audio DSP tests.
+Both new cache regressions passed. Render testing passed 139 tests but
+failed the unchanged >4x mixer speed requirement at 2.79x realtime.
+The separate five-second diagnostic reached 4.211x; it does not satisfy
+the full ten-second gate. Cache eviction did not resolve this failure.
+The performance cause remains under investigation; no replacement
+FilmCraft run has been dispatched yet.
 
 Run 37824265776 compiled with DXC and passed 167 GPU comparisons; three
 failed at RGB threshold boundaries, environment coordinates and a slight

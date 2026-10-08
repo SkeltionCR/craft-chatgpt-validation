@@ -2695,6 +2695,108 @@ index e9d35f4..7554d2e 100644
 +
 +[target.'cfg(windows)'.dev-dependencies]
 +cpu-time = "1"
+diff --git a/crates/render/src/mixer.rs b/crates/render/src/mixer.rs
+index a142768..673fa1c 100644
+--- a/crates/render/src/mixer.rs
++++ b/crates/render/src/mixer.rs
+@@ -248,19 +248,95 @@ impl<'a> Lane<'a> {
+             Some(o) => o.at(t, self.auto(t)),
+         }
+     }
++    /// Keyframed scalar lanes hold their endpoint value outside the keyframe
++    /// range. Evaluate that value once for a block wholly outside the range.
++    fn constant_in(&self, c0: i64, sr: u32, samples: usize) -> Option<f64> {
++        if let Some(v) = self.constant() {
++            return Some(v);
++        }
++        if self.ov.is_some() || self.hold || samples == 0 || sr == 0 {
++            return None;
++        }
++        let p = self.param?;
++        let (first, last) = (p.keyframes.first()?, p.keyframes.last()?);
++        let end_sample = c0.checked_add(i64::try_from(samples - 1).ok()?)?;
++        // Require representable, monotonic tick endpoints before using the
++        // shortcut. Preserve the ordinary evaluation for unusual timestamps.
++        let time = |s: i64| i64::try_from(s as i128 * filmcraft_time::TICKS_PER_SECOND as i128 / sr as i128).ok().map(Tick);
++        let (start, end) = (time(c0)?, time(end_sample)?);
++        if end <= first.time || (start >= last.time && start > first.time) {
++            Some(self.auto(start))
++        } else {
++            None
++        }
++    }
+     /// Per-sample values for content samples `c0 ..`, mapped through `f`, into `out`.
+     /// Returns the constant instead when the lane does not change.
+     fn fill(&self, c0: i64, sr: u32, out: &mut [f32], f: impl Fn(f64) -> f32) -> Option<f32> {
+-        if let Some(v) = self.constant() {
++        if let Some(v) = self.constant_in(c0, sr, out.len()) {
+             return Some(f(v));
+         }
+         for (i, o) in out.iter_mut().enumerate() {
+-            *o = f(self.at(Tick::from_units(c0 + i as i64, sr as i64)));
++            let sample = c0.saturating_add(i64::try_from(i).unwrap_or(i64::MAX));
++            *o = f(self.at(Tick::from_units(sample, sr as i64)));
+         }
+         None
+     }
+ }
+ 
++#[cfg(test)]
++mod lane_tests {
++    use super::*;
++    use filmcraft_project::{Interpolation, Keyframe};
++
++    #[test]
++    fn block_constants_match_every_sample_across_keyframes_and_overrides() {
++        for sr in [44_100, 48_000, 47_999] {
++            let time = |i| Tick::from_units(i, sr as i64);
++            for interp in Interpolation::ALL {
++                let mut p = Param::new(ParamValue::Float(0.0));
++                p.keyframes = [(100, -6.0), (200, -12.0), (400, 3.0)].map(|(t, v)| {
++                    let mut k = Keyframe::new(time(t), ParamValue::Float(v));
++                    k.interp = interp;
++                    k
++                }).to_vec();
++                for ov in [None, Some(Override { value: -3.0, release: None }), Some(Override { value: -3.0, release: Some((time(200), time(100))) })] {
++                    for hold in [false, true] {
++                        let lane = Lane { param: Some(&p), stat: 0.0, ov, hold };
++                        for start in [-512, -1, 0, 99, 100, 101, 399, 400, 401, 1024] {
++                            for n in [1, 17, 64, 512] {
++                                let expected: Vec<f32> = (0..n).map(|i| db_gain(lane.at(time(start + i as i64)))).collect();
++                                let mut actual = vec![0.0; n];
++                                if let Some(g) = lane.fill(start, sr, &mut actual, db_gain) {
++                                    actual.fill(g);
++                                }
++                                assert_eq!(actual, expected, "sr={sr}, interp={interp:?}, hold={hold}, start={start}, n={n}");
++                            }
++                        }
++                    }
++                }
++                let lane = Lane { param: Some(&p), stat: 0.0, ov: None, hold: false };
++                assert_eq!(lane.constant_in(400, sr, 512), Some(3.0));
++                assert_eq!(lane.constant_in(-512, sr, 512), Some(-6.0));
++                assert_eq!(lane.constant_in(99, sr, 512), None);
++                assert_eq!(lane.constant_in(i64::MAX, sr, 512), None);
++                assert_eq!(lane.constant_in(0, 0, 64), None);
++            }
++        }
++    }
++
++    #[test]
++    fn duplicate_endpoint_times_preserve_the_boundary_sample() {
++        let t = Tick::from_units(100, 48_000);
++        let p = Param { value: ParamValue::Float(0.0), keyframes: vec![Keyframe::new(t, ParamValue::Float(-6.0)), Keyframe::new(t, ParamValue::Float(3.0))] };
++        let lane = Lane { param: Some(&p), stat: 0.0, ov: None, hold: false };
++        let mut values = [0.0; 17];
++        assert_eq!(lane.fill(100, 48_000, &mut values, db_gain), None);
++        assert_eq!(values[0], db_gain(-6.0));
++        assert!(values[1..].iter().all(|&v| v == db_gain(3.0)));
++    }
++}
++
+ // ------------------------------------------------------------------------------------- plan
+ 
+ #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 diff --git a/crates/render/src/mixer_tests.rs b/crates/render/src/mixer_tests.rs
 index 54f0647..a8739f3 100644
 --- a/crates/render/src/mixer_tests.rs
@@ -2728,10 +2830,10 @@ index 34bdf20..4dde6b9 100644
      path
 diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
 new file mode 100644
-index 0000000..03bd172
+index 0000000..668a421
 --- /dev/null
 +++ b/docs/chatgpt-connection.md
-@@ -0,0 +1,69 @@
+@@ -0,0 +1,76 @@
 +# FilmCraft ChatGPT connection
 +
 +This local modification adds an optional native ChatGPT connection to the Windows desktop app.
@@ -2762,16 +2864,23 @@ index 0000000..03bd172
 +## Validation status (2026-10-08)
 +
 +Windows run 37653811843 passed eight release authentication tests, the actual
-+connection-panel preview, 320 engine tests and 31 export tests. The concurrency,
-+GPU shader comparisons and media-file fixture corrections all passed. Its one
-+remaining failure was the audio performance test: 2.51x realtime on one core,
-+below the unchanged requirement of more than 4x.
++connection-panel preview and the concurrency, GPU and media fixture corrections.
++Run 37824008072 passed 320 engine tests, 31 export tests and 117 audio DSP tests,
++including exact comparisons of the optimized circular reads and cached reverb
++gains with their previous calculations. Its one render failure remained the audio
++performance test: 2.58x realtime, below the unchanged requirement of more than 4x.
 +
 +The revised audio code wraps circular-buffer indices with bounded subtraction
 +and caches reverb feedback gains while their smoothed controls are stationary.
 +Regression tests compare circular reads with the previous modulo formula and
 +audio samples with the previous unconditional coefficient updates, including
-+changes to the controls. These optimizations still need compilation and full CI.
++changes to the controls. These two optimizations passed their regression tests.
++The new mixer patch evaluates scalar automation once for blocks wholly before
++the first or after the last keyframe, where the value is constant. It preserves
++per-sample evaluation across keyframes and live override transitions. Additional
++tests compare every output sample across interpolation modes, unusual rates,
++negative times, overrides and duplicate endpoint timestamps. This new change
++still needs compilation and full CI.
 +GPU comparisons and the performance threshold remain enabled.
 +
 +The resolved Cargo.lock from that run is included. The build recipe checks the
@@ -2781,7 +2890,7 @@ index 0000000..03bd172
 +Local Cargo remains blocked by Windows Application Control (OS error 4551);
 +no protection setting was changed. Actual ChatGPT account authorization remains
 +untested. This is a source change, not an installed or signed application release.
-+Evidence: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37653811843
++Evidence: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37824008072
 +
 +On an authorized build machine, run:
 +

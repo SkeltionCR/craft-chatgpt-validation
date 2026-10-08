@@ -91,6 +91,13 @@ if ($App -in @('filmcraft','effectcraft')) {
     if ($App -eq 'filmcraft') {
         Invoke-Checked -Command cargo -Arguments @('+stable','test','-p','filmcraft-audio-dsp','--release','--locked')
         Invoke-Checked -Command cargo -Arguments @('+stable','test','-p','filmcraft-render','profile_mixer_insert_costs','--release','--locked','--','--ignored','--nocapture')
+        # The isolated diagnostic and concurrent suite give different mixer CPU
+        # timings on this shared runner. Execute all FilmCraft test cases in a
+        # serial harness; the mixer still uses its own one-core Rayon pool and
+        # must satisfy the original ten-second >4x requirement. Tests which
+        # explicitly spawn threads retain their internal concurrency.
+        $env:RUST_TEST_THREADS = '1'
+        Write-Output 'CRAFT_TEST_CONFIGURATION:filmcraft:rust_test_threads=1:unchanged_speed_gate=>4x'
         Invoke-Checked -Command cargo -Arguments @('+stable','test','-p','filmcraft-render','--release','--locked','--','--nocapture')
         Write-Output 'CRAFT_RENDER_TESTS_PASSED:filmcraft'
     }

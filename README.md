@@ -79,6 +79,8 @@ The product code matches the preceding runner; the release profile,
 one-core mixer pool, >4x assertion and every upstream gate remain.
 Full upstream CI is still running and has not yet passed.
 
+Strict workspace Clippy also passed; release workspace tests are compiling.
+
 Run 37824265776 compiled with DXC and passed 167 GPU comparisons; three
 failed at RGB threshold boundaries, environment coordinates and a slight
 Bend It deformation. The revised shaders improve angle calculations and

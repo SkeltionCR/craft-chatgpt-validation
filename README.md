@@ -91,3 +91,7 @@ and every full upstream gate still require a successful runner validation.
 The first precision rerun passed 390 engine tests and formatting, then
 stopped at two strict Clippy errors in the new regression. Both now use
 fixed-size chunk iteration; GPU comparisons await the replacement run.
+
+The replacement run 37857808769 passed 390 engine tests, formatting and
+strict workspace Clippy. Release workspace tests are compiling; actual
+GPU comparisons and the full CI result remain pending.

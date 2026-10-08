@@ -66,13 +66,13 @@ FilmCraft's revised Windows engine paths passed 320 engine tests. Its corrected
 export fixtures passed 31 export tests. The full rerun checks every workspace
 test suite with `--no-fail-fast`, then repeats the unchanged upstream CI gates.
 
-The last full workspace pass exposed five failed targets. The revised source
-coalesces duplicate intra-frame requests, links DXC on Windows x86-64,
-uses a Windows thread CPU clock for the unchanged performance threshold,
-and closes media fixture sessions before moving files. GPU comparisons stay
-enabled. These corrections require a new successful full validation run.
+The latest full workspace pass confirmed the concurrency, GPU comparisons
+and media-file fixture corrections. The remaining failure is the audio
+performance test: 2.51x realtime versus its unchanged requirement of >4x.
+Full CI remains unverified while that failure is investigated.
 
-EffectCraft's current run passed 390 engine tests, release authentication tests,
-the offscreen panel preview check and strict workspace Clippy. The full upstream
-CI run is still pending. Earlier three-hour runs timed out; the current run
-allows six hours with the same source, release optimization and required gates.
+EffectCraft passed 390 engine tests, release authentication tests, the offscreen
+panel preview and strict workspace Clippy in its previous run. That run reached
+the six-hour limit while rebuilding release tests. The recipe now runs upstream
+CI before the filtered sign-in checks to reuse test binaries. The source, release
+optimization settings and required upstream gates are unchanged.

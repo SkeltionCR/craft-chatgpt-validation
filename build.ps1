@@ -83,6 +83,21 @@ if ($App -in @('filmcraft','effectcraft')) {
         Write-Output 'CRAFT_EXPORT_TESTS_PASSED:filmcraft'
     }
 }
+if ($App -eq 'effectcraft') {
+    # Upstream CI runs Clippy before release tests. Run that pass before the
+    # filtered auth tests: the six-hour run rebuilt test artifacts after Clippy,
+    # including a second expensive Thin LTO editor/CLI compilation.
+    # Preserve every upstream gate and the workspace's release profile.
+    Invoke-Checked -Command cargo -Arguments @('+stable','xtask','ci')
+    Write-Output 'CRAFT_FULL_CI_PASSED:effectcraft'
+    Write-Output 'CRAFT_CLIPPY_PASSED:effectcraft'
+    Invoke-Checked -Command cargo -Arguments @('+stable','test','--workspace','chatgpt','--release','--locked')
+    Write-Output 'CRAFT_AUTH_TESTS_PASSED:effectcraft'
+    $env:CRAFT_SNAPSHOT_PATH = Join-Path $recipeRoot 'panel-preview.png'
+    Invoke-Checked -Command cargo -Arguments @('+stable','test','--workspace','chatgpt_panel_offscreen_preview','--release','--locked','--','--ignored')
+    Write-Output 'CRAFT_PANEL_PREVIEW_PASSED:effectcraft'
+    return
+}
 Invoke-Checked -Command cargo -Arguments (@('+stable','test','--workspace','chatgpt') + $profileArguments)
 Write-Output "CRAFT_AUTH_TESTS_PASSED:$App"
 $env:CRAFT_SNAPSHOT_PATH = Join-Path $recipeRoot 'panel-preview.png'

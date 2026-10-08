@@ -50,7 +50,7 @@ assets from upstream remain in its ephemeral build checkout and are not redistri
 |---|---|---|
 | PhotoCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526632188) | Not exercised |
 | VectorCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526641875) | Not exercised |
-| FilmCraft | [Failed; fixes remain](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37856550606) | Not exercised |
+| FilmCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37858950216) | Not exercised |
 | LightCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475) | Not exercised |
 | PrintCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37536527821) | Not exercised |
 | EffectCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37857808769) | Not exercised |
@@ -71,8 +71,13 @@ Both new cache regressions passed. Render testing passed 139 tests but
 failed the unchanged >4x mixer speed requirement at 2.79x realtime.
 The separate five-second diagnostic reached 4.211x; it does not satisfy
 the full ten-second gate. Cache eviction did not resolve this failure.
-The performance cause remains under investigation; no replacement
-FilmCraft run has been dispatched yet.
+
+The replacement run uses a serial Rust test harness to investigate
+interference from simultaneous CPU-heavy tests on the shared runner.
+The same ten-second mixer benchmark, one-core Rayon pool, >4x assertion,
+release profile and every upstream test and gate remain enabled.
+Tests that explicitly spawn threads retain their own concurrency.
+Full validation still requires the replacement run to pass.
 
 Run 37824265776 compiled with DXC and passed 167 GPU comparisons; three
 failed at RGB threshold boundaries, environment coordinates and a slight

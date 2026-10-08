@@ -53,7 +53,7 @@ assets from upstream remain in its ephemeral build checkout and are not redistri
 | FilmCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37856550606) | Not exercised |
 | LightCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475) | Not exercised |
 | PrintCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37536527821) | Not exercised |
-| EffectCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37856555037) | Not exercised |
+| EffectCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37857808769) | Not exercised |
 | DesignCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526643074) | Not exercised |
 
 Panel previews use synthetic disconnected accounts and a test editor surface.
@@ -82,3 +82,7 @@ Signed-zero axes and the wrapped environment seam are handled explicitly.
 New GPU threshold regressions and additional geometry cases retain the
 existing pixel tolerances. Numerical probes passed; actual GPU comparisons
 and every full upstream gate still require a successful runner validation.
+
+The first precision rerun passed 390 engine tests and formatting, then
+stopped at two strict Clippy errors in the new regression. Both now use
+fixed-size chunk iteration; GPU comparisons await the replacement run.

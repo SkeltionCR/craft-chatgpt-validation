@@ -38,7 +38,7 @@ jobs:
       CARGO_TERM_COLOR: never
       RUST_BACKTRACE: 1
       CARGO_BUILD_JOBS: ${{ inputs.compiler_jobs || '4' }}
-      CARGO_TARGET_DIR: ${{ runner.temp }}/craft-target/${{ inputs.app }}
+      CARGO_TARGET_DIR: ${{ github.workspace }}/../craft-target/${{ inputs.app }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - name: Restore EffectCraft compilation cache

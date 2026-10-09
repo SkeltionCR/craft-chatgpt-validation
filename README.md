@@ -53,7 +53,7 @@ assets from upstream remain in its ephemeral build checkout and are not redistri
 | FilmCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37858950216) | Not exercised |
 | LightCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475) | Not exercised |
 | PrintCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37536527821) | Not exercised |
-| EffectCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37950060589) | Not exercised |
+| EffectCraft | [Failed; fixes remain](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37950060589) | Not exercised |
 | DesignCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526643074) | Not exercised |
 
 Panel previews use synthetic disconnected accounts and a test editor surface.
@@ -62,12 +62,15 @@ and account renewal with a person's ChatGPT account remain untested.
 
 Full validation is still pending for effectcraft.
 
-Previous run 37942683582 passed 172 GPU tests and failed one height-80
-Bpc32 composited environment comparison. All 390 engine tests passed.
-The new scalar GPU blur uses compensated sums and CPU f32 normalization.
-Supplementary native probes passed on Intel D3D12, Intel Vulkan and software
-D3D12: 18 box cases per backend matched exactly; 15 full Gaussian cases
-matched normalized planes exactly, with HDR relative errors at most 6.89e-7.
-These probes use wgpu 29; full project wgpu 30 scene/CI validation is required.
-A full Gaussian GPU regression was added. Existing criteria remain unchanged.
-Replacement full-validation run: 37950060589. Status: pending.
+Run 37950060589 passed 390 engine tests and strict GPU Clippy.
+Its full GPU suite passed 173 tests and failed only the new scalar-blur
+regression; none were ignored. The original environment comparison passed.
+DXC reproduced the exact regression mismatch locally: pattern 0, sigma 0.75,
+pixel 4 returned bits 1061884486 instead of 1061884484.
+The revised shader preserves compensated-sum rounding through a host-zero
+runtime integer mask. It fixes that counterexample without changing criteria.
+The actual shader passed supplementary DXC/FXC checks on hardware and software
+D3D12, plus Vulkan: five configurations, 18 box and 15 Gaussian cases each.
+These probes use native wgpu 29; the product uses wgpu 30 and static DXC.
+Full hosted scene, upstream CI and authentication/UI validation remain required.
+Corrected source prepared; replacement full validation has not started yet.

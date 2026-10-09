@@ -78,6 +78,12 @@ if ($App -in @('filmcraft','effectcraft')) {
     # The full workspace checks and upstream CI still run below.
     Invoke-Checked -Command cargo -Arguments @('+stable','test','-p',"$App-engine",'--release')
     Write-Output "CRAFT_ENGINE_TESTS_PASSED:$App"
+    if ($App -eq 'effectcraft') {
+        # Report the entire GPU suite before cold editor/CLI Thin LTO linking.
+        # Upstream CI still runs every original gate after this early check.
+        Invoke-Checked -Command cargo -Arguments @('+stable','test','-p','effectcraft-gpu','--release','--locked','--','--nocapture')
+        Write-Output 'CRAFT_GPU_TESTS_PASSED:effectcraft'
+    }
     if ($App -eq 'filmcraft') {
         Invoke-Checked -Command cargo -Arguments @('+stable','test','-p','filmcraft-export','--release')
         Write-Output 'CRAFT_EXPORT_TESTS_PASSED:filmcraft'

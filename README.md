@@ -67,5 +67,14 @@ and none were ignored. The exact RGB threshold regression and Bend It
 comparisons passed. Remaining failures are environment projection at
 height 80 (one pixel beyond tolerance) and default Page Turn rendering.
 Engine tests, formatting and strict workspace Clippy passed.
-No replacement run is active. Both shader failures need corrections and
-a successful full rerun. Existing pixel tolerances remain unchanged.
+A successful full rerun remains required; existing tolerances are unchanged.
+
+The revised shaders passed supplementary native probes on Intel D3D12,
+Intel Vulkan and Microsoft software D3D12. The probe runtime uses wgpu 29;
+the Rust project uses wgpu 30 and still requires its full CI result.
+The prior Page Turn also passed locally; its hosted cause is not yet proven.
+The revised recipe runs the entire GPU suite before editor/CLI compilation,
+then retains all upstream CI gates. Optional compilation caching allows
+later runs to reuse outputs which Cargo verifies with fingerprints.
+
+Corrected source is prepared; replacement run not yet dispatched.

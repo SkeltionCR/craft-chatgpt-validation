@@ -2995,14 +2995,18 @@ index 82ccbb5..3256337 100644
              textureStore(out, p, vec4<f32>(r * a, a));
          }
 diff --git a/crates/gpu/src/shaders/fx_transition.wgsl b/crates/gpu/src/shaders/fx_transition.wgsl
-index 66278a6..f122959 100644
+index 66278a6..cb29674 100644
 --- a/crates/gpu/src/shaders/fx_transition.wgsl
 +++ b/crates/gpu/src/shaders/fx_transition.wgsl
-@@ -776,7 +776,12 @@ fn ftr_env_uv(mapping: u32, r: vec3<f32>) -> vec2<f32> {
+@@ -775,8 +775,15 @@ fn ftr_env_uv(mapping: u32, r: vec3<f32>) -> vec2<f32> {
+         }
          return vec2<f32>((cr.x + (cr.z + 1.0) * 0.5) / 3.0, (cr.y + (cr.w + 1.0) * 0.5) / 4.0);
      }
-     let lat = asin_p(clamp(r.y, -1.0, 1.0));
+-    let lat = asin_p(clamp(r.y, -1.0, 1.0));
 -    return vec2<f32>(ftr_lon_u(r.x, r.z), 0.5 + lat / 3.141592653589793);
++    // atan2 retains the small horizontal component near a pole. Rounding a unit
++    // vector's y to +/-1 before asin loses it and magnifies coordinate error.
++    let lat = atan2_p(r.y, length(r.xz));
 +    let longitude = 0.5 + atan2_p(r.x, r.z) / 6.283185307179586;
 +    var u = select(clamp(longitude, 0.5, 0.99999994), clamp(longitude, 0.0, 0.5), r.x <= 0.0);
 +    // atan2(+/-0, negative z) maps to either edge; both wrap to column zero.
@@ -3012,8 +3016,23 @@ index 66278a6..f122959 100644
  }
  
  @compute @workgroup_size(16, 16)
+@@ -792,9 +799,11 @@ fn ftr_env(@builtin(global_invocation_id) gid: vec3<u32>) {
+     }
+     let g = ftr_grad(p) * P.f[0].x;
+     let height = P.f[0].y;
+-    let n = normalize(vec3<f32>(-g.x * height, -g.y * height, 1.0));
+-    let d = -n.z;
+-    let r = vec3<f32>(-2.0 * d * n.x, -2.0 * d * n.y, -(-1.0 - 2.0 * d * n.z));
++    // Algebraic reflection of the same (-slope.x, -slope.y, 1) normal.
++    // Avoid a rounded reciprocal square root followed by cancellation in z.
++    let slope = g * height;
++    let squared = dot(slope, slope);
++    let r = vec3<f32>(-2.0 * slope.x, -2.0 * slope.y, squared - 1.0) / (squared + 1.0);
+     let uv = ftr_env_uv(P.u[0].x, r);
+     let es = P.f[0].z;
+     let ex = fract_euclid(uv.x) * P.f[1].z * es + P.f[1].x;
 diff --git a/crates/gpu/src/shaders/fx_warp.wgsl b/crates/gpu/src/shaders/fx_warp.wgsl
-index 9d7ccef..88e7e42 100644
+index 9d7ccef..ef23d72 100644
 --- a/crates/gpu/src/shaders/fx_warp.wgsl
 +++ b/crates/gpu/src/shaders/fx_warp.wgsl
 @@ -183,7 +183,7 @@ fn fxw_bendit(@builtin(global_invocation_id) gid: vec3<u32>) {
@@ -3025,6 +3044,72 @@ index 9d7ccef..88e7e42 100644
      let dd = lx * lx + ly * ly - 2.0 * ly * rho;
      let w_arc = -dd / (rho + sqrt(max(rho * rho + dd, 0.0)));
      var cand: array<vec3<f32>, 3>;
+@@ -231,37 +231,42 @@ fn fxw_pageturn(@builtin(global_invocation_id) gid: vec3<u32>) {
+         textureStore(out, p, vec4<f32>(0.0));
+         return;
+     }
+-    // (u, back side, shade, valid) from the top layer down.
+-    var cand: array<vec4<f32>, 4>;
++    // There are exactly two surfaces at each pixel: back first, then front.
++    // Keep the transparent-back fallback explicit rather than indexing a sparse
++    // local array in a loop; both branches mirror the CPU's candidate order.
++    var back_u: f32;
++    var back_shade: f32;
++    var front_u: f32;
++    var front_shade: f32;
+     if (d <= 0.0) {
+-        cand[0] = vec4<f32>(FXW_PI * r - d, 1.0, 0.9, 1.0);
+-        cand[3] = vec4<f32>(d, 0.0, 1.0, 1.0);
++        back_u = FXW_PI * r - d;
++        back_shade = 0.9;
++        front_u = d;
++        front_shade = 1.0;
+     } else {
+         let a = asin_p(clamp(d / r, -1.0, 1.0));
+-        cand[1] = vec4<f32>(FXW_PI * r - r * a, 1.0, 0.6 + 0.4 * cos(a), 1.0);
++        back_u = FXW_PI * r - r * a;
++        back_shade = 0.6 + 0.4 * cos(a);
+         let psi = a / (0.5 * FXW_PI);
+-        cand[2] = vec4<f32>(r * a, 0.0, 1.0 - 0.4 * psi * (0.5 + 0.5 * ldot), 1.0);
++        front_u = r * a;
++        front_shade = 1.0 - 0.4 * psi * (0.5 + 0.5 * ldot);
+     }
+-    for (var i = 0; i < 4; i++) {
+-        let c = cand[i];
+-        if (c.w == 0.0) {
+-            continue;
+-        }
+-        let back = c.y != 0.0;
+-        if ((back && !show_back) || (!back && !show_front)) {
+-            continue;
+-        }
+-        let k = c.x - d;
++    if (show_back) {
++        let k = back_u - d;
+         let v = sample_bilinear(src, q.x + k * n.x, q.y + k * n.y);
+-        if (v.w <= 1e-4) {
+-            continue;
++        if (v.w > 1e-4) {
++            let col = paper * (1.0 - bo) + fxw_unpremul(v) * bo;
++            textureStore(out, p, vec4<f32>(col * back_shade * v.w, v.w));
++            return;
+         }
+-        var col = fxw_unpremul(v);
+-        if (back) {
+-            col = paper * (1.0 - bo) + col * bo;
++    }
++    if (show_front) {
++        let k = front_u - d;
++        let v = sample_bilinear(src, q.x + k * n.x, q.y + k * n.y);
++        if (v.w > 1e-4) {
++            textureStore(out, p, vec4<f32>(fxw_unpremul(v) * front_shade * v.w, v.w));
++            return;
+         }
+-        textureStore(out, p, vec4<f32>(col * c.z * v.w, v.w));
+-        return;
+     }
+     textureStore(out, p, vec4<f32>(0.0));
+ }
 diff --git a/crates/gpu/src/tests_fx_stylize.rs b/crates/gpu/src/tests_fx_stylize.rs
 index 44e156a..6690bd6 100644
 --- a/crates/gpu/src/tests_fx_stylize.rs
@@ -3083,25 +3168,51 @@ index ad6ebdf..d48a51d 100644
          effect_case("ec.perspective.3dglasses", &[("view3d", e(view)), ("sceneConvergence", n(4.0)), ("verticalAlignment", n(1.5))]);
      }
 diff --git a/crates/gpu/src/tests_fx_warp.rs b/crates/gpu/src/tests_fx_warp.rs
-index 39bcba1..8e9e511 100644
+index 39bcba1..4ab920d 100644
 --- a/crates/gpu/src/tests_fx_warp.rs
 +++ b/crates/gpu/src/tests_fx_warp.rs
-@@ -53,6 +53,9 @@ fn bend_it_and_page_turn() {
+@@ -48,11 +48,18 @@ fn bezier_warp() {
+ }
+ 
+ #[test]
+-fn bend_it_and_page_turn() {
++fn bend_it() {
+     effect_case("ec.distort.ccbendit", &[("bend", n(45.0))]);
      effect_case("ec.distort.ccbendit", &[("bend", n(-120.0)), ("start", pt(10.0, 30.0)), ("end", pt(55.0, 8.0)), ("renderPrestart", e(1))]);
      // A slight bend: a large arc radius.
      effect_case("ec.distort.ccbendit", &[("bend", n(0.05)), ("start", pt(5.0, 22.0)), ("end", pt(60.0, 22.0))]);
 +    for bend in [0.01, -0.05] {
 +        effect_case("ec.distort.ccbendit", &[("bend", n(bend)), ("start", pt(10.0, 30.0)), ("end", pt(55.0, 8.0)), ("renderPrestart", e(1))]);
 +    }
++}
++
++#[test]
++fn page_turn() {
      effect_case("ec.distort.ccpageturn", &[]);
      effect_case("ec.distort.ccpageturn", &[("foldRadius", n(4.0)), ("foldDirection", n(30.0)), ("foldPosition", pt(40.0, 20.0))]);
      effect_case(
+@@ -62,6 +69,15 @@ fn bend_it_and_page_turn() {
+     effect_case("ec.distort.ccpageturn", &[("render", e(1)), ("foldPosition", pt(50.0, 10.0))]);
+ }
+ 
++#[test]
++fn page_turn_transparent_back_keeps_flat_front() {
++    // With the fold beyond the right edge, the back samples outside the image;
++    // the next candidate must return the original flat front, never transparency.
++    for render in [0, 2] {
++        effect_case("ec.distort.ccpageturn", &[("foldDirection", n(270.0)), ("foldPosition", pt(100.0, 22.0)), ("render", e(render))]);
++    }
++}
++
+ #[test]
+ fn color_emboss_and_cartoon() {
+     effect_case("ec.stylize.coloremboss", &[]);
 diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
 new file mode 100644
-index 0000000..ce9bace
+index 0000000..19f056e
 --- /dev/null
 +++ b/docs/chatgpt-connection.md
-@@ -0,0 +1,75 @@
+@@ -0,0 +1,77 @@
 +# EffectCraft ChatGPT connection
 +
 +This local modification adds an optional native ChatGPT connection to the Windows desktop app.
@@ -3128,36 +3239,38 @@ index 0000000..ce9bace
 +  `effectcraft --chatgpt-status`, `--chatgpt-sign-in`, `--chatgpt-refresh`, and
 +  `--chatgpt-disconnect`. Status never returns credentials.
 +
-+## Validation status (2026-10-08)
++## Validation status (2026-10-09)
 +
-+Run 37824265776 compiled release tests with the Windows x86-64 DXC dependency.
-+The GPU suite passed 167 tests and failed three, with zero tests ignored.
-+Remaining failures were RGB threshold boundaries, spherical environment
-+coordinates and a slight Bend It deformation. Existing pixel tolerances and
-+all upstream gates remain unchanged. The engine's 390 tests also passed.
++Run 37857808769 completed with 169 GPU tests passed and two failed, none ignored.
++The RGB threshold regression and Bend It comparisons passed. Remaining failures
++were environment projection at height 80 and default Page Turn rendering.
++All 390 engine tests, formatting and strict workspace Clippy passed.
 +
-+The revised shaders calculate angles with a range-reduced atan series and use
-+integer nearest-even mantissa division only near RGB thresholds. Signed-zero
-+axis directions and the wrapped environment seam are handled explicitly. A new GPU
-+regression compares threshold decisions at neighboring premultiplied values
-+over 255 alpha levels, with and without inversion. Additional environment and
-+small-bend cases exercise the unchanged CPU/GPU comparison criteria.
-+Independent numerical probes passed 20,049 float32 division comparisons and
-+100,001 angle comparisons and 16 signed-zero/axis cases (maximum angle error
-+2.65e-7 radians). These probes
-+do not substitute for the real GPU comparisons or full CI, which remain pending.
-+Run 37856555037 passed the 390 engine tests and upstream formatting, then stopped
-+at two strict Clippy errors in the new regression's chunk iteration. Both now
-+use fixed-size as_chunks iterators. The returned patch exactly matched that
-+run's input, so no older source was imported over these newer corrections.
++The new environment shader computes reflection algebraically and latitude with
++atan2, preserving small components near sphere poles. Page Turn now evaluates
++the back and front surfaces explicitly in the same order as the CPU reference.
++The Page Turn cases run independently of Bend It and include a new regression
++for a transparent back surface that must reveal the flat front.
 +
-+Eight release authentication tests, the actual connection-panel preview and
-+strict workspace Clippy passed earlier in run 37612917628. Local Cargo remains
-+blocked by Windows Application Control (OS error 4551); no protection setting
-+changed. Actual ChatGPT account authorization remains untested. This is modified
-+source, not an installed or signed application release.
-+Evidence: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37824265776
-+Shader arithmetic: https://www.w3.org/TR/WGSL/#floating-point-accuracy
++Supplementary local probes compiled the actual 24-file WGSL module and dispatched
++the revised kernels on Intel Direct3D 12, Intel Vulkan and Microsoft software
++Direct3D 12. Twelve Page Turn comparisons per backend passed the existing 1e-3
++pixel criterion. Ten thousand environment directions per backend differed from
++independent double-precision geometry by at most 1.09e-7 normalized coordinates.
++The previous Page Turn shader also passed these local probes, so they do not
++establish the cause of its hosted failure. Local probes use native wgpu 29;
++the project's Rust build uses wgpu 30 and still requires full validation.
++
++The next build runs the entire GPU suite before the expensive editor/CLI link;
++every upstream CI gate, release setting and pixel tolerance remains enabled.
++Compiled outputs can be cached for later runs; Cargo still checks fingerprints.
++Full validation of this revised source remains pending.
++
++Eight authentication tests and an explicit connection-panel preview passed in
++an earlier run. Actual authorization with a person's ChatGPT account remains
++untested. Local Cargo is blocked by Windows Application Control (error 4551);
++no security setting changed. This is modified source, not an installed release.
++Latest failed run: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37857808769
 +
 +On an authorized build machine, run:
 +

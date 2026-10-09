@@ -79,6 +79,10 @@ if ($App -in @('filmcraft','effectcraft')) {
     Invoke-Checked -Command cargo -Arguments @('+stable','test','-p',"$App-engine",'--release')
     Write-Output "CRAFT_ENGINE_TESTS_PASSED:$App"
     if ($App -eq 'effectcraft') {
+        # Catch strict GPU/test lint errors before the long rendering comparisons.
+        # The complete upstream workspace Clippy gate still runs below.
+        Invoke-Checked -Command cargo -Arguments @('+stable','clippy','-p','effectcraft-gpu','--all-targets','--release','--locked','--','-D','warnings')
+        Write-Output 'CRAFT_GPU_CLIPPY_PASSED:effectcraft'
         # Report the entire GPU suite before cold editor/CLI Thin LTO linking.
         # Upstream CI still runs every original gate after this early check.
         Invoke-Checked -Command cargo -Arguments @('+stable','test','-p','effectcraft-gpu','--release','--locked','--','--nocapture')

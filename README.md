@@ -74,6 +74,6 @@ D3D12, plus Vulkan: five configurations, 18 box and 15 Gaussian cases each.
 These probes use native wgpu 29; the product uses wgpu 30 and static DXC.
 Full hosted scene, upstream CI and authentication/UI validation remain required.
 Replacement full-validation run: 37954342001. Status: pending.
-The replacement passed 390 engine tests, strict GPU Clippy and the
+Observed live milestones: the replacement passed 390 engine tests, strict GPU Clippy and the
 new scalar-blur regression on the hosted Windows compiler.
-Its full 174-test GPU suite is running; complete CI remains pending.
+Complete GPU and upstream CI results await final log verification.

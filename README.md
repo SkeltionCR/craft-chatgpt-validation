@@ -53,7 +53,7 @@ assets from upstream remain in its ephemeral build checkout and are not redistri
 | FilmCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37858950216) | Not exercised |
 | LightCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475) | Not exercised |
 | PrintCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37536527821) | Not exercised |
-| EffectCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37942683582) | Not exercised |
+| EffectCraft | [Failed; fixes remain](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37942683582) | Not exercised |
 | DesignCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526643074) | Not exercised |
 
 Panel previews use synthetic disconnected accounts and a test editor surface.
@@ -62,19 +62,10 @@ and account renewal with a person's ChatGPT account remain untested.
 
 Full validation is still pending for effectcraft.
 
-Run 37857808769 completed with failure: 169 GPU tests passed, two failed,
-and none were ignored. The exact RGB threshold regression and Bend It
-comparisons passed. Remaining failures are environment projection at
-height 80 (one pixel beyond tolerance) and default Page Turn rendering.
-Engine tests, formatting and strict workspace Clippy passed.
-A successful full rerun remains required; existing tolerances are unchanged.
-
-The revised shaders passed supplementary native probes on Intel D3D12,
-Intel Vulkan and Microsoft software D3D12. The probe runtime uses wgpu 29;
-the Rust project uses wgpu 30 and still requires its full CI result.
-The prior Page Turn also passed locally; its hosted cause is not yet proven.
-The revised recipe runs the entire GPU suite before editor/CLI compilation,
-then retains all upstream CI gates. Optional compilation caching allows
-later runs to reuse outputs which Cargo verifies with fingerprints.
-
-Replacement full-validation run: 37942683582.
+Run 37942683582 finished with 172 GPU tests passed, one failed and none ignored.
+Page Turn, its new flat-front regression, Bend It and RGB thresholding passed.
+The direct environment check passed, but a height-80 Bpc32 composited scene
+still differs at one of 5,917 pixels (maximum displayed difference 0.001015).
+The existing 0.001 criterion remains unchanged; full validation is incomplete.
+No current build is running. CPU relief-plane blur uses a 64-bit accumulator;
+the GPU uses 32-bit image blur sums. That precision mismatch is under investigation.

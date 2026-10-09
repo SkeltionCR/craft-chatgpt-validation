@@ -38,7 +38,6 @@ jobs:
       CARGO_TERM_COLOR: never
       RUST_BACKTRACE: 1
       CARGO_BUILD_JOBS: ${{ inputs.compiler_jobs || '4' }}
-      CARGO_TARGET_DIR: ${{ github.workspace }}/../craft-target/${{ inputs.app }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - name: Restore EffectCraft compilation cache
@@ -47,13 +46,15 @@ jobs:
         continue-on-error: true
         uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25
         with:
-          path: ${{ env.CARGO_TARGET_DIR }}
+          path: ${{ runner.temp }}/craft-target/${{ inputs.app }}
           key: craft-target-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.app }}-${{ hashFiles('patches/effectcraft-chatgpt.patch') }}-${{ github.run_id }}
           restore-keys: |
             craft-target-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.app }}-${{ hashFiles('patches/effectcraft-chatgpt.patch') }}-
             craft-target-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.app }}-
       - name: Build and test pinned editor
         shell: pwsh
+        env:
+          CARGO_TARGET_DIR: ${{ runner.temp }}/craft-target/${{ inputs.app }}
         run: ./build.ps1 -App '${{ inputs.app }}'
       - name: Collect formatted source patch and lockfile
         if: always()
@@ -64,5 +65,5 @@ jobs:
         continue-on-error: true
         uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25
         with:
-          path: ${{ env.CARGO_TARGET_DIR }}
+          path: ${{ runner.temp }}/craft-target/${{ inputs.app }}
           key: craft-target-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.app }}-${{ hashFiles('patches/effectcraft-chatgpt.patch') }}-${{ github.run_id }}

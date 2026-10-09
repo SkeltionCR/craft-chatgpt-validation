@@ -50,50 +50,22 @@ assets from upstream remain in its ephemeral build checkout and are not redistri
 |---|---|---|
 | PhotoCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526632188) | Not exercised |
 | VectorCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526641875) | Not exercised |
-| FilmCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37858950216) | Not exercised |
+| FilmCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37858950216) | Not exercised |
 | LightCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475) | Not exercised |
 | PrintCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37536527821) | Not exercised |
-| EffectCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37857808769) | Not exercised |
+| EffectCraft | [Failed; fixes remain](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37857808769) | Not exercised |
 | DesignCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526643074) | Not exercised |
 
 Panel previews use synthetic disconnected accounts and a test editor surface.
 A CI result proves only the checks performed by that run; actual browser authorization
 and account renewal with a person's ChatGPT account remain untested.
 
-Full validation is still pending for filmcraft, effectcraft.
+Full validation is still pending for effectcraft.
 
-FilmCraft's revised Windows engine paths passed 320 engine tests. Its corrected
-export fixtures passed 31 export tests. Runner validation preserves every
-upstream gate and adds a workspace pass with `--no-fail-fast` after CI succeeds.
-
-Run 37856550606 passed 320 engine, 31 export and 117 audio DSP tests.
-Both new cache regressions passed. Render testing passed 139 tests but
-failed the unchanged >4x mixer speed requirement at 2.79x realtime.
-The separate five-second diagnostic reached 4.211x; it does not satisfy
-the full ten-second gate. Cache eviction did not resolve this failure.
-
-Replacement run 37858950216 passed the full ten-second mixer gate
-at 4.4x realtime with a serial Rust test harness. All 140 render tests
-passed, with zero failures and three existing ignored tests.
-The product code matches the preceding runner; the release profile,
-one-core mixer pool, >4x assertion and every upstream gate remain.
-Full upstream CI is still running and has not yet passed.
-
-Strict workspace Clippy also passed; release workspace tests are compiling.
-
-Run 37824265776 compiled with DXC and passed 167 GPU comparisons; three
-failed at RGB threshold boundaries, environment coordinates and a slight
-Bend It deformation. The revised shaders improve angle calculations and
-use exact nearest-even mantissa division only near RGB thresholds.
-Signed-zero axes and the wrapped environment seam are handled explicitly.
-New GPU threshold regressions and additional geometry cases retain the
-existing pixel tolerances. Numerical probes passed; actual GPU comparisons
-and every full upstream gate still require a successful runner validation.
-
-The first precision rerun passed 390 engine tests and formatting, then
-stopped at two strict Clippy errors in the new regression. Both now use
-fixed-size chunk iteration; GPU comparisons await the replacement run.
-
-The replacement run 37857808769 passed 390 engine tests, formatting and
-strict workspace Clippy. Release workspace tests are compiling; actual
-GPU comparisons and the full CI result remain pending.
+Run 37857808769 completed with failure: 169 GPU tests passed, two failed,
+and none were ignored. The exact RGB threshold regression and Bend It
+comparisons passed. Remaining failures are environment projection at
+height 80 (one pixel beyond tolerance) and default Page Turn rendering.
+Engine tests, formatting and strict workspace Clippy passed.
+No replacement run is active. Both shader failures need corrections and
+a successful full rerun. Existing pixel tolerances remain unchanged.

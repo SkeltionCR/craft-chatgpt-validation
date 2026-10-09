@@ -53,7 +53,7 @@ assets from upstream remain in its ephemeral build checkout and are not redistri
 | FilmCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37858950216) | Not exercised |
 | LightCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475) | Not exercised |
 | PrintCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37536527821) | Not exercised |
-| EffectCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37948681140) | Not exercised |
+| EffectCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37950060589) | Not exercised |
 | DesignCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526643074) | Not exercised |
 
 Panel previews use synthetic disconnected accounts and a test editor surface.
@@ -70,4 +70,4 @@ D3D12: 18 box cases per backend matched exactly; 15 full Gaussian cases
 matched normalized planes exactly, with HDR relative errors at most 6.89e-7.
 These probes use wgpu 29; full project wgpu 30 scene/CI validation is required.
 A full Gaussian GPU regression was added. Existing criteria remain unchanged.
-Replacement full-validation run: 37948681140. Status: pending.
+Replacement full-validation run: 37950060589. Status: pending.

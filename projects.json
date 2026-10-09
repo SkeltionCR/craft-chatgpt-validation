@@ -38,7 +38,7 @@
     "repo": "effectcraft",
     "name": "EffectCraft",
     "upstream": "2fadd14f09bb064cab8f1f8fe85af601a08b6e53",
-    "patch_sha256": "e52b55be3e3ca31013f876946d3a17f8d85fbedf8d5980fcdc15605f85140998"
+    "patch_sha256": "818ed7b6c4bbae6add6a6311e18bdd6913e24edd7f32207453eebf7d30ff032c"
   },
   {
     "repo": "designcraft",

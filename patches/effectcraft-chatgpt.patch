@@ -2870,6 +2870,105 @@ index 36c751d..639a2c6 100644
 +
  [dev-dependencies]
  effectcraft-text = { workspace = true }
+diff --git a/crates/gpu/src/fx_transition.rs b/crates/gpu/src/fx_transition.rs
+index b74607a..351a759 100644
+--- a/crates/gpu/src/fx_transition.rs
++++ b/crates/gpu/src/fx_transition.rs
+@@ -16,11 +16,12 @@ use effectcraft_effects::{Buf, EffectCtx};
+ use effectcraft_raster::Image;
+ 
+ use crate::context::{Enc, GpuImage, Params};
+-use crate::effects::{GBuf, gaussian_blur};
++use crate::effects::{GBuf, box_radii, gaussian_blur};
+ 
+ /// Compute entry points in `fx_transition.wgsl`.
+ pub(crate) const KERNELS: &[&str] = &[
+     "ftr_plane",
++    "ftr_plane_box",
+     "ftr_mul",
+     "ftr_under",
+     "ftr_blocks",
+@@ -142,6 +143,71 @@ fn plane(e: &mut Enc, img: &GpuImage, src: u32) -> GpuImage {
+     kernel(e, "ftr_plane", &p, img, None, None)
+ }
+ 
++/// `util::gauss_plane` uses an f64 accumulator, unlike the RGBA image blur.
++/// Keep the relief on the GPU with compensated sums and the same f32 output
++/// rounding after each box pass. The small relief windows are independent.
++fn gauss_relief(e: &mut Enc, img: &GpuImage, sigma: f64) -> GpuImage {
++    let mut cur = img.clone();
++    if sigma <= 0.05 {
++        return cur;
++    }
++    let radii = box_radii(sigma, 3);
++    for vertical in [false, true] {
++        for &radius in &radii {
++            if radius == 0 {
++                continue;
++            }
++            let mut p = Params::default();
++            p.u[0] = [radius as u32, vertical as u32, 0, 0];
++            p.f[0][0] = 1.0 / (2 * radius + 1) as f32;
++            cur = kernel(e, "ftr_plane_box", &p, &cur, None, None);
++        }
++    }
++    cur
++}
++
++#[cfg(test)]
++mod relief_tests {
++    use super::*;
++    use effectcraft_effects::util::{Plane, gauss_plane};
++
++    #[test]
++    fn relief_blur_matches_cpu_scalar_accumulation() {
++        let Some(g) = crate::tests::gpu() else { return };
++        // Cross the ordinary RGBA blur's horizontal and vertical chunk boundaries.
++        let (w, h) = (389, 71);
++        for pattern in 0..3 {
++            let mut state = 0x12345678_u32;
++            let mut image = Image::new(w, h);
++            for pixel in &mut image.data {
++                state = state.wrapping_mul(1664525).wrapping_add(1013904223);
++                let bits = match pattern {
++                    0 => 0x3f000000 | (state & 0x7fffff),
++                    1 => 0x3f000000 + ((state >> 16) & 511),
++                    _ => (state & 0x807fffff) | ((110 + ((state >> 23) & 31)) << 23),
++                };
++                *pixel = [f32::from_bits(bits), 0.0, 0.0, 1.0];
++            }
++            let plane = Plane { w: w as usize, h: h as usize, data: image.data.iter().map(|p| p[0]).collect() };
++            let input = g.ctx.upload_image(&image).unwrap();
++            for sigma in [0.0, 0.375, 0.75, 1.5, 3.5] {
++                let expected = gauss_plane(&plane, sigma, sigma);
++                let mut encoder = Enc::new(&g.ctx);
++                let output = gauss_relief(&mut encoder, &input, sigma);
++                let bytes = encoder.read_texture(&output.texture, w, h, 16).unwrap();
++                for (i, (pixel, &want)) in bytes.as_chunks::<16>().0.iter().zip(&expected.data).enumerate() {
++                    let got = f32::from_le_bytes(pixel[..4].try_into().unwrap());
++                    if pattern < 2 {
++                        assert_eq!(got.to_bits(), want.to_bits(), "pattern {pattern}, sigma {sigma}, pixel {i}");
++                    } else {
++                        assert!((got - want).abs() <= 1e-6 * want.abs().max(1.0), "HDR sigma {sigma}, pixel {i}: {got} != {want}");
++                    }
++                }
++            }
++        }
++    }
++}
++
+ /// transition2::prop_plane's property → `util::Src` index.
+ fn prop_src(prop: u32) -> u32 {
+     match prop {
+@@ -517,7 +583,7 @@ fn environment(e: &mut Enc, ctx: &EffectCtx, b: GBuf) -> Option<GBuf> {
+     }
+     let relief = plane(e, &b.img, 11);
+     let soft = 1.5 * b.scale.max(0.25);
+-    let hmap = gaussian_blur(e, &relief, soft, soft, true);
++    let hmap = gauss_relief(e, &relief, soft);
+     let mut p = Params::default();
+     let data = rows(e, &mut p, &env);
+     p.u[0][0] = pr.e("mapping");
 diff --git a/crates/gpu/src/shaders/common.wgsl b/crates/gpu/src/shaders/common.wgsl
 index 00ac946..b26ff8f 100644
 --- a/crates/gpu/src/shaders/common.wgsl
@@ -2995,10 +3094,57 @@ index 82ccbb5..3256337 100644
              textureStore(out, p, vec4<f32>(r * a, a));
          }
 diff --git a/crates/gpu/src/shaders/fx_transition.wgsl b/crates/gpu/src/shaders/fx_transition.wgsl
-index 66278a6..cb29674 100644
+index 66278a6..7958223 100644
 --- a/crates/gpu/src/shaders/fx_transition.wgsl
 +++ b/crates/gpu/src/shaders/fx_transition.wgsl
-@@ -775,8 +775,15 @@ fn ftr_env_uv(mapping: u32, r: vec3<f32>) -> vec2<f32> {
+@@ -88,6 +88,46 @@ fn ftr_grad(p: vec2<i32>) -> vec2<f32> {
+     return vec2<f32>(gx, gy);
+ }
+ 
++// Flip the sign through the integer representation to keep each subtraction
++// rounded. Shader floating-point reassociation would otherwise erase the
++// residuals in the compensated addition below.
++fn ftr_plane_sub(a: f32, b: f32) -> f32 {
++    return a + bitcast<f32>(bitcast<u32>(b) ^ 0x80000000u);
++}
++
++// Compensated addition of a sample into a two-component float32 accumulator.
++// The CPU's scalar Plane blur accumulates in f64 before rounding to f32; the
++// ordinary RGBA image blur's f32 running sums can move relief gradients.
++fn ftr_plane_add(acc: vec2<f32>, x: f32) -> vec2<f32> {
++    let sum = acc.x + x;
++    let part = ftr_plane_sub(sum, acc.x);
++    let error = ftr_plane_sub(acc.x, ftr_plane_sub(sum, part)) + ftr_plane_sub(x, part);
++    let low = acc.y + error;
++    let high = sum + low;
++    return vec2<f32>(high, ftr_plane_sub(low, ftr_plane_sub(high, sum)));
++}
++
++// A scalar box mean with repeated edges. u[0] = (radius, vertical), f[0].x
++// is the CPU's f32 normalization, avoiding approximate shader reciprocals.
++// Form the mean from its own window so no f32 running-sum drift accumulates
++// across a row or column. Each pass rounds the sum before multiplying by norm,
++// matching util::box_row; other image blurs retain their existing kernel.
++@compute @workgroup_size(16, 16)
++fn ftr_plane_box(@builtin(global_invocation_id) gid: vec3<u32>) {
++    let p = vec2<i32>(gid.xy);
++    if (!ftr_inside(p)) { return; }
++    let radius = i32(P.u[0].x);
++    let vertical = P.u[0].y != 0u;
++    var acc = vec2<f32>(0.0);
++    for (var k = -radius; k <= radius; k++) {
++        var q = p;
++        if (vertical) { q.y += k; } else { q.x += k; }
++        acc = ftr_plane_add(acc, tex_get_clamped(src, q.x, q.y).x);
++    }
++    let norm = P.f[0].x;
++    textureStore(out, p, vec4<f32>((acc.x + acc.y) * norm, 0.0, 0.0, 1.0));
++}
++
+ // transition2::wipe_t.
+ fn ftr_wipe_t(g: f32, c: f32, w0: f32) -> f32 {
+     let w = max(w0, 1e-3);
+@@ -775,8 +815,15 @@ fn ftr_env_uv(mapping: u32, r: vec3<f32>) -> vec2<f32> {
          }
          return vec2<f32>((cr.x + (cr.z + 1.0) * 0.5) / 3.0, (cr.y + (cr.w + 1.0) * 0.5) / 4.0);
      }
@@ -3016,7 +3162,7 @@ index 66278a6..cb29674 100644
  }
  
  @compute @workgroup_size(16, 16)
-@@ -792,9 +799,11 @@ fn ftr_env(@builtin(global_invocation_id) gid: vec3<u32>) {
+@@ -792,9 +839,11 @@ fn ftr_env(@builtin(global_invocation_id) gid: vec3<u32>) {
      }
      let g = ftr_grad(p) * P.f[0].x;
      let height = P.f[0].y;
@@ -3209,10 +3355,10 @@ index 39bcba1..4ab920d 100644
      effect_case("ec.stylize.coloremboss", &[]);
 diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
 new file mode 100644
-index 0000000..19f056e
+index 0000000..1e846bd
 --- /dev/null
 +++ b/docs/chatgpt-connection.md
-@@ -0,0 +1,77 @@
+@@ -0,0 +1,79 @@
 +# EffectCraft ChatGPT connection
 +
 +This local modification adds an optional native ChatGPT connection to the Windows desktop app.
@@ -3234,43 +3380,45 @@ index 0000000..19f056e
 +- Disconnect clears local credentials and attempts remote revocation. If that fails,
 +  the app directs you to https://chatgpt.com/settings/usage.
 +- The desktop wrapper forwards all editor lifecycle hooks, preferences, autosaves,
-+  and native-menu input. Engine/document files and web/WASM targets are untouched.
++  and native-menu input. Authentication remains native desktop-only; engine/document formats are unchanged.
 +- Authentication commands are native platform operations, available headlessly:
 +  `effectcraft --chatgpt-status`, `--chatgpt-sign-in`, `--chatgpt-refresh`, and
 +  `--chatgpt-disconnect`. Status never returns credentials.
 +
 +## Validation status (2026-10-09)
 +
-+Run 37857808769 completed with 169 GPU tests passed and two failed, none ignored.
-+The RGB threshold regression and Bend It comparisons passed. Remaining failures
-+were environment projection at height 80 and default Page Turn rendering.
-+All 390 engine tests, formatting and strict workspace Clippy passed.
++Run 37942683582 completed with 172 GPU tests passed, one failed and none ignored.
++Page Turn, its flat-front regression, Bend It and exact RGB thresholding passed.
++The direct environment comparisons passed; the remaining failure was one pixel
++in a height-80 Bpc32 composited environment scene (0.001015 versus the unchanged
++0.001 criterion). All 390 engine tests passed. Full CI did not pass.
 +
-+The new environment shader computes reflection algebraically and latitude with
-+atan2, preserving small components near sphere poles. Page Turn now evaluates
-+the back and front surfaces explicitly in the same order as the CPU reference.
-+The Page Turn cases run independently of Bend It and include a new regression
-+for a transparent back surface that must reveal the flat front.
++The CPU's scalar relief blur accumulates in f64, while the ordinary GPU RGBA
++blur accumulates in f32. The revised environment path uses a separate scalar
++GPU box blur with compensated sums, repeated edges and CPU-computed f32 means.
++Integer sign flips preserve the compensation residuals against shader floating
++point reassociation. Other image blurs retain their existing implementation.
++No CPU rendering fallback, original pixel criterion or upstream gate changed.
 +
-+Supplementary local probes compiled the actual 24-file WGSL module and dispatched
-+the revised kernels on Intel Direct3D 12, Intel Vulkan and Microsoft software
-+Direct3D 12. Twelve Page Turn comparisons per backend passed the existing 1e-3
-+pixel criterion. Ten thousand environment directions per backend differed from
-+independent double-precision geometry by at most 1.09e-7 normalized coordinates.
-+The previous Page Turn shader also passed these local probes, so they do not
-+establish the cause of its hosted failure. Local probes use native wgpu 29;
-+the project's Rust build uses wgpu 30 and still requires full validation.
++Supplementary probes dispatched the actual WGSL on Intel Direct3D 12, Intel
++Vulkan and Microsoft software Direct3D 12. Per backend, all 18 scalar box cases
++matched independent CPU f64 running sums exactly (27,619 pixels per case).
++Fifteen full Gaussian cases matched normalized and near-flat planes exactly;
++signed HDR errors were at most 6.89e-7 relative to max(1, abs(reference)).
++The new Rust regression checks those full Gaussian cases on the actual project
++GPU. Local probes use native wgpu 29; the project uses wgpu 30 and still needs
++its complete hosted validation result. These probes do not prove the full scene.
 +
-+The next build runs the entire GPU suite before the expensive editor/CLI link;
-+every upstream CI gate, release setting and pixel tolerance remains enabled.
-+Compiled outputs can be cached for later runs; Cargo still checks fingerprints.
-+Full validation of this revised source remains pending.
++The next build runs the entire GPU suite before the expensive editor/CLI link,
++then every upstream CI gate and the authentication/UI checks. Full validation
++of this revised source is pending. Optional compilation caching retains Cargo
++fingerprint checks; the cache path from the preceding failed run is corrected.
 +
 +Eight authentication tests and an explicit connection-panel preview passed in
 +an earlier run. Actual authorization with a person's ChatGPT account remains
 +untested. Local Cargo is blocked by Windows Application Control (error 4551);
 +no security setting changed. This is modified source, not an installed release.
-+Latest failed run: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37857808769
++Latest failed run: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37942683582
 +
 +On an authorized build machine, run:
 +

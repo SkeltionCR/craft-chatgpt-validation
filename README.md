@@ -62,10 +62,12 @@ and account renewal with a person's ChatGPT account remain untested.
 
 Full validation is still pending for effectcraft.
 
-Run 37942683582 finished with 172 GPU tests passed, one failed and none ignored.
-Page Turn, its new flat-front regression, Bend It and RGB thresholding passed.
-The direct environment check passed, but a height-80 Bpc32 composited scene
-still differs at one of 5,917 pixels (maximum displayed difference 0.001015).
-The existing 0.001 criterion remains unchanged; full validation is incomplete.
-No current build is running. CPU relief-plane blur uses a 64-bit accumulator;
-the GPU uses 32-bit image blur sums. That precision mismatch is under investigation.
+Previous run 37942683582 passed 172 GPU tests and failed one height-80
+Bpc32 composited environment comparison. All 390 engine tests passed.
+The new scalar GPU blur uses compensated sums and CPU f32 normalization.
+Supplementary native probes passed on Intel D3D12, Intel Vulkan and software
+D3D12: 18 box cases per backend matched exactly; 15 full Gaussian cases
+matched normalized planes exactly, with HDR relative errors at most 6.89e-7.
+These probes use wgpu 29; full project wgpu 30 scene/CI validation is required.
+A full Gaussian GPU regression was added. Existing criteria remain unchanged.
+Corrected source prepared; no replacement build running yet.

@@ -3484,7 +3484,7 @@ index 1e4c0d1..58e8ab7 100644
      assert_eq!(h.app.session.browse.as_ref().map(|b| b.path.clone()), Some(trip.clone()), "clicking it browses it");
 diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
 new file mode 100644
-index 0000000..ff09a75
+index 0000000..51a5038
 --- /dev/null
 +++ b/docs/chatgpt-connection.md
 @@ -0,0 +1,58 @@
@@ -3519,13 +3519,13 @@ index 0000000..ff09a75
 +Windows compilation and 8 authentication/UI tests passed, along with an explicitly
 +requested offscreen preview of the real connection panel on a synthetic editor surface.
 +The complete upstream CI gate passed. Its exact summary is:
-+`CI summary: all 7 steps passed (fmt, clippy, test, parity, layers, assets, wasm)`. The runner's formatted source and
-+resolved Cargo.lock have been imported into this checkout.
++`CI summary: all 7 steps passed (fmt, clippy, test, parity, layers, assets, wasm)`. This checkout matches the runner's formatted
++product source and resolved Cargo.lock.
 +
 +Evidence: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475
 +The preview does not use a live account. Actual browser authorization, account restart,
 +renewal and remote disconnect with a person's ChatGPT account remain untested.
-+Local Cargo remains blocked by Smart App Control; no Windows security setting was changed.
++Local Cargo remains blocked by Windows Application Control; no Windows security setting was changed.
 +This is a source modification, not an installed or signed application release.
 +
 +On an authorized build machine, run:

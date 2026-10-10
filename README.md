@@ -53,7 +53,7 @@ assets from upstream remain in its ephemeral build checkout and are not redistri
 | FilmCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37858950216) | Not exercised |
 | LightCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475) | Not exercised |
 | PrintCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37536527821) | Not exercised |
-| EffectCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37954342001) | Not exercised |
+| EffectCraft | [Failed; fixes remain](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37954342001) | Not exercised |
 | DesignCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526643074) | Not exercised |
 
 Panel previews use synthetic disconnected accounts and a test editor surface.
@@ -62,18 +62,14 @@ and account renewal with a person's ChatGPT account remain untested.
 
 Full validation is still pending for effectcraft.
 
-Run 37950060589 passed 390 engine tests and strict GPU Clippy.
-Its full GPU suite passed 173 tests and failed only the new scalar-blur
-regression; none were ignored. The original environment comparison passed.
-DXC reproduced the exact regression mismatch locally: pattern 0, sigma 0.75,
-pixel 4 returned bits 1061884486 instead of 1061884484.
-The revised shader preserves compensated-sum rounding through a host-zero
-runtime integer mask. It fixes that counterexample without changing criteria.
-The actual shader passed supplementary DXC/FXC checks on hardware and software
-D3D12, plus Vulkan: five configurations, 18 box and 15 Gaussian cases each.
-These probes use native wgpu 29; the product uses wgpu 30 and static DXC.
-Full hosted scene, upstream CI and authentication/UI validation remain required.
-Replacement full-validation run: 37954342001. Status: pending.
-Observed live milestones: the replacement passed 390 engine tests, strict GPU Clippy and the
-new scalar-blur regression on the hosted Windows compiler.
-Complete GPU and upstream CI results await final log verification.
+Run 37954342001 passed all 174 GPU tests, with no failures, ignores or filters.
+The complete GPU suite passed again during workspace testing. Engine tests,
+workspace formatting, strict workspace Clippy and all eight named auth tests passed.
+Full CI stopped at the renderer automatic-choice fixture: 176 passed, one failed,
+one existing ignore. The fast mock was asked for 3 of 40 frames instead of >=36.
+Its zero simulated delay still called sleep(0), which yields the time slice on Windows.
+The revised fixture skips that yield and keeps the original >=36 criterion.
+This likely scheduling cause still requires hosted confirmation.
+The full renderer suite runs early; workspace no-fail-fast reports every failed
+target while preserving the failure status and all upstream gates.
+Corrected fixture prepared; replacement full validation has not started yet.

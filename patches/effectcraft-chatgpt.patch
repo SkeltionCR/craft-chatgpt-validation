@@ -3359,12 +3359,38 @@ index 39bcba1..4ab920d 100644
  #[test]
  fn color_emboss_and_cartoon() {
      effect_case("ec.stylize.coloremboss", &[]);
+diff --git a/crates/render/src/tests_auto.rs b/crates/render/src/tests_auto.rs
+index c34321c..2944361 100644
+--- a/crates/render/src/tests_auto.rs
++++ b/crates/render/src/tests_auto.rs
+@@ -33,7 +33,10 @@ impl Accelerator for TimedAccel {
+     }
+     fn comp_frame(&self, _r: &Renderer, _comp: ItemId, _t: Tick) -> Option<crate::Image> {
+         self.calls.fetch_add(1, Ordering::SeqCst);
+-        std::thread::sleep(self.delay);
++        // A zero delay models no work. Windows sleep(0) yields the time slice.
++        if !self.delay.is_zero() {
++            std::thread::sleep(self.delay);
++        }
+         // The centre of the comp, as the CPU draws it (a red solid).
+         self.handle.then(|| {
+             let mut img = crate::Image::new(200, 100);
+@@ -107,7 +110,8 @@ fn auto_backend_keeps_fast_accelerators() {
+     let (p, cid) = project();
+     let fast = TimedAccel::new(0, true);
+     let asked = frames(&p, cid, &fast, Backend::Auto, 40);
+-    assert!(asked >= 36, "asked {asked} of 40");
++    let stats = fast.pick.stats(AutoKey::new(cid, 1.0, false));
++    assert!(asked >= 36, "asked {asked} of 40; {stats:?}");
+ }
+ 
+ #[test]
 diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
 new file mode 100644
-index 0000000..be3c13b
+index 0000000..f6d7a31
 --- /dev/null
 +++ b/docs/chatgpt-connection.md
-@@ -0,0 +1,82 @@
+@@ -0,0 +1,75 @@
 +# EffectCraft ChatGPT connection
 +
 +This local modification adds an optional native ChatGPT connection to the Windows desktop app.
@@ -3391,43 +3417,36 @@ index 0000000..be3c13b
 +  `effectcraft --chatgpt-status`, `--chatgpt-sign-in`, `--chatgpt-refresh`, and
 +  `--chatgpt-disconnect`. Status never returns credentials.
 +
-+## Validation status (2026-10-09)
++## Validation status (2026-10-10)
 +
-+Full Windows CI remains pending. Run 37950060589 passed 390 engine tests and
-+strict GPU Clippy, then its new scalar-blur regression failed: normalized
-+pattern 0, sigma 0.75, pixel 4 returned bits 1061884486 instead of 1061884484.
-+The complete GPU suite passed 173 tests and failed only that new regression;
-+none were ignored. The original environment comparison passed.
-+Prior run 37942683582 passed 172 GPU tests and failed one Bpc32 environment
-+comparison at height 80. Page Turn, its regression, Bend It and RGB passed.
++Run 37954342001 passed all 174 GPU tests with no failures, ignores or filters,
++including the scalar-blur regression and the original environment, RGB, Bend It
++and Page Turn comparisons. The entire GPU suite passed again during workspace
++testing. All 390 engine tests, workspace formatting and strict workspace Clippy
++passed. All eight added authentication tests also passed in workspace testing.
 +
-+The scalar GPU blur now observes intermediate float results through integer
-+bits and a runtime mask which the host sets to zero. This preserves the value
-+and stops DXC from removing the compensated-sum residuals by reassociation.
-+CPU-computed f32 normalization, repeated edges and per-pass rounding remain.
-+The existing regression and all original pixel criteria remain unchanged.
-+No CPU rendering fallback was added; other image blurs keep their kernels.
++Full CI stopped at `tests_auto::auto_backend_keeps_fast_accelerators`: 176 render
++tests passed, one failed and one existing test was ignored. The mock accelerator
++was asked for only 3 of 40 frames against the unchanged requirement of >=36.
++The zero-delay mock still called `std::thread::sleep(Duration::ZERO)`. On Windows
++Rust invokes Sleep(0), which yields the thread time slice; on Unix it returns
++immediately. That scheduling cost is a likely cause of the unexpected CPU choice.
 +
-+Earlier local Direct3D probes used FXC, while the Windows product uses DXC.
-+Switching the local probe to DXC reproduced the hosted pixel-4 mismatch exactly.
-+The revised actual WGSL fixed that counterexample and passed checks on Intel
-+and software Direct3D with both FXC and DXC, plus Intel Vulkan. Each of these
-+five compiler/adapter configurations passed 18 box cases and 15 full Gaussian
-+cases (27,619 pixels each). Box and normalized Gaussian cases matched exactly;
-+signed HDR Gaussian relative errors were at most 6.89e-7 against max(1, abs(CPU)).
-+These probes use native wgpu 29. The dynamic DXC probe uses Chrome's Microsoft /
-+Google Dawn build at shader model 6.0; the product uses wgpu 30 and static DXC.
-+A complete hosted project run, including the original scenes, is still required.
++The fixture now skips sleeping for zero simulated delay and includes timing
++statistics in the original assertion. The production AutoPick code and >=36
++criterion are unchanged. The next recipe runs every renderer test early, then
++the complete GPU suite and upstream CI. Workspace --no-fail-fast reports all
++failed targets while keeping a failure status. Formatting, strict lint, layers,
++assets, wasm and authentication/UI gates remain required.
 +
-+The recipe checks strict GPU linting before the full GPU suite, then retains
-+all upstream CI gates and authentication/UI checks. Revised source is prepared;
-+a successful replacement full run remains required.
-+Compilation caching retains Cargo fingerprint checks. No security setting changed.
++Revised source is prepared. A successful replacement full run and its explicit
++connection-panel preview are still required. Actual account authorization remains
++untested; no installed or signed application release was created. Local Cargo
++remains blocked by Windows Application Control; no security setting changed.
 +
-+Eight authentication tests and the connection-panel preview passed in an earlier
-+run. Real account authorization remains untested. Local Cargo is blocked by
-+Windows Application Control (4551). This is source, not an installed release.
-+Current run: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37950060589
++Evidence: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37954342001
++Rust sleep behavior: https://doc.rust-lang.org/std/thread/fn.sleep.html
++Windows Sleep behavior: https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-sleep
 +
 +On an authorized build machine, run:
 +
@@ -3447,3 +3466,17 @@ index 0000000..be3c13b
 +
 +Source contract: https://developers.openai.com/siwc/token-sharing-open-source/sign-in
 +UI guidance: https://developers.openai.com/siwc/ui-ux-guidelines
+diff --git a/xtask/src/main.rs b/xtask/src/main.rs
+index 051f6ec..332c163 100644
+--- a/xtask/src/main.rs
++++ b/xtask/src/main.rs
+@@ -406,7 +406,8 @@ fn ci() -> Result<(), String> {
+     let cargo = env!("CARGO");
+     run(Command::new(cargo).args(["fmt", "--check"]))?;
+     run(Command::new(cargo).args(["clippy", "--workspace", "--all-targets", "--release", "--", "-D", "warnings"]))?;
+-    run(Command::new(cargo).args(["test", "--workspace", "--release"]))?;
++    // Report every failed target; any failure still rejects the test gate.
++    run(Command::new(cargo).args(["test", "--workspace", "--release", "--no-fail-fast"]))?;
+     layers()?;
+     assets()?;
+     wasm()

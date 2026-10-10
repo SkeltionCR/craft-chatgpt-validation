@@ -71,6 +71,10 @@ The revised test uses an original bundled variable font: width changes both
 advances and outlines; weight changes outlines while preserving advances.
 Original width/outline difference assertions remain, with expected widths
 and constant-advance weight coverage added. Production text code is unchanged.
-An independent font-data oracle checked geometry, metrics and reproducibility;
-Rust behavior and every full CI/authentication/panel gate still need validation.
+An independent font-data oracle checked geometry, metrics and reproducibility.
 Replacement full-validation run: 38091148903. Status: pending.
+Observed live in the replacement: all 43 text unit tests passed, with zero
+failures, ignores or filters. The bundled fixture completed its width/weight
+assertions, the system-font menu integration test passed, and strict text
+Clippy passed. Complete renderer/GPU, workspace CI and explicit authentication
+and connection-panel results still await terminal verification.

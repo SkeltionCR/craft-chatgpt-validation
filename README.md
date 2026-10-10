@@ -73,3 +73,9 @@ This likely scheduling cause still requires hosted confirmation.
 The full renderer suite runs early; workspace no-fail-fast reports every failed
 target while preserving the failure status and all upstream gates.
 Replacement full-validation run: 38073568886. Status: pending.
+Observed live in the replacement: all 177 renderer tests passed,
+including the previously failing fast-accelerator fixture and all four
+automatic-choice cases. One existing renderer test remains ignored.
+All 174 GPU tests also passed, with zero failures, ignores or filters.
+Remaining workspace CI, explicit authentication and panel preview await
+terminal log verification. These milestones do not establish full success.

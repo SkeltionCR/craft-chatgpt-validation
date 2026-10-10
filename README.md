@@ -53,7 +53,7 @@ assets from upstream remain in its ephemeral build checkout and are not redistri
 | FilmCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37858950216) | Not exercised |
 | LightCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475) | Not exercised |
 | PrintCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37536527821) | Not exercised |
-| EffectCraft | [Failed; fixes remain](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37954342001) | Not exercised |
+| EffectCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/38073568886) | Not exercised |
 | DesignCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526643074) | Not exercised |
 
 Panel previews use synthetic disconnected accounts and a test editor surface.
@@ -72,4 +72,4 @@ The revised fixture skips that yield and keeps the original >=36 criterion.
 This likely scheduling cause still requires hosted confirmation.
 The full renderer suite runs early; workspace no-fail-fast reports every failed
 target while preserving the failure status and all upstream gates.
-Corrected fixture prepared; replacement full validation has not started yet.
+Replacement full-validation run: 38073568886. Status: pending.

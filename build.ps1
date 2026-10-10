@@ -19,7 +19,13 @@ function Invoke-Checked {
 if ($CollectOnly) {
     if (-not (Test-Path -LiteralPath (Join-Path $sourceRoot '.git'))) { return }
     Set-Location -LiteralPath $sourceRoot
-    Invoke-Checked -Command git -Arguments @('add','-N','--',"apps/$App/src/chatgpt.rs","apps/$App/src/chatgpt_unsupported.rs",'docs/chatgpt-connection.md')
+    $collectionPaths = @("apps/$App/src/chatgpt.rs","apps/$App/src/chatgpt_unsupported.rs",'docs/chatgpt-connection.md')
+    if ($App -eq 'effectcraft') {
+        $collectionPaths += @('crates/text/tests/fixtures/CraftVariableTest.ttf',
+            'crates/text/tests/fixtures/CraftVariableTest.ttf.attribution',
+            'crates/text/tests/fixtures/generate-variable-font.py')
+    }
+    Invoke-Checked -Command git -Arguments (@('add','-N','--') + $collectionPaths)
     $patchFile = Join-Path $recipeRoot 'result.patch'
     # Let Git write UTF-8 directly, preserving actual LF bytes on Windows.
     Invoke-Checked -Command git -Arguments @('diff','--binary',"--output=$patchFile")
@@ -79,6 +85,13 @@ if ($App -in @('filmcraft','effectcraft')) {
     Invoke-Checked -Command cargo -Arguments @('+stable','test','-p',"$App-engine",'--release')
     Write-Output "CRAFT_ENGINE_TESTS_PASSED:$App"
     if ($App -eq 'effectcraft') {
+        # The complete text suite must pass with the bundled variable-font
+        # fixture before the longer renderer/GPU/editor checks. Full upstream
+        # CI below still executes this suite and every other original gate.
+        Invoke-Checked -Command cargo -Arguments @('+stable','test','-p','effectcraft-text','--release','--locked','--','--nocapture')
+        Write-Output 'CRAFT_TEXT_TESTS_PASSED:effectcraft'
+        Invoke-Checked -Command cargo -Arguments @('+stable','clippy','-p','effectcraft-text','--all-targets','--release','--locked','--','-D','warnings')
+        Write-Output 'CRAFT_TEXT_CLIPPY_PASSED:effectcraft'
         # Check the complete renderer suite before the longer GPU comparisons.
         Invoke-Checked -Command cargo -Arguments @('+stable','test','-p','effectcraft-render','--release','--locked','--','--nocapture')
         Write-Output 'CRAFT_RENDER_TESTS_PASSED:effectcraft'

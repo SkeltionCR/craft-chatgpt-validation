@@ -53,7 +53,7 @@ assets from upstream remain in its ephemeral build checkout and are not redistri
 | FilmCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37858950216) | Not exercised |
 | LightCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475) | Not exercised |
 | PrintCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37536527821) | Not exercised |
-| EffectCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/38073568886) | Not exercised |
+| EffectCraft | [Failed; fixes remain](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/38073568886) | Not exercised |
 | DesignCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526643074) | Not exercised |
 
 Panel previews use synthetic disconnected accounts and a test editor surface.
@@ -62,20 +62,15 @@ and account renewal with a person's ChatGPT account remain untested.
 
 Full validation is still pending for effectcraft.
 
-Run 37954342001 passed all 174 GPU tests, with no failures, ignores or filters.
-The complete GPU suite passed again during workspace testing. Engine tests,
-workspace formatting, strict workspace Clippy and all eight named auth tests passed.
-Full CI stopped at the renderer automatic-choice fixture: 176 passed, one failed,
-one existing ignore. The fast mock was asked for 3 of 40 frames instead of >=36.
-Its zero simulated delay still called sleep(0), which yields the time slice on Windows.
-The revised fixture skips that yield and keeps the original >=36 criterion.
-This likely scheduling cause still requires hosted confirmation.
-The full renderer suite runs early; workspace no-fail-fast reports every failed
-target while preserving the failure status and all upstream gates.
-Replacement full-validation run: 38073568886. Status: pending.
-Observed live in the replacement: all 177 renderer tests passed,
-including the previously failing fast-accelerator fixture and all four
-automatic-choice cases. One existing renderer test remains ignored.
-All 174 GPU tests also passed, with zero failures, ignores or filters.
-Remaining workspace CI, explicit authentication and panel preview await
-terminal log verification. These milestones do not establish full success.
+Run 38073568886 passed all 174 GPU and 177 renderer tests, plus all eight
+named authentication tests, formatting and strict workspace Clippy.
+Full workspace testing reported exactly one failed target: effectcraft-text
+(42 passed, one failed). Its variable-font fixture assumed the first installed
+weight axis changes advances; valid weight axes may preserve advances.
+The revised test uses an original bundled variable font: width changes both
+advances and outlines; weight changes outlines while preserving advances.
+Original width/outline difference assertions remain, with expected widths
+and constant-advance weight coverage added. Production text code is unchanged.
+An independent font-data oracle checked geometry, metrics and reproducibility;
+Rust behavior and every full CI/authentication/panel gate still need validation.
+Corrected fixture prepared; replacement full validation has not started yet.

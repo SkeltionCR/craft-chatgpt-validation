@@ -53,7 +53,7 @@ assets from upstream remain in its ephemeral build checkout and are not redistri
 | FilmCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37858950216) | Not exercised |
 | LightCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475) | Not exercised |
 | PrintCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37536527821) | Not exercised |
-| EffectCraft | [Failed; fixes remain](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/38091148903) | Not exercised |
+| EffectCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/38106350430) | Not exercised |
 | DesignCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526643074) | Not exercised |
 
 Panel previews use synthetic disconnected accounts and a test editor surface.
@@ -73,5 +73,5 @@ original audio-stopped, audio-held and playback-active assertion. Production
 playback code is unchanged; the earlier native-render/audio assertions remain.
 The recipe runs all three audio-scrubbing cases early, followed by every
 renderer/GPU test, full original upstream CI, explicit auth tests and panel preview.
-Test correction prepared; replacement validation has not started yet.
+Replacement full-validation run: 38106350430. Status: pending.
 Hosted Rust validation is required; this correction does not establish full success.

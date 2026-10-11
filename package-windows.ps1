@@ -19,8 +19,14 @@ Invoke-Checked -Command git -Arguments @('-C',$source,'fetch','--depth','1','ori
 Invoke-Checked -Command git -Arguments @('-C',$source,'checkout','--detach','FETCH_HEAD')
 Invoke-Checked -Command git -Arguments @('-C',$source,'apply','--check',$patch)
 Invoke-Checked -Command git -Arguments @('-C',$source,'apply',$patch)
+if ($project.distribution_patch_sha256) {
+    $distributionPatch = Join-Path $recipe "patches/$App-distribution.patch"
+    if ((Get-FileHash -LiteralPath $distributionPatch -Algorithm SHA256).Hash.ToLowerInvariant() -ne $project.distribution_patch_sha256) { throw 'Distribution patch checksum mismatch' }
+    Invoke-Checked -Command git -Arguments @('-C',$source,'apply','--check',$distributionPatch)
+    Invoke-Checked -Command git -Arguments @('-C',$source,'apply',$distributionPatch)
+}
 Set-Location -LiteralPath $source
-Invoke-Checked -Command rustup -Arguments @('toolchain','install','stable','--profile','minimal','--component','clippy')
+Invoke-Checked -Command rustup -Arguments @('toolchain','install','stable','--profile','minimal','--component','clippy','--component','rustfmt')
 # Match the upstream Windows packaging convention: the target links its CRT
 # statically, while host proc-macros and build scripts keep their normal runtime.
 $target = 'x86_64-pc-windows-msvc'
@@ -31,6 +37,14 @@ if ($sdkRoot) {
     if ($sdkBin -and (Test-Path -LiteralPath (Join-Path $sdkBin.FullName 'x64/rc.exe'))) { $env:PATH = (Join-Path $sdkBin.FullName 'x64') + ';' + $env:PATH }
 }
 if ($App -in @('photocraft','effectcraft')) { [Environment]::SetEnvironmentVariable(($App.ToUpperInvariant()+'_REQUIRE_WINRES'),'1') }
+if ($project.distribution_patch_sha256) {
+    Invoke-Checked -Command cargo -Arguments @('+stable','fmt','--check')
+    Invoke-Checked -Command cargo -Arguments @('+stable','xtask','layers')
+    Invoke-Checked -Command cargo -Arguments @('+stable','xtask','assets')
+    Invoke-Checked -Command cargo -Arguments @('+stable','clippy','--release','--locked','--target',$target,'-p',"$App-ui-egui",'--all-targets','--','-D','warnings')
+    Invoke-Checked -Command cargo -Arguments @('+stable','test','--release','--locked','--target',$target,'-p',"$App-ui-egui",'--lib')
+    Write-Output "CRAFT_DISTRIBUTION_UI_CHECKS_PASSED:$App"
+}
 Invoke-Checked -Command cargo -Arguments @('+stable','build','--release','--locked','--target',$target,'-p',$App,'-p',"$App-cli")
 Write-Output "CRAFT_PACKAGE_BUILD_PASSED:$App"
 Invoke-Checked -Command cargo -Arguments @('+stable','test','--release','--locked','--target',$target,'-p',$App,'chatgpt')
@@ -54,6 +68,18 @@ Copy-Item -LiteralPath (Join-Path $bin "$App.exe"),(Join-Path $bin "$App-cli.exe
 foreach ($name in @('LICENSE','LICENSE.txt','LICENSE-MIT','LICENSE-APACHE','NOTICE','ATTRIBUTION.md')) {
     if (Test-Path -LiteralPath (Join-Path $source $name)) { Copy-Item -LiteralPath (Join-Path $source $name) -Destination $stage }
 }
+foreach ($name in @('ASSETS.md','ATTRIBUTION.toml')) {
+    if (Test-Path -LiteralPath (Join-Path $source $name)) { Copy-Item -LiteralPath (Join-Path $source $name) -Destination $stage }
+}
+function Copy-Notices([string]$From,[string]$To) {
+    foreach ($notice in @(Get-ChildItem -LiteralPath $From -Recurse -File | Where-Object { $_.Name -match '(?i)(licen[cs]e|copying|notice|^OFL)' })) {
+        $relative = [IO.Path]::GetRelativePath($From,$notice.FullName)
+        $destination = Join-Path $To $relative
+        New-Item -ItemType Directory -Path (Split-Path -Parent $destination) -Force | Out-Null
+        Copy-Item -LiteralPath $notice.FullName -Destination $destination
+    }
+}
+Copy-Notices -From (Join-Path $source 'assets') -To (Join-Path $stage 'licenses/project-assets')
 # Preserve dependency notices alongside the binaries, including embedded font licences.
 $metadataJson = & cargo +stable metadata --locked --format-version 1
 if ($LASTEXITCODE -ne 0) { throw 'Dependency metadata failed' }
@@ -63,12 +89,8 @@ New-Item -ItemType Directory -Path $notices | Out-Null
 $licenses = @()
 foreach ($dependency in $metadata.packages) {
     $dependencyRoot = Split-Path -Parent $dependency.manifest_path
-    $dependencyNotices = @(Get-ChildItem -LiteralPath $dependencyRoot -File | Where-Object { $_.Name -match '^(LICENSE|COPYING|NOTICE)' })
     $destination = Join-Path $notices "$($dependency.name)-$($dependency.version)"
-    if ($dependencyNotices.Count) {
-        New-Item -ItemType Directory -Path $destination -Force | Out-Null
-        foreach ($notice in $dependencyNotices) { Copy-Item -LiteralPath $notice.FullName -Destination $destination }
-    }
+    Copy-Notices -From $dependencyRoot -To $destination
     $licenses += @{name=$dependency.name;version=$dependency.version;license=$dependency.license;repository=$dependency.repository}
 }
 $licenses | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $stage 'dependency-licenses.json') -Encoding utf8
@@ -83,6 +105,7 @@ This build does not implement AI editing. It is not an official signed release.
 Original source: https://github.com/storytold/$App
 Base commit: $($project.upstream)
 Reviewed patch SHA-256: $($project.patch_sha256)
+Distribution UI patch SHA-256: $($project.distribution_patch_sha256)
 Prior full validation: $($project.validated_run)
 Build: https://github.com/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID
 
@@ -94,7 +117,7 @@ $instructions | Set-Content -LiteralPath (Join-Path $stage 'READ-ME.txt') -Encod
 $files = @(Get-ChildItem -LiteralPath $stage -Recurse -File | ForEach-Object {
     @{path=[IO.Path]::GetRelativePath($stage,$_.FullName).Replace('\','/');sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant();bytes=$_.Length}
 })
-@{app=$App;name=$project.name;platform='windows-x64';upstream=$project.upstream;patch_sha256=$project.patch_sha256;build_run=$env:GITHUB_RUN_ID;build_commit=$env:GITHUB_SHA;prior_full_validation=$project.validated_run;files=$files;static_crt=$true;auth_smoke='passed';auth_tests='passed';signed=$false} |
+@{app=$App;name=$project.name;platform='windows-x64';upstream=$project.upstream;patch_sha256=$project.patch_sha256;distribution_patch_sha256=$project.distribution_patch_sha256;build_run=$env:GITHUB_RUN_ID;build_commit=$env:GITHUB_SHA;prior_full_validation=$project.validated_run;files=$files;static_crt=$true;auth_smoke='passed';auth_tests='passed';signed=$false} |
     ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $stage 'package-manifest.json') -Encoding utf8
 $archive = Join-Path $dist "$App-chatgpt-windows-x64.zip"
 Compress-Archive -LiteralPath $stage -DestinationPath $archive -CompressionLevel Optimal

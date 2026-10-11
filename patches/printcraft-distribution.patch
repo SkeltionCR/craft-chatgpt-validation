@@ -1,0 +1,41 @@
+--- a/crates/ui-egui/src/widgets.rs
++++ b/crates/ui-egui/src/widgets.rs
+@@ -107,24 +107,9 @@
+     ctx.request_repaint_after(std::time::Duration::from_millis(100));
+ }
+ 
+-/// The ArtCraft wordmark (Storyteller's brand, docs/brand/; not open source), sized to `height`.
+-pub fn artcraft_logo(ui: &mut egui::Ui, height: f32) -> Response {
+-    let dark = ui.visuals().dark_mode;
+-    let (uri, bytes): (&str, &'static [u8]) = if dark {
+-        ("bytes://artcraft-logo-white.svg", include_bytes!("../../../docs/brand/artcraft-logo-white.svg"))
+-    } else {
+-        ("bytes://artcraft-logo.svg", include_bytes!("../../../docs/brand/artcraft-logo.svg"))
+-    };
+-    ui.add(egui::Image::from_bytes(uri, bytes).max_height(height).alt_text("ArtCraft"))
+-}
+-
+-/// The ArtCraft mark (brand blue, works on light and dark), `size` points square.
++/// Plain app initials for the modified build.
+ pub fn artcraft_mark(ui: &mut egui::Ui, size: f32) -> Response {
+-    ui.add(
+-        egui::Image::from_bytes("bytes://artcraft-mark.svg", include_bytes!("../../../docs/brand/artcraft-mark.svg"))
+-            .fit_to_exact_size(vec2(size, size))
+-            .alt_text("ArtCraft"),
+-    )
++    ui.label(egui::RichText::new("PC").size(size * 0.5))
+ }
+ 
+ /// Buttons for every community link (`printcraft_engine::links`), Discord first and prominent.
+--- a/crates/ui-egui/src/dialogs.rs
++++ b/crates/ui-egui/src/dialogs.rs
+@@ -1030,8 +1030,7 @@
+                 );
+                 ui.add_space(12.0);
+                 ui.horizontal(|ui| {
+-                    ui.label(egui::RichText::new("Part of").color(t.text_muted));
+-                    widgets::artcraft_logo(ui, 16.0);
++                    ui.label(egui::RichText::new("Modified build based on PrintCraft by the ArtCraft team.").color(t.text_muted));
+                 });
+                 ui.add_space(6.0);
+                 if let Some(cmd) = widgets::community_links(ui) {

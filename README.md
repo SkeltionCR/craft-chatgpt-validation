@@ -76,5 +76,10 @@ Replacement full-validation run: 38091148903. Status: pending.
 Observed live in the replacement: all 43 text unit tests passed, with zero
 failures, ignores or filters. The bundled fixture completed its width/weight
 assertions, the system-font menu integration test passed, and strict text
-Clippy passed. Complete renderer/GPU, workspace CI and explicit authentication
-and connection-panel results still await terminal verification.
+Clippy passed.
+The replacement also passed all 177 renderer tests, with zero failures
+and one existing ignore, confirmed by its live suite summary and marker.
+All 174 GPU tests passed in the replacement, with zero failures, ignores
+or filters, confirmed by its live suite summary and marker.
+Full workspace CI, explicit authentication and connection-panel results
+still await terminal verification. Early suites do not establish full success.

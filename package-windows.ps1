@@ -85,7 +85,7 @@ $metadataJson = & cargo +stable metadata --locked --format-version 1
 if ($LASTEXITCODE -ne 0) { throw 'Dependency metadata failed' }
 $metadata = ($metadataJson -join "`n") | ConvertFrom-Json
 $notices = Join-Path $stage 'licenses'
-New-Item -ItemType Directory -Path $notices | Out-Null
+New-Item -ItemType Directory -Path $notices -Force | Out-Null
 $licenses = @()
 foreach ($dependency in $metadata.packages) {
     $dependencyRoot = Split-Path -Parent $dependency.manifest_path

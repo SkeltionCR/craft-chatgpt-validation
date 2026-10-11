@@ -38,7 +38,8 @@
     "repo": "effectcraft",
     "name": "EffectCraft",
     "upstream": "2fadd14f09bb064cab8f1f8fe85af601a08b6e53",
-    "patch_sha256": "30428030d279b42ba3b6322f36935fb71eb56ce37f97daf11506ef756da3e340"
+    "patch_sha256": "1b2452ff1cf0d3f99b5427ff08eae6f48e0718ef288975e5f3fdc55eab28445e",
+    "validated_run": "https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/38106350430"
   },
   {
     "repo": "designcraft",

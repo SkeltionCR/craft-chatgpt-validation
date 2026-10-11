@@ -53,25 +53,13 @@ assets from upstream remain in its ephemeral build checkout and are not redistri
 | FilmCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37858950216) | Not exercised |
 | LightCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475) | Not exercised |
 | PrintCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37536527821) | Not exercised |
-| EffectCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/38106350430) | Not exercised |
+| EffectCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/38106350430) | Not exercised |
 | DesignCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526643074) | Not exercised |
 
 Panel previews use synthetic disconnected accounts and a test editor surface.
 A CI result proves only the checks performed by that run; actual browser authorization
 and account renewal with a person's ChatGPT account remain untested.
 
-Full validation is still pending for effectcraft.
-
-Run 38091148903 passed the complete text (43), renderer (177) and GPU (174)
-suites, including the bundled variable-font assertions and strict text/GPU Clippy.
-Full workspace testing reported one failed target: ui_audio_scrub (two passed,
-one failed). The last assertion requires sound to stop when a frame is uncached.
-Clearing the native cache can race workers refilling it during the next UI step.
-The revised test uses a separate empty cache and holds render completion pending.
-It verifies the cache stays empty before and after the step, then retains the
-original audio-stopped, audio-held and playback-active assertion. Production
-playback code is unchanged; the earlier native-render/audio assertions remain.
-The recipe runs all three audio-scrubbing cases early, followed by every
-renderer/GPU test, full original upstream CI, explicit auth tests and panel preview.
-Replacement full-validation run: 38106350430. Status: pending.
-Hosted Rust validation is required; this correction does not establish full success.
+All seven projects passed their complete upstream Windows CI gates.
+Each also passed the added authentication/UI tests and explicit panel preview.
+PrintCraft includes ten added tests; each other app includes eight.

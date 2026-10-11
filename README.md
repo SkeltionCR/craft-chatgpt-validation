@@ -28,8 +28,8 @@ concurrency groups, allowing a resource trial to run alongside an existing build
 
 The job log includes a SHA-256-verified, base64-encoded final source patch between
 `CRAFT_PATCH_START` and `CRAFT_PATCH_END`, allowing the local checkout to receive
-formatting and lockfile changes even when validation reports a failure. No binary,
-cache, or artifact storage is requested by this workflow.
+formatting and lockfile changes for review. EffectCraft uses a GitHub Actions
+compilation cache between runs. The workflow does not publish application installers.
 The panel preview uses a synthetic disconnected account and a test editor surface;
 it never opens a browser or reads a person's stored credentials. Its PNG is returned
 in the job log between `CRAFT_IMAGE_START` and `CRAFT_IMAGE_END` with a checksum.

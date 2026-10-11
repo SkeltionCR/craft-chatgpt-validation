@@ -27,7 +27,7 @@
 -        p.image(t.id(), r, Rect::from_min_max(pos2(0.0, 0.0), pos2(1.0, 1.0)), Color32::WHITE);
 -    }
 -}
-+    p.text(r.center(), egui::Align2::CENTER_CENTER, "EC", egui::FontId::proportional(r.height() * 0.45), p.ctx().style().visuals.text_color());
++    p.text(r.center(), egui::Align2::CENTER_CENTER, "EC", egui::FontId::proportional(r.height() * 0.45), p.ctx().global_style().visuals.text_color());
 +}
 --- a/crates/ui-egui/src/panels/dialogs.rs
 +++ b/crates/ui-egui/src/panels/dialogs.rs

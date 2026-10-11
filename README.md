@@ -53,7 +53,7 @@ assets from upstream remain in its ephemeral build checkout and are not redistri
 | FilmCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37858950216) | Not exercised |
 | LightCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37592193475) | Not exercised |
 | PrintCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37536527821) | Not exercised |
-| EffectCraft | [Pending](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/38091148903) | Not exercised |
+| EffectCraft | [Failed; fixes remain](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/38091148903) | Not exercised |
 | DesignCraft | [Passed](https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/37526643074) | Not exercised |
 
 Panel previews use synthetic disconnected accounts and a test editor surface.
@@ -62,24 +62,16 @@ and account renewal with a person's ChatGPT account remain untested.
 
 Full validation is still pending for effectcraft.
 
-Run 38073568886 passed all 174 GPU and 177 renderer tests, plus all eight
-named authentication tests, formatting and strict workspace Clippy.
-Full workspace testing reported exactly one failed target: effectcraft-text
-(42 passed, one failed). Its variable-font fixture assumed the first installed
-weight axis changes advances; valid weight axes may preserve advances.
-The revised test uses an original bundled variable font: width changes both
-advances and outlines; weight changes outlines while preserving advances.
-Original width/outline difference assertions remain, with expected widths
-and constant-advance weight coverage added. Production text code is unchanged.
-An independent font-data oracle checked geometry, metrics and reproducibility.
-Replacement full-validation run: 38091148903. Status: pending.
-Observed live in the replacement: all 43 text unit tests passed, with zero
-failures, ignores or filters. The bundled fixture completed its width/weight
-assertions, the system-font menu integration test passed, and strict text
-Clippy passed.
-The replacement also passed all 177 renderer tests, with zero failures
-and one existing ignore, confirmed by its live suite summary and marker.
-All 174 GPU tests passed in the replacement, with zero failures, ignores
-or filters, confirmed by its live suite summary and marker.
-Full workspace CI, explicit authentication and connection-panel results
-still await terminal verification. Early suites do not establish full success.
+Run 38091148903 passed the complete text (43), renderer (177) and GPU (174)
+suites, including the bundled variable-font assertions and strict text/GPU Clippy.
+Full workspace testing reported one failed target: ui_audio_scrub (two passed,
+one failed). The last assertion requires sound to stop when a frame is uncached.
+Clearing the native cache can race workers refilling it during the next UI step.
+The revised test uses a separate empty cache and holds render completion pending.
+It verifies the cache stays empty before and after the step, then retains the
+original audio-stopped, audio-held and playback-active assertion. Production
+playback code is unchanged; the earlier native-render/audio assertions remain.
+The recipe runs all three audio-scrubbing cases early, followed by every
+renderer/GPU test, full original upstream CI, explicit auth tests and panel preview.
+Test correction prepared; replacement validation has not started yet.
+Hosted Rust validation is required; this correction does not establish full success.

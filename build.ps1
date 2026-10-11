@@ -92,6 +92,10 @@ if ($App -in @('filmcraft','effectcraft')) {
         Write-Output 'CRAFT_TEXT_TESTS_PASSED:effectcraft'
         Invoke-Checked -Command cargo -Arguments @('+stable','clippy','-p','effectcraft-text','--all-targets','--release','--locked','--','-D','warnings')
         Write-Output 'CRAFT_TEXT_CLIPPY_PASSED:effectcraft'
+        # Exercise all audio-scrubbing cases with a controlled uncached-frame
+        # precondition. Full workspace CI still reruns this original target.
+        Invoke-Checked -Command cargo -Arguments @('+stable','test','-p','effectcraft-ui-egui','--test','ui_audio_scrub','--release','--locked','--','--nocapture')
+        Write-Output 'CRAFT_AUDIO_SCRUB_TESTS_PASSED:effectcraft'
         # Check the complete renderer suite before the longer GPU comparisons.
         Invoke-Checked -Command cargo -Arguments @('+stable','test','-p','effectcraft-render','--release','--locked','--','--nocapture')
         Write-Output 'CRAFT_RENDER_TESTS_PASSED:effectcraft'

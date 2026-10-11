@@ -3614,12 +3614,61 @@ index 0000000..63f94bf
 +
 +if __name__ == "__main__":
 +    generate()
+diff --git a/crates/ui-egui/tests/ui_audio_scrub.rs b/crates/ui-egui/tests/ui_audio_scrub.rs
+index cf17fb1..ce6de80 100644
+--- a/crates/ui-egui/tests/ui_audio_scrub.rs
++++ b/crates/ui-egui/tests/ui_audio_scrub.rs
+@@ -9,6 +9,7 @@ use effectcraft_engine::project::ItemId;
+ use effectcraft_engine::time::Tick;
+ use effectcraft_ui_egui::EffectcraftApp;
+ use effectcraft_ui_egui::audio::{AudioDevice, AudioFeed};
++use effectcraft_ui_egui::frames::{Frames, RemoteDone, RemoteFrames, RemoteJob};
+ use egui::{Event, Modifiers, pos2};
+ use egui_kittest::Harness;
+ use serde_json::json;
+@@ -17,6 +18,20 @@ use serde_json::json;
+ #[derive(Clone, Default)]
+ struct Fake(Arc<Mutex<(Option<Arc<AudioFeed>>, bool)>>);
+ 
++/// Keep requested frames pending until this fixture is dropped. An empty cache alone is
++/// not an uncached-frame precondition: native workers may refill it during the UI step.
++#[derive(Default)]
++struct HeldFrames(Mutex<Vec<RemoteDone>>);
++
++impl RemoteFrames for HeldFrames {
++    fn slots(&self) -> usize {
++        1
++    }
++    fn start(&self, _job: RemoteJob, done: RemoteDone) {
++        self.0.lock().unwrap().push(done);
++    }
++}
++
+ impl AudioDevice for Fake {
+     fn sample_rate(&self) -> u32 {
+         48000
+@@ -141,7 +156,14 @@ fn preview_with_audio_shows_every_frame_and_sounds_once_cached() {
+     assert!(h.state().audio.is_some() && fake.0.lock().unwrap().0.is_some(), "the sound started once the frames ahead were cached");
+     assert!(shown > 0, "frames played silently first");
+     // A frame that isn't cached stops the sound rather than being skipped.
+-    h.state().frames.clear();
++    // Use a separate empty cache, so already-running workers cannot repopulate it. The
++    // controlled renderer holds completion through the next UI step instead of racing it.
++    let mut uncached = Frames::default();
++    uncached.set_remote(Some(Arc::new(HeldFrames::default())));
++    h.state_mut().frames = uncached;
++    assert!(h.state().frames.cached_frames(&h.state().shown_series(cid)).is_empty());
+     h.step();
++    assert!(h.state().frames.cached_frames(&h.state().shown_series(cid)).is_empty());
+     assert!(h.state().audio.is_none() && h.state().playback.audio_held && h.state().playback.playing);
++    eprintln!("CRAFT_AUDIO_CACHE_MISS_PASSED:held_frames:audio_stopped:playback_active");
+ }
 diff --git a/docs/chatgpt-connection.md b/docs/chatgpt-connection.md
 new file mode 100644
-index 0000000..b8af945
+index 0000000..2e6756c
 --- /dev/null
 +++ b/docs/chatgpt-connection.md
-@@ -0,0 +1,71 @@
+@@ -0,0 +1,67 @@
 +# EffectCraft ChatGPT connection
 +
 +This local modification adds an optional native ChatGPT connection to the Windows desktop app.
@@ -3646,32 +3695,28 @@ index 0000000..b8af945
 +  `effectcraft --chatgpt-status`, `--chatgpt-sign-in`, `--chatgpt-refresh`, and
 +  `--chatgpt-disconnect`. Status never returns credentials.
 +
-+## Validation status (2026-10-10)
++## Validation status (2026-10-11)
 +
-+Run 38073568886 passed all 174 GPU and 177 renderer tests, all 390 engine tests,
-+formatting, strict workspace Clippy and all eight added authentication tests.
-+Full workspace testing reported exactly one failed target: effectcraft-text.
-+Its text suite passed 42 tests and failed the variable-font style test.
-+The test selected the first installed variable font and assumed its weight axis
-+changes advances. The OpenType weight-axis specification permits constant widths.
++Run 38091148903 passed all 43 text, 177 renderer and 174 GPU tests,
++including the bundled variable-font assertions and strict text/GPU Clippy.
++Full workspace testing reported exactly one failed target: ui_audio_scrub,
++with two passing tests and one failure at the missing-frame audio assertion.
 +
-+The revised test uses an original bundled geometric font with width and weight
-+axes. Width changes advances and outlines; weight changes outlines while preserving
-+advances. The original >1.0 difference assertions remain, with expected width and
-+constant-advance weight coverage added. Production text code is unchanged.
-+The fixture includes its generator, open licence and attribution. Independent
-+font-data checks confirm geometry, metrics and byte-for-byte reproducibility;
-+these checks do not establish Rust behavior or complete CI success.
++The final test cleared its cache while native workers could refill it during
++the next UI step. The correction uses a separate empty cache and holds render
++completion pending. It checks that the cache remains empty before and after
++the step and keeps the original requirement: audio is absent, audio is held,
++and playback remains active. Earlier native-rendering and audio assertions
++remain unchanged. Production playback code is unchanged.
 +
-+The replacement recipe runs the complete text suite and strict text Clippy early,
-+then every renderer/GPU test and original upstream CI gate. A successful complete
-+run and explicit connection-panel preview remain required. Actual account
-+authorization remains untested; no installed or signed application release was
-+created. Local Cargo remains blocked by Windows Application Control; no security
-+setting changed.
++The replacement recipe runs all three audio-scrubbing tests early, then every
++renderer/GPU test and original upstream CI gate. A successful complete run,
++eight explicit authentication tests and connection-panel preview remain required.
++The correction has not yet passed hosted Rust validation. Actual account
++authorization remains untested; no installed or signed release was created.
++Local Cargo remains blocked by Windows Application Control; no security setting changed.
 +
-+Evidence: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/38073568886
-+Weight-axis specification: https://learn.microsoft.com/en-us/typography/opentype/spec/dvaraxistag_wght
++Evidence: https://github.com/SkeltionCR/craft-chatgpt-validation/actions/runs/38091148903
 +
 +On an authorized build machine, run:
 +

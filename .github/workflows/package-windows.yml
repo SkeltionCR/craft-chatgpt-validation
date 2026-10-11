@@ -27,6 +27,7 @@ jobs:
         shell: pwsh
         env:
           CARGO_TARGET_DIR: ${{ runner.temp }}/craft-package-target
+          GITHUB_TOKEN: ${{ github.token }}
         run: ./package-windows.ps1 -App '${{ inputs.app }}'
       - name: Save Windows package
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

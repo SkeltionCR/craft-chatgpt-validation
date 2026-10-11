@@ -31,6 +31,23 @@ Invoke-Checked -Command rustup -Arguments @('toolchain','install','stable','--pr
 # statically, while host proc-macros and build scripts keep their normal runtime.
 $target = 'x86_64-pc-windows-msvc'
 $env:CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_RUSTFLAGS = '-C target-feature=+crt-static'
+if ($App -in @('filmcraft','effectcraft')) {
+    # The pinned shader compiler queries GitHub via curl before it downloads its
+    # immutable, checksum-pinned archive. Authenticate that query to avoid the
+    # shared runner's anonymous API quota; retain every upstream integrity check.
+    if (-not $env:GITHUB_TOKEN) { throw 'GitHub read token required for shader compiler release verification' }
+    $curlHome = Join-Path $env:RUNNER_TEMP 'craft-github-curl'
+    New-Item -ItemType Directory -Path $curlHome -Force | Out-Null
+    @(
+        "header = `"Authorization: Bearer $env:GITHUB_TOKEN`"",
+        'header = "Accept: application/vnd.github+json"',
+        'header = "X-GitHub-Api-Version: 2022-11-28"',
+        'fail',
+        'retry = 5',
+        'retry-delay = 3'
+    ) | Set-Content -LiteralPath (Join-Path $curlHome '.curlrc') -Encoding ascii
+    $env:CURL_HOME = $curlHome
+}
 $sdkRoot = (Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows Kits\Installed Roots' -ErrorAction SilentlyContinue).KitsRoot10
 if ($sdkRoot) {
     $sdkBin = Get-ChildItem -LiteralPath (Join-Path $sdkRoot 'bin') -Directory | Where-Object Name -Like '10.*' | Sort-Object Name -Descending | Select-Object -First 1

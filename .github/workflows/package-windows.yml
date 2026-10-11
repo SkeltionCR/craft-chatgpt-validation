@@ -21,11 +21,12 @@ jobs:
     env:
       CARGO_TERM_COLOR: never
       CARGO_BUILD_JOBS: '4'
-      CARGO_TARGET_DIR: ${{ runner.temp }}/craft-package-target
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - name: Build, test and package native Windows apps
         shell: pwsh
+        env:
+          CARGO_TARGET_DIR: ${{ runner.temp }}/craft-package-target
         run: ./package-windows.ps1 -App '${{ inputs.app }}'
       - name: Save Windows package
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
